@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="{{=T.accepted_language or 'en'}}" class="no-js"><!-- no-js need it for modernzr -->
+  <head>
+
+    <meta charset="utf-8" />	  	
+    <!-- www.phpied.com/conditional-comments-block-downloads/ -->
+    <!--[if IE]><![endif]-->    
+    <!-- Always force latest IE rendering engine 
+	 (even in intranet) & Chrome Frame 
+	 Remove this if you use the .htaccess -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>{{=response.title or request.application}}</title>
+    
+    <!-- http://dev.w3.org/html5/markup/meta.name.html -->
+    <meta name="application-name" content="{{=request.application}}" />	
+    
+    <!-- Speaking of Google, don't forget to set your site up: 
+	 http://google.com/webmasters -->
+    <meta name="google-site-verification" content="" />
+    <!--  Mobile Viewport Fix
+	  j.mp/mobileviewport & davidbcalhoun.com/2010/viewport-metatag 
+	  device-width: Occupy full width of the screen in its current orientation
+	  initial-scale = 1.0 retains dimensions instead of zooming out if page height > device height
+	  maximum-scale = 1.0 retains dimensions instead of zooming in if page width < device width
+      -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    
+        <!-- Place favicon.ico and apple-touch-icon.png in the root of your domain and delete these references -->
+    <link rel="shortcut icon" href="{{=URL('static','favicon.ico')}}" type="image/x-icon">
+    <link rel="apple-touch-icon" href="{{=URL('static','favicon.png')}}">
+
+    <!-- For the less-enabled mobile browsers like Opera Mini -->
+    <link rel="stylesheet" media="handheld" href="{{=URL('static','css/handheld.css')}}">
+    
+    <!-- All JavaScript at the bottom, except for Modernizr which enables HTML5 elements & feature detects -->
+    <script src="{{=URL('static','js/modernizr-1.7.min.js')}}"></script>
+    
+    {{#------  require CSS and JS files for this page (read info in base.css) ------}}
+    {{response.files.append(URL('static','css/base.css'))}}
+    {{response.files.append(URL('static','css/superfish.css'))}}
+    {{response.files.append(URL('static','js/superfish.js'))}}
+    {{#------  web2py specific js code (jquery, calendar, form stuff) ------}}
+    {{include 'web2py_ajax.html'}}
+
+    {{
+    #using sidebars need to know what sidebar you want to use
+    #prior of using it, because of static width size of content, you can use
+    #left_sidebar, right_sidebar, both or none (False left and right)    
+    left_sidebar_enabled = globals().get('left_sidebar_enabled',False)
+    right_sidebar_enabled = globals().get('right_sidebar_enabled',False)
+    if left_sidebar_enabled and right_sidebar_enabled: width_content='63%'
+    elif left_sidebar_enabled != right_sidebar_enabled: width_content='740px'
+    else: width_content='100%'
+    if left_sidebar_enabled: left_sidebar_style = 'style="display: block;"'
+    else: left_sidebar_style = 'style="display: none;"'
+    if right_sidebar_enabled: right_sidebar_style = 'style="display: block;"'
+    else: right_sidebar_style = 'style="display: none;"'
+    style_content = 'style="width: %s"' % width_content
+    }}
+  </head>
+   
+<body>
+    <div class="flash"></div> <!-- notification div --> 
+    
+    <div id="container">	      		      	
+      
+      <div id="wrapper">		
+	
+	<div id="header"> <!-- header and login nav --> 
+	   <!-- this is default header --> 
+	  		          
+	  <div id="logo"><!-- put your logo here --></div> 
+	  <div style="clear: both;"></div><!-- Clear the divs --> 
+	  				  					  
+	</div><!-- header  --> 
+	
+	<div id="page"> <!-- Here my central body -->	  
+	  <!-- content --> 
+	  <div id="content" style="width: 100%" > 
+	    
+	    <h1>Demo</h1> 
+	    <p>This is a sample application to show the features of powerTable plugin for web2py, click on menu above to see the examples</p> 
+	    <hr /> 
+	    
+	    
+	    <script> 
+  $(document).ready(function(){
+    $('#switcher').themeswitcher();
+  });
+</script> 
+<script type="text/javascript"
+  src="http://jqueryui.com/themeroller/themeswitchertool/"> 
+</script> 
+<h2>Categories</h2> 
+<pan>In this example some selected fields are shown in main table, and other other foreign table shown in details.</span> 
+<div id="switcher"><b>Change theme:</b></div><br /> 
+<script><!--
+ 
+                  
+                  var oTable;
+                  var gaiSelected =  [];
+           
+         /*function to format details*/ 
+            /* Formating function for row details */
+            function fnFormatDetails ( oTable, nTr,key,rid )
+            {
+                var aData = oTable.fnGetData( nTr );
+                                var sOut = '<form><input type="hidden" value='+key+ ' id=dt_'+rid+' name=dt_'+rid+' />'
+                                sOut += '<input type="hidden" value="products.id,                                                        products.name,                                                        products.picture,                                                        products.qtdinstock,                                                        products.price,                                                        products.colors,                                                        products.dimensions,                                                        products.weight" id=dtcols_'+rid+' name=dtcols_'+rid+' /></form>'
+                                sOut += '<div class="datatabledetail" id="target'+rid+'div"></div>'
+                
+                return sOut;
+            }
+    
+    
+                   /*function to format details*/
+                   
+                   jQuery(document).ready(function() {
+                    
+             /*
+     * Insert a 'details' column to the table
+     */
+    var nCloneTh = document.createElement( 'th' );
+    var nCloneTd = document.createElement( 'td' );
+    nCloneTd.innerHTML = '<img src="../static/plugin_powertable/images/details_open.png" alt="Click to see details" title="Click for details" style="cursor:pointer;">';
+    nCloneTd.className = "dtclick center";
+    
+    $('.powerTable thead tr').each( function () {
+        this.insertBefore( nCloneTh, this.childNodes[1] );
+    } );
+    
+    $('.powerTable tbody tr').each( function () {
+        this.insertBefore(  nCloneTd.cloneNode( true ), this.childNodes[1] );
+    } );
+                   
+                   
+                   /*insert detail column image*/
+        
+                    $('.powerTable tbody tr[title]').tooltip( {
+                    "delay": 0,"track": true,"fade": 250} );
+                    var oTable = jQuery('.powerTable').dataTable(
+                                                             
+                                                             {'oLanguage': {'sSearch': 'Search:', 'sZeroRecords': 'Nothing found - sorry', 'sInfoEmpty': 'Showing 0 to 0 of 0 records', 'sProcessing': 'Processing...', 'sInfoPostFix': '', 'sLengthMenu': 'Display _MENU_ entries', 'sUrl': '', 'sInfoFiltered': '(filtered from _MAX_ total records)', 'oPaginate': {'sFirst': 'First', 'sLast': 'Last', 'sPrevious': 'Previous', 'sNext': 'Next'}, 'sInfo': 'Showing _START_ to _END_ of _TOTAL_ records'}, 'sScrollY': '100%', 'fnRowCallback': "function( nRow, aData, iDisplayIndex ) {\nif ( jQuery.inArray(aData[0], gaiSelected) != -1 ){\n$(nRow).addClass('row_selected');\n}\nreturn nRow\n;}", 'bJQueryUI': true, 'sPaginationType': 'full_numbers', 'sScrollX': '100%', 'bPaginate': true, 'bSortClasses': false, 'bProcessing': true, 'aLengthMenu': [[2, 5, 10, 25, 50, 100, -1], [2, 5, 10, 25, 50, 100, 'All']]}
+                                                             
+                                                             );
+                    /*not editable*/
+                    var hidekeycolumn = 200;oTable.fnSetColumnVis(0,false);oTable.fnDraw();
+                    /*No highlight*/
+                    
+    /*click on image to show details*/
+                    
+                    $('.powerTable tbody td.dtclick img').live( 'click', function () {
+                    var nTr = this.parentNode.parentNode;
+                                        var rid = this.parentNode.parentNode.getAttribute('id');
+                                        var key = this.parentNode.parentNode.getAttribute('key');
+                                        //alert(this.parentNode.parentNode.getAttribute('key'));
+                    if ( this.src.match('details_close') )
+                    {
+                        /* This row is already open - close it */
+                        this.src = "../static/plugin_powertable/images/details_open.png";
+                                                this.title = "Click for details";
+                                                this.alt =  "Open Details";
+                        oTable.fnClose( nTr );
+                    }
+                    else
+                    {
+                        /* Open this row */
+                        this.src = "../static/plugin_powertable/images/details_close.png";
+                                                this.title = "Click to close details";
+                                                this.alt =  "Close Details";
+                        oTable.fnOpen( nTr, fnFormatDetails(oTable,nTr,key,rid), 'details' );
+                                                ajax('/productdetails', ['dt_'+rid,'dtcols_'+rid], 'target'+rid+'div');
+                    }
+                } );
+                                
+                                
+                    
+                    
+                    /*click on image to show details*/
+                    
+                    
+                 /* Click on row event handler */
+    $('.powerTable tbody tr.clickable').live('click', function () {
+        var aData = oTable.fnGetData( this );
+        var iId = aData[0];
+        
+        if ( jQuery.inArray(iId, gaiSelected) == -1 )
+        {
+            gaiSelected[gaiSelected.length++] = iId;
+                        //alert(gaiSelected)
+        }
+        else
+        {
+            gaiSelected = jQuery.grep(gaiSelected, function(value) {
+                return value != iId;
+            } );
+                        //alert(gaiSelected)
+        }
+        
+        $(this).toggleClass('row_selected');
+    } );
+        /*Click on row event handler*/
+        
+                    
+          /*adjust columns */
+        if ($.browser.msie){}else{  
+        $(window).bind('resize', function () {
+            oTable.fnAdjustColumnSizing();
+    } );
+    }
+                    
+   });
+//--></script><STYLE> 
+        .powerTable tbody tr.even:hover, .powerTable  tbody tr.even td.highlighted {
+        background-color: #ccc !important;
+        }
+        
+        .powerTable tbody tr.odd:hover, .powerTable  tbody tr.odd td.highlighted {
+                background-color: #ccc;
+        }
+        
+        
+        
+        .powerTable tr.even:hover {
+                background-color: #ECFFB3;
+        }
+        
+        .powerTable th {
+                
+                white-space:nowrap;
+        }
+        
+        .powerTable tr.row_selected  {
+                background-color: #d5effc;
+        }
+        
+        .dataTables_wrapper{}
+        
+        .dataTables_length select{
+            
+            margin:0;
+            width: 60px;      
+            border:none;        
+            
+        }
+        .dataTables_filter input{
+             margin:0;
+             width: 150px;
+             border:none;
+        }
+        .DataTables_sort_wrapper{position:relative;padding-right: 20px;}
+        .dataTables_wrapper .ui-state-default{line-height:20px;}
+        .dataTables_wrapper .ui-icon{cursor: pointer;}
+        .dataTables_wrapper .ui-button, .dataTables_paginate,.dataTables_info,.powerTable thead {line-height: 100%;}
+        .dataTables_processing{top:50%;background-color: #FFFEF3;color:#000;}
+        .dataTables_wrapper .css_right {
+float: right;
+}
+
+        </STYLE><table class="powerTable"><thead><tr><th>Id</th><th>Name</th><th>Small Picture</th></tr></thead><tbody><tr class="even clickable" id="1" key="category.id.1" title="Record 1"><td class="category.id.id">1</td><td class="category.name.string">Vegan Food</td><td class="virtual.smallpicture.string"><img alt="A small picture for Vegan Food" border="0" height="30px" src="/download/category.picture.9f4f39811d410b54.3634362d4c5f7468756d622e6a7067.jpg" title="This is the category small picture" /></td></tr><tr class="odd clickable" id="2" key="category.id.2" title="Record 2"><td class="category.id.id">2</td><td class="category.name.string">Dairy Free Candy</td><td class="virtual.smallpicture.string"><img alt="A small picture for Dairy Free Candy" border="0" height="30px" src="/download/category.picture.b1974a4805e47745.393733432d4c5f7468756d622e6a7067.jpg" title="This is the category small picture" /></td></tr></tbody></table> 
+
+<hr />
+
+<h2 class="topbar">Labs Favorite</h2> 
+<ol> 
+ 
+ <!-- Google Body -->
+ <li> 
+    <a href="http://bodybrowser.googlelabs.com/"> 
+    
+    <img class="thumbnail" src="/show_app_thumbnail?app_key=agtnbGFiczIwLXd3d3IVCxIMTGFic0FwcE1vZGVsGJm1uQIM" alt='Thumbnail' /> 
+    
+    </a> 
+    <div class="content"> 
+      <h2 class="app"> 
+      <div class="name"> 
+        
+        <a href="http://bodybrowser.googlelabs.com/"> 
+        
+          Google Body</a> 
+        
+        
+        
+        
+        
+           &nbsp; <span class="not_localized" title="この試験運用機能は翻訳されていません。"><a href="/faq#translation">未翻訳</a></span> 
+        </div> 
+    </h2> 
+      <div class="desc"> 
+        Google Body は人体の詳細な 3D 模型です。身体を構成しているさまざまな「層」をはぎ取り、拡大し、興味のある部位を表示できます。クリックして体の構造を確認したり、筋肉や組織、骨などを検索したりできます。</div> 
+      <div class="meta"> 
+        <span class="date" style='padding-right:8px'>2010 年 12 月 16 日</span> 
+        
+        <span class="rating" style='padding-right:8px'
+           g:type="AverageStarRating"
+           g:inline="true"
+           g:entity.url="http://bodybrowser.googlelabs.com/" ></span> 
+        <span class="rating" style='padding-right:8px'
+           g:type="NumRatings"
+           g:inline="true"
+           g:entity.url="http://bodybrowser.googlelabs.com/" ></span> 
+        
+        
+        <span class="links"> 
+          <a href='/show_details?app_key=agtnbGFiczIwLXd3d3IVCxIMTGFic0FwcE1vZGVsGJm1uQIM'> 
+            詳細とフィードバック &raquo;</a></span> 
+        
+    </div></div></li> 
+  
+  <!-- Google Swiffy -->
+    <li> 
+    <a href="http://swiffy.googlelabs.com/"> 
+    
+    <img class="thumbnail" src="/show_app_thumbnail?app_key=agtnbGFiczIwLXd3d3IVCxIMTGFic0FwcE1vZGVsGKHQvQIM" alt='Thumbnail' /> 
+    
+    </a> 
+    <div class="content"> 
+      <h2 class="app"> 
+      <div class="name"> 
+        
+        <a href="http://swiffy.googlelabs.com/"> 
+        
+          Google Swiffy (SWF to HTML5)</a> 
+        
+        
+        
+        
+        
+           &nbsp; <span class="not_localized" title="この試験運用機能は翻訳されていません。"><a href="/faq#translation">未翻訳</a></span> 
+        </div> 
+    </h2> 
+      <div class="desc"> 
+        Swiffy converts Flash SWF files to HTML5, allowing you to reuse Flash content on devices without a Flash player (such as iPhones and iPads).</div> 
+      <div class="meta"> 
+        <span class="date" style='padding-right:8px'>2011 年 6 月 28 日</span> 
+        
+        <span class="rating" style='padding-right:8px'
+           g:type="AverageStarRating"
+           g:inline="true"
+           g:entity.url="http://swiffy.googlelabs.com/" ></span> 
+        <span class="rating" style='padding-right:8px'
+           g:type="NumRatings"
+           g:inline="true"
+           g:entity.url="http://swiffy.googlelabs.com/" ></span> 
+        
+        
+        <span class="links"> 
+          <a href='/show_details?app_key=agtnbGFiczIwLXd3d3IVCxIMTGFic0FwcE1vZGVsGKHQvQIM'> 
+            詳細とフィードバック &raquo;</a></span> 
+        
+    </div></div></li> 
+  
+<hr /> 
+
+<h1>{{=T("Code")}}</h1></html>
+
+{{=CODE("""print 'hello world'
+""")}}
+
+
+</body>
+</html>
