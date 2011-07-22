@@ -79,3 +79,37 @@ crud.settings.auth = None        # =auth to enforce authorization on crud
 ## >>> rows=db(db.mytable.myfield=='value').select(db.mytable.ALL)
 ## >>> for row in rows: print row.id, row.myfield
 #########################################################################
+def horizontal_radio_widget(field, value): 
+    rows = SQLFORM.widgets.radio.widget(field,value).elements('tr') 
+    inner = []
+    for row in rows:
+        elem = row.elements('td')[0]
+        button = elem[0]
+        label = elem[1]
+        label = SPAN(label, 
+                     _onclick='jQuery(this).parent().children("input").click();', _style='cursor:pointer;')
+        inner.append(SPAN(button, ' ', label, _style='padding-right:10px;'))
+    return DIV(*inner)
+
+db.define_table('image',
+   Field('title'),
+   Field('file', 'upload'),
+    Field('bank_account_type', 'integer', label='口座区分', 
+          requires=IS_EMPTY_OR(IS_IN_SET([(1, '普通'), (2, '当座')])), 
+          widget=horizontal_radio_widget))
+
+db.define_table('comment',
+   Field('image_id', db.image),
+   Field('author'),
+   Field('email'),
+   Field('body', 'text'))
+
+db.image.title.requires = IS_NOT_IN_DB(db, db.image.title)
+db.comment.image_id.requires = IS_IN_DB(db, db.image.id, '%(title)s')
+db.comment.author.requires = IS_NOT_EMPTY()
+db.comment.email.requires = IS_EMAIL()
+db.comment.body.requires = IS_NOT_EMPTY()
+
+db.comment.image_id.writable = db.comment.image_id.readable = False
+
+

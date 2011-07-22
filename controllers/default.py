@@ -16,9 +16,25 @@ def index():
     """
     return dict(message='HELLO')
 
-def widget1():
+def widget_demo():
     return dict()
 
+def horizontal_widget():
+    form = SQLFORM(db.image)
+    
+    code = CODE(
+"""def horizontal_radio_widget(field, value): 
+    rows = SQLFORM.widgets.radio.widget(field,value).elements('tr') 
+    inner = []
+    for row in rows:
+        elem = row.elements('td')[0]
+        button = elem[0]
+        label = elem[1]
+        label = SPAN(label, 
+                     _onclick='jQuery(this).parent().children("input").click();', _style='cursor:pointer;')
+        inner.append(SPAN(button, ' ', label, _style='padding-right:10px;'))
+    return DIV(*inner)""")
+    return dict(form=form, code=code)
 
 def user():
     """
