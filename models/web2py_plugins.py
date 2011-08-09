@@ -5,19 +5,19 @@ info_plugin_metas = dict(
         label='Horizontal Radio Widget',
         short_description='A radio widget arranging its radio buttons horizontally.',
         long_description="""
-The default widget for single select filed is a vertical radio widget in web2py,
+In web2py, the default widget for a single select filed is a vertical radio widget,
 which occupies a relatively large area. 
-Then, it's often the case that a horizontal radio widget is more appropriate.
-So we implemented it. We also made labels of the widget clickable for usability. 
+It's often the case that a horizontal radio widget is more appropriate.
+So we implemented it, and further made it clickable on it's labels. 
 """,
     ),
     plugin_multiselect_widget=dict(
         label='Multiselect Widget',
         short_description='A user-friendly multiselect widget.',
         long_description="""
-The default widget for multiple select field is made by a select input tag in web2py,
+In web2py, the default widget for a multiple select field is made by a select input tag,
 which becomes difficult to handle when it had many option items.
-So we built anohter user-friendly multiple select widget.
+So we built a custom multiple select widget which would be more user-friendly.
 """,
     ),
     plugin_suggest_widget=dict(
