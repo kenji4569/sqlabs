@@ -13,8 +13,12 @@ So we implemented it. We also made labels of the widget clickable for usability.
     ),
     plugin_multiselect_widget=dict(
         label='Multiselect Widget',
-        short_description=' ',
-        long_description=""" """,
+        short_description='A user-friendly multiselect widget.',
+        long_description="""
+The default widget for multiple select field is made by a select input tag.
+But this widget becomes difficult to handle when it had many option items.
+So we built a yet anohter multiple select widget which would be more user-friendly.
+""",
     ),
     plugin_suggest_widget=dict(
         label='Suggest Widget',
