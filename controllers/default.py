@@ -1,6 +1,18 @@
 # -*- coding: utf-8 -*-
 
 def index():
+    def _make_widgets_list(*plugin_names):
+        widgets_list = []
+        for plugin_name in plugin_names:
+            info_plugin_meta = info_plugin_metas[plugin_name]
+            widgets_list.append(
+               (info_plugin_meta['label'], 
+                URL('web2py_plugins', 'index', args=plugin_name),
+                info_plugin_meta['description']) 
+            )
+        return widgets_list
+        
+
     return dict(
         sections=[
             ('web2py-plugins', 
@@ -9,23 +21,12 @@ is a powerful opensource web framework based on python programming language.
 We have developed many products using the framework, and want to share some code parts of the products.
 Thanks to a web2py's plugin system, the code parts should be quite portable. Have a look at the codes and try the demos."""),
               [('Custom Widgets',
-                [('Horizontal Radio Widget', 
-                  URL('plugin_horizontal_widget', 'index'),
-                  """This widget ..."""
-                  ),
-                 ('Multiselect Widget', 
-                  URL('plugin_multiselect_widget', 'index'),
-                  """This widget ..."""
-                  ),
-                 ('Suggest Widget', 
-                  URL('plugin_suggest_widget', 'index'),
-                  """This widget ..."""
-                  ),
-                  ('Lazy Options Widget', 
-                  URL('plugin_lazy_options_widget', 'index'),
-                  """This widget ..."""
-                  ),
-                 ]),
+                _make_widgets_list(
+                    'plugin_horizontal_radio_widget', 
+                    'plugin_multiselect_widget', 
+                    'plugin_suggest_widget',
+                    'plugin_lazy_options_widget',
+                )),
                 ('Custom Validators',
                  [('xxx Validator', 
                   URL('plugin_horizontal', 'index'),
