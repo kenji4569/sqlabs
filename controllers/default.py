@@ -7,12 +7,11 @@ def index():
             info_plugin_meta = info_plugin_metas[plugin_name]
             widgets_list.append(
                (info_plugin_meta['label'], 
-                URL('web2py_plugins', 'index', args=plugin_name),
+                URL(plugin_name, 'index'),
                 info_plugin_meta['short_description']) 
             )
         return widgets_list
         
-
     return dict(
         sections=[
             ('web2py-plugins', 

@@ -11,4 +11,4 @@ def index():
     if form.accepts(request.vars, session):
         session.flash = 'submitted : %s' % request.vars.colors
         redirect(URL('index'))
-    return form
+    return dict(form=form)

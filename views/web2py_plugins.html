@@ -1,0 +1,36 @@
+{{extend 'layout.html'}}
+
+<p><a href="{{=URL('default', 'index')}}">← Back to the home</a></p>
+
+<h3>{{=response.web2py_plugins.plugin_label}}</h3>
+<p>{{=response.web2py_plugins.plugin_description}}</p>
+
+<hr/>
+
+<h4>Demo</h4>
+
+{{=BEAUTIFY(response._vars)}}
+
+<p></p>
+<hr/>
+
+<h4>Usage code</h4>
+<ul>
+  <li>
+    <span>controllers/{{=response.web2py_plugins.plugin_name}}.py</span>
+    {{=response.web2py_plugins.controller_code}}
+  </li>
+</ul>
+
+<p></p>
+<hr/>
+
+<h4>Source code</h4>
+<ul>
+  <li>
+    <span>modules/{{=response.web2py_plugins.plugin_name}}.py</span>
+    {{=response.web2py_plugins.module_code}}
+  </li>
+</ul>
+
+<p></p>
