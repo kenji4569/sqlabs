@@ -15,9 +15,9 @@ So we implemented it, and further made it clickable on it's labels.
         label='Multiselect Widget',
         short_description='A user-friendly multiselect widget.',
         long_description="""
-In web2py, the default widget for a multiple select field is made by a select input tag,
-which becomes difficult to handle when it had many option items.
-So we built a custom multiple select widget which would be more user-friendly.
+In web2py, the default widget for a multiple select field is made by a single select input tag,
+which becomes difficult to handle when it had many options.
+So we built a multiple select widget which would be more user-friendly.
 """,
     ),
     plugin_suggest_widget=dict(
