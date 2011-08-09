@@ -18,8 +18,8 @@ def index():
             ('web2py-plugins', 
               SPAN(A('Web2py', _href="http://www.web2py.com"), """ 
 is a powerful opensource web framework based on python programming language.
-We have developed many products using this framework, and want to share useful code parts extracted from the work.
-Thanks to a web2py's plugin system, the code parts are quite portable. Try the demos and have a look at the codes."""),
+We have developed many products using this framework, and want to share useful code parts from the work.
+The web2py's plugin system enalbes the code parts quite portable. Enjoy the demos and codes."""),
               [('Custom Widgets',
                 _make_widgets_list(
                     'plugin_horizontal_radio_widget', 
