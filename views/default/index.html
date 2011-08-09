@@ -1,43 +1,21 @@
 {{extend 'layout.html'}}
 
 <img src="{{=URL('static', 'images/front.jpg')}}" width=790>
-<h3>web2py-plugins</h3>
-<p><a href="http://www.web2py.com">web2py</a> is a powerful opensource web framework based on python programming language.
-We have developed many products using the framework, and want to share some code parts of the products.
-Thanks to a web2py's plugin system, the code parts will be quite portable. Have a look at the codes and try the demos.
-</p>
-<h4>Custom Widgets</h4>
-<div id="examples">
-  <ul>
-    <li class="ex_container">
-      <h3><a href="../plugin_horizontal/horizontal_widget.html">Horizontal Radio Widget</a></h3>
-      <p>some description here..</p>
-    </li>
-    <li class="ex_container">
-      <h3><a href="../plugin_horizontal/horizontal_widget.html">Horizontal Radio Widget</a></h3>
-      <p>some description here..</p>
-    </li>
-    <li class="ex_container">
-      <h3><a href="../plugin_horizontal/horizontal_widget.html">Horizontal Radio Widget</a></h3>
-      <p>some description here..</p>
-    </li>
-  </ul>
-</div>
 
-<h4>Custom Widgets</h4>
-<div id="examples">
+{{for section in sections:}}
+<h3>{{=section[0]}}</h3>
+<p>{{=section[1]}}</p>
+{{for subsection in section[2]:}}
+<h4>{{=subsection[0]}}</h4>
+<div class="examples">
   <ul>
+    {{for example in subsection[1]:}}
     <li class="ex_container">
-      <h3><a href="../plugin_horizontal/horizontal_widget.html">Horizontal Radio Widget</a></h3>
-      <p>some description here..some description here..some description here..some description here..</p>
+      <h3><a href="{{=example[1]}}">{{=example[0]}}</a></h3>
+      <p>{{=example[2]}}</p>
     </li>
-    <li class="ex_container">
-      <h3><a href="../plugin_horizontal/horizontal_widget.html">Horizontal Radio Widget</a></h3>
-      <p>some description here..</p>
-    </li>
-    <li class="ex_container">
-      <h3><a href="../plugin_horizontal/horizontal_widget.html">Horizontal Radio Widget</a></h3>
-      <p>some description here..</p>
-    </li>
+    {{pass}}
   </ul>
 </div>
+{{pass}}
+{{pass}}
