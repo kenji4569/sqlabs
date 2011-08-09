@@ -30,7 +30,7 @@ def index():
     return dict(
         plugin_name=plugin_name,
         plugin_label=info_plugin['label'],
-        plugin_description=info_plugin['description'],
+        plugin_description=info_plugin['long_description'],
         controller_code=controller_code,
         module_code=module_code,
     )
