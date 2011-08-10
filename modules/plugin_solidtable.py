@@ -287,6 +287,7 @@ class SOLIDTABLE(TABLE):
     word-break: break-all;
     padding: 5px 12px 3px 12px;
     margin-bottom: 0.5em;
+    vertical-align: middle;
     //text-align: left;}
   #%(id)s th.colselected {
     background: #E2E2E2;
