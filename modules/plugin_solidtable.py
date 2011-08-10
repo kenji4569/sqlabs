@@ -7,38 +7,48 @@ class SOLIDTABLE(TABLE):
     def __init__(self, sqlrows, linkto=None, upload=None, orderby=None,
             headers={}, truncate=16, columns=None, th_link='',
             extracolumns=None, selectid=None, renderstyle=False, **attributes):
-        TABLE.__init__(self, **attributes)
-        
-        if '_id' not in attributes:
-            attributes['_id'] = 'solidtable_%s' % id(sqlrows)
-        self.attributes = attributes
-        self.sqlrows = sqlrows
-        self.linkto = linkto
-        self.truncate = truncate
-        self.selectid = selectid
-        self.components = []
-        
         if not sqlrows:
             return
-        columns = columns or sqlrows.colnames
-        columns = [c if type(c) is str else '%s' % id(c) for c in columns]
+        TABLE.__init__(self, **attributes)
+        if '_id' not in attributes:
+            attributes['_id'] = 'solidtable_%s' % id(sqlrows)
+        self.attributes, self.sqlrows, self.linkto, self.truncate, self.selectid = (
+            attributes, sqlrows, linkto, truncate, selectid
+        )
+        self.components = []
+        
+        def _conver_column_key(c):
+            if c is None:
+                return None
+            return c if type(c) is str else '%s' % id(c)
+        _columns = []
+        for columns_inner in columns or self.sqlrows.colnames:
+            if type(columns_inner) in (list, tuple):
+                _columns_inner = []
+                for column in columns_inner:
+                    _columns_inner.append(_conver_column_key(column))
+                _columns.append(_columns_inner)
+            else:
+                _columns.append(_conver_column_key(columns_inner))
+        columns = _columns
             
-        self.show_header = headers is not None
-        headers = self.show_header and headers or {}
-        headers = self._convert_headers(headers, columns)
+        show_header = headers is not None
+        headers = self._convert_headers(show_header and headers or {}, columns)
         if extracolumns:#new implement dict
             _extracolumns = dict([('%s' % id(ec), ec) for ec in extracolumns])
             columns.extend([c for c in _extracolumns.keys() if c not in columns])
             headers.update(_extracolumns.items())
+            
+        columns, col_lines = self._make_multine_columns(columns, headers)
         
-        if self.show_header:
-            self.components.append(self._create_thead(headers, columns))
+        if show_header:
+            self.components.append(self._create_thead(headers, columns, col_lines))
             
         if renderstyle:
-            self.components.append(STYLE(self.style()))
+            self._set_render_style()
         
-        self.components.append(self._create_tbody(headers, columns))
-        
+        self.components.append(self._create_tbody(headers, columns, col_lines))
+            
     def _convert_headers(self, headers, columns):
         
         def _get_field_label(column):
@@ -52,61 +62,129 @@ class SOLIDTABLE(TABLE):
         if headers=='fieldname:capitalize':
             headers = {}
             for c in columns:
-                headers[c] = ' '.join([w.capitalize() for w in c.split('.')[-1].split('_')])
+                if c:
+                    headers[c] = {'label': ' '.join([w.capitalize() 
+                                    for w in c.split('.')[-1].split('_')])}
         elif headers=='labels':
             headers = {}
             for c in columns:
-                headers[c] = _get_field_label(c)
+                if c:
+                    headers[c] = {'label': _get_field_label(c)}
         else:
-            for c in columns:
+            def _set_label(c):
                 if c not in headers:
-                    headers[c] = _get_field_label(c)
+                    headers[c] = {'label': _get_field_label(c)}
                 elif 'label' not in headers[c]:
                     headers[c]['label'] = _get_field_label(c)
+            for columns_inner in columns or self.sqlrows.colnames:
+                if type(columns_inner) in (list, tuple):
+                    for column in columns_inner:
+                        if column:
+                            _set_label(column)
+                else:
+                    if columns_inner:
+                        _set_label(columns_inner) 
                     
         return headers
         
-    def _create_thead(self, headers, columns):
-        row = []
-        for c in columns:#new implement dict
-            if isinstance(headers.get(c), dict):
-                th = self._create_th(headers[c])
+    def _make_multine_columns(self, columns, headers):
+        for header in headers.values():
+            header['_colspan'] = 1
+            header['_rowspan'] = 1
+        
+        flat_columns = []
+        max_col_lines = 1 # max row span in the table header or each table "row"
+        for columns_inner in columns:
+            if type(columns_inner) in (list, tuple):
+                for column in columns_inner:
+                    if column:
+                        flat_columns.append(column)
+                max_col_lines = max(len(columns_inner), max_col_lines)
+            elif columns_inner:
+                flat_columns.append(columns_inner)
+                
+        col_lines = [[] for i in range(max_col_lines)]
+        for col_no, cols_inner in enumerate(columns):
+            if type(cols_inner) in (list, tuple):
+                num_lines = len(cols_inner)
+                rowspan = max_col_lines / num_lines
+                extra_rowspan = max_col_lines % num_lines
+                for i in range((max_col_lines-extra_rowspan)/rowspan):
+                    col = cols_inner[i]
+                    if col:
+                        headers[col]['_rowspan'] = rowspan
+                        col_lines[i*rowspan].append(col)
+                    else:
+                        for _col_no in reversed(range(col_no)):
+                            try:
+                                headers[columns[_col_no][i]]['_colspan'] += 1
+                            except:
+                                pass
+                if extra_rowspan:
+                    for line_no in range(max_col_lines-extra_rowspan, max_col_lines):
+                        col_lines[line_no].append(None)
             else:
-                th = TH(headers.get(c, c))
-            # if orderby:
-                # pass # TODO
-            row.append(th)
-        return THEAD(TR(*row))
+                col = cols_inner
+                if col:
+                    headers[col]['_rowspan'] = max_col_lines
+                    col_lines[0].append(col)
+                else:
+                    for _col_no in reversed(range(col_no)):
+                        try:
+                            headers[columns[_col_no]]['_colspan'] += 1
+                        except:
+                            pass
+                        
+        return flat_columns, col_lines
+             
+    def _create_thead(self, headers, columns, col_lines):
+        thead_inner = []
+        for col_line in col_lines:
+            tr_inner =[]
+            for col in col_line:
+                if not col:
+                    tr_inner.append(TH())
+                else:
+                    tr_inner.append(self._create_th(headers[col]))
+            thead_inner.append(tr_inner)
+        return THEAD(*thead_inner)
         
-    def _create_th(self, coldict):
+    def _create_th(self, header):
         attrcol = dict()
-        if 'width' in coldict and coldict['width']:
-            attrcol.update(_width=coldict['width'])
-        self._apply_class(attrcol, coldict)
-        return TH(coldict['label'],**attrcol)
+        self._apply_colclass(attrcol, header)
+        if header.get('width'):
+            attrcol.update(_width=header['width'])
         
-    def _apply_class(self, attrcol, coldict):
-        if coldict.get('selected'):
-            colclass= str(coldict.get('class', '') + " colselected").strip()
+        return TH(header['label'],**attrcol)
+        
+    def _apply_colclass(self, attrcol, header):
+        attrcol.update(_rowspan=header['_rowspan'], _colspan=header['_colspan'])
+        
+        if header.get('selected'):
+            colclass= str(header.get('class', '') + " colselected").strip()
         else:
-            colclass = coldict.get('class')
+            colclass = header.get('class')
         if colclass:
             attrcol.update(_class=colclass)
         
-    def _create_tbody(self, headers, columns):
-        tbody = []
+    def _create_tbody(self, headers, columns, col_lines):
+        tbody_inner = []
         for (rc, record) in enumerate(self.sqlrows):
-            row = []
-            _class = 'even' if rc % 2 == 0 else 'odd'
-            if self.selectid is not None and record.id == self.selectid:
-                _class += ' rowselected'
-            for colname in columns:
-                row.append(self._create_td(headers[colname], colname, record, rc))
-            tbody.append(TR(_class=_class, *row))
-        return TBODY(*tbody)
+            for col_line in col_lines:
+                tr_inner = []
+                for col in col_line:
+                    if not col:
+                        tr_inner.append(TD())
+                    else:
+                        tr_inner.append(self._create_td(headers[col], col, record, rc))
+                _class = 'even' if rc % 2 == 0 else 'odd'
+                if self.selectid is not None and record.id == self.selectid:
+                    _class += ' rowselected'
+                tbody_inner.append(TR(_class=_class, *tr_inner))
+        return TBODY(*tbody_inner)
         
     def _create_td(self, header, colname, record, rc):
-        if '.' not in colname:
+        if 'content' in header:
             r = header['content'](record, rc)
         else:
             if not table_field.match(colname):
@@ -120,9 +198,7 @@ class SOLIDTABLE(TABLE):
                 field = self.sqlrows.db[tablename][fieldname]
             except KeyError:
                 field = None
-            if tablename in record \
-                    and isinstance(record,Row) \
-                    and isinstance(record[tablename],Row):
+            if tablename in record and isinstance(record, Row) and isinstance(record[tablename], Row):
                 r = record[tablename][fieldname]
             elif fieldname in record:
                 r = record[fieldname]
@@ -148,9 +224,9 @@ class SOLIDTABLE(TABLE):
                             tref,fref = ref.split('.')
                             if hasattr(self.sqlrows.db[tref],'_primarykey'):
                                 href = '%s/%s?%s' % (self.linkto, tref, urllib.urlencode({fref:r}))
-                    r = A(represent(field,r,record), _href=str(href))
+                    r = A(represent(field, r, record), _href=str(href))
                 elif field.represent:
-                    r = represent(field,r,record)
+                    r = represent(field, r, record)
             elif self.linkto and hasattr(field._table,'_primarykey') and fieldname in field._table._primarykey:
                 # have to test this with multi-key tables
                 key = urllib.urlencode(dict( [ \
@@ -182,7 +258,7 @@ class SOLIDTABLE(TABLE):
                     
         attrcol = dict()
         if isinstance(header, dict):
-            self._apply_class(attrcol, header)
+            self._apply_colclass(attrcol, header)
                     
         return TD(r,**attrcol)
         
@@ -192,7 +268,7 @@ class SOLIDTABLE(TABLE):
         else:
             return r
             
-    def style(self):
+    def _set_render_style(self):
         # original by: http://activeadmin.info/
         css = '''
 #%(id)s { width: 100%%; margin-bottom: 10px; border: 0; border-spacing: 0; }
@@ -236,6 +312,7 @@ class SOLIDTABLE(TABLE):
       display: block; 
       max-height: 34px;
       overflow:hidden;}
+    #%(id)s th a:hover { color: black; }
     #%(id)s th.sortable a {
       background: url("../images/orderable.png") no-repeat 0 4px;
       padding-left: 13px; }
@@ -256,6 +333,8 @@ class SOLIDTABLE(TABLE):
     border-bottom: 1px solid #e8e8e8;
     vertical-align: top; 
     word-break: break-all;}
-        ''' % dict(id=self.attributes['_id'])        
-        return css
+  #%(id)s tr.rowselected td { background: #fff0f0;  }
+        ''' % dict(id=self.attributes['_id']) 
+        
+        self.components.append(STYLE(css))
         

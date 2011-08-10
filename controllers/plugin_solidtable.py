@@ -4,7 +4,8 @@ from gluon.contrib.populate import populate
 
 db = DAL('sqlite:memory:')
 db.define_table('product', 
-    Field('name'), Field('description', 'text'), Field('price', 'integer'))
+    Field('name'), Field('status'), Field('description', 'text'), 
+    Field('price', 'integer'), Field('quantity', 'integer'))
 populate(db.product, 10)
 
 def index():
@@ -22,10 +23,14 @@ def index():
     table = SOLIDTABLE(rows,  
             headers=headers,
             columns=[extracolumns[0], 
-                    'product.id', 'product.name', 
-                    'product.description', 'product.price'], 
+                    'product.id', 
+                    ['product.name', 'product.description'], 
+                    ['product.status', None], 
+                    ['product.price', 'product.quantity']
+                    ], 
             extracolumns=extracolumns,
-            renderstyle=True)
+            renderstyle=True,
+            selectid=7)
     return dict(table=DIV(table, STYLE('.italic {font-style: italic;}')))
 
 
