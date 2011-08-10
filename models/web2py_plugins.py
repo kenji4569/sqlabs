@@ -4,21 +4,22 @@ info_plugin_metas = dict(
     plugin_horizontal_radio_widget=dict(
         label='Horizontal Radio Widget',
         short_description='A radio widget arranging its radio buttons horizontally.',
-        long_description="""
-In web2py, the default widget for a single select filed is a vertical radio widget,
-which occupies a relatively large area. 
+        long_description=SPAN(
+A("A built-in radio widget in web2py", _href="http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.RadioWidget-class.html"), 
+""" arranges its radio buttons vertically, which occupies a relatively large area. 
 It's often the case that a horizontal radio widget is more appropriate.
-So we implemented it, and further made it clickable on it's labels. 
-""",
+So we implemented it, and further made it clickable for it's labels. 
+"""),
     ),
     plugin_multiselect_widget=dict(
         label='Multiselect Widget',
         short_description='A user-friendly multiselect widget.',
-        long_description="""
-In web2py, the default widget for a multiple select field is made by a single select input tag,
-which becomes difficult to handle when it had many options.
-So we built a multiple select widget which would be more user-friendly.
-""",
+        long_description=SPAN(
+A("A default mult-select widget in web2py", _href="http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.MultipleOptionsWidget-class.html"),
+""" is made by a single select input tag,
+which would be difficult to handle when it had many options.
+So we built more user-friendly multiple select widget with two select input tags.
+"""),
     ),
     plugin_suggest_widget=dict(
         label='Suggest Widget',
