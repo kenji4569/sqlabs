@@ -22,26 +22,30 @@ The code parts are organized in """,
 A("a web2py's plugin system", _href='http://web2py.com/book/default/chapter/13#Plugins'),
 """. Try the demos and codes below."""),
               [('Custom Widgets',
-                _make_widgets_list(
-                    'plugin_hradio_widget', 
-                    'plugin_multiselect_widget', 
-                    'plugin_suggest_widget',
-                    'plugin_lazy_options_widget',
-                )),
+                    _make_widgets_list(
+                        'plugin_hradio_widget', 
+                        'plugin_multiselect_widget', 
+                        'plugin_suggest_widget',
+                        'plugin_lazy_options_widget',
+                    )),
+                 ('Grid Tools',
+                     _make_widgets_list(
+                        'plugin_solidtable', 
+                    )),
                 ('Custom Validators',
-                 [('xxx Validator', 
-                  URL('plugin_horizontal', 'index'),
-                  """xxxxxxxxxxxxxxxxxxxxxx"""
-                  ),
-                  ('yyy Validator', 
-                  URL('plugin_horizontal', 'index'),
-                  """yyyyyyyyyyyyyyyyyyy"""
-                  ),
-                  ('zzz Validator', 
-                  URL('plugin_horizontal', 'index'),
-                  """zzzzzzzzzzzzzzzzzzzz"""
-                  )
-                 ]),
+                     [('xxx Validator', 
+                      URL('plugin_horizontal', 'index'),
+                      """xxxxxxxxxxxxxxxxxxxxxx"""
+                      ),
+                      ('yyy Validator', 
+                      URL('plugin_horizontal', 'index'),
+                      """yyyyyyyyyyyyyyyyyyy"""
+                      ),
+                      ('zzz Validator', 
+                      URL('plugin_horizontal', 'index'),
+                      """zzzzzzzzzzzzzzzzzzzz"""
+                      )
+                     ]),
             ]),
         ],
     )
