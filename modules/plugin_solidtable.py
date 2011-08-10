@@ -271,7 +271,7 @@ class SOLIDTABLE(TABLE):
     def _set_render_style(self):
         # original by: http://activeadmin.info/
         css = '''
-#%(id)s { width: 100%%; margin-bottom: 10px; border: 0; border-spacing: 0; }
+#%(id)s { width: 100%%; margin-bottom: 10px; border: 0; border-spacing: 0; border-collapse:separate;}
   #%(id)s th {
     background: #efefef;
     background: -webkit-gradient(linear, left top, left bottom, from(#efefef), to(#dfe1e2));
