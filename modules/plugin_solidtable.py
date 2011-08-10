@@ -11,14 +11,13 @@ class SOLIDTABLE(TABLE):
         
         if '_id' not in attributes:
             attributes['_id'] = 'solidtable_%s' % id(sqlrows)
-        
-        self.components = []
         self.attributes = attributes
         self.sqlrows = sqlrows
         self.linkto = linkto
         self.truncate = truncate
+        self.selectid = selectid
+        self.components = []
         
-        components = self.components
         if not sqlrows:
             return
         columns = columns or sqlrows.colnames
@@ -33,13 +32,12 @@ class SOLIDTABLE(TABLE):
             headers.update(_extracolumns.items())
         
         if self.show_header:
-            components.append(self._create_thead(columns, headers))
+            self.components.append(self._create_thead(headers, columns))
             
         if renderstyle:
-            components.append(STYLE(self.style()))
+            self.components.append(STYLE(self.style()))
         
-        components.append(self._create_tbody(columns, headers, 
-                                             selectid, linkto, truncate))
+        self.components.append(self._create_tbody(headers, columns))
         
     def _convert_headers(self, headers, columns):
         
@@ -68,7 +66,7 @@ class SOLIDTABLE(TABLE):
                     
         return headers
         
-    def _create_thead(self, columns, headers):
+    def _create_thead(self, headers, columns):
         row = []
         for c in columns:#new implement dict
             if isinstance(headers.get(c), dict):
@@ -95,20 +93,19 @@ class SOLIDTABLE(TABLE):
         if colclass:
             attrcol.update(_class=colclass)
         
-    def _create_tbody(self, columns, headers, 
-                      selectid, linkto, truncate):
+    def _create_tbody(self, headers, columns):
         tbody = []
         for (rc, record) in enumerate(self.sqlrows):
             row = []
             _class = 'even' if rc % 2 == 0 else 'odd'
-            if selectid is not None and record.id == selectid:
+            if self.selectid is not None and record.id == self.selectid:
                 _class += ' rowselected'
             for colname in columns:
-                row.append(self._create_td(colname, headers[colname], record, rc))
+                row.append(self._create_td(headers[colname], colname, record, rc))
             tbody.append(TR(_class=_class, *row))
         return TBODY(*tbody)
         
-    def _create_td(self, colname, header, record, rc):
+    def _create_td(self, header, colname, record, rc):
         if '.' not in colname:
             r = header['content'](record, rc)
         else:
