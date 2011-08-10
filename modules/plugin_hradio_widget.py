@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from gluon import *
 
-def horizontal_radio_widget(field, value): 
+def hradio_widget(field, value): 
     rows = SQLFORM.widgets.radio.widget(field,value).elements('tr') 
     inner = []
     for row in rows:

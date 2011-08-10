@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 info_plugin_metas = dict(
-    plugin_horizontal_radio_widget=dict(
+    plugin_hradio_widget=dict(
         label='Horizontal Radio Widget',
         short_description='A radio widget arranging its radio buttons horizontally.',
         long_description=SPAN(
@@ -12,8 +12,8 @@ So we implemented it, and further made it clickable for it's labels.
 """),
     ),
     plugin_multiselect_widget=dict(
-        label='Multiselect Widget',
-        short_description='A user-friendly multiselect widget.',
+        label='Multiple Select Widget',
+        short_description='A more user-friendly widget for a multiple select field.',
         long_description=SPAN(
 A("A default mult-select widget in web2py", _href="http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.MultipleOptionsWidget-class.html"),
 """ is made by a single select input tag,

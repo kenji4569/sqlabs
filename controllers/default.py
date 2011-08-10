@@ -23,7 +23,7 @@ A("a web2py's plugin system", _href='http://web2py.com/book/default/chapter/13#P
 """. Try the demos and codes below."""),
               [('Custom Widgets',
                 _make_widgets_list(
-                    'plugin_horizontal_radio_widget', 
+                    'plugin_hradio_widget', 
                     'plugin_multiselect_widget', 
                     'plugin_suggest_widget',
                     'plugin_lazy_options_widget',
