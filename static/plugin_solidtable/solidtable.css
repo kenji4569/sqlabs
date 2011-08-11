@@ -1,0 +1,65 @@
+/* original by: http://activeadmin.info/ */
+table.solidtable { width: 100%%; margin-bottom: 10px; border: 0; border-spacing: 0; border-collapse:separate;}
+  table.solidtable th {
+    background: #efefef;
+    background: -webkit-gradient(linear, left top, left bottom, from(#efefef), to(#dfe1e2));
+    background: -moz-linear-gradient(-90deg, #efefef, #dfe1e2);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#efefef, endColorstr=#dfe1e2);
+    -ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#efefef, endColorstr=#dfe1e2);
+    box-shadow: 0 1px 2px #aaaaaa;
+    -moz-box-shadow: 0 1px 2px #aaaaaa;
+    -webkit-box-shadow: 0 1px 2px #aaaaaa;
+    text-shadow: white 0 1px 0;
+    border-bottom: 1px solid #ededed;
+    font-size: 1.0em; font-weight: bold; line-height: 140%%; color: #5e6469;
+    word-break: break-all;
+    padding: 5px 12px 3px 12px;
+    margin-bottom: 0.5em;
+    vertical-align: middle;
+    //text-align: left;}
+  table.solidtable th.colselected {
+    background: #E2E2E2;
+    background: -webkit-gradient(linear, left top, left bottom, from(#E2E2E2), to(#D2D4D6));
+    background: -moz-linear-gradient(-90deg, #E2E2E2, #D2D4D6);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#e2e2e2, endColorstr=#d2d4d6);
+    -ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#e2e2e2, endColorstr=#d2d4d6);
+    border-bottom: 1px solid #DFE1E2;}
+    
+    table.solidtable th span.icon svg path, table.solidtable th span.icon svg polygon, table.solidtable th span.icon svg rect, table.solidtable th span.icon svg circle {
+      fill: #5e6469 !important; }
+    table.solidtable th span.icon {
+      width: 1em;
+      height: 1em; }
+    table.solidtable th span.icon svg {
+      width: 1em;
+      height: 1em; }
+    table.solidtable th span.icon {
+      margin-right: 5px; }
+    table.solidtable th a, table.solidtable th a:link, table.solidtable th a:visited {
+      color: #5e6469;
+      text-decoration: none;
+      display: block; 
+      max-height: 34px;
+      overflow:hidden;}
+    table.solidtable th a:hover { color: black; }
+    table.solidtable th a.orderable {
+      background: url("orderable.png") no-repeat 0 4px;
+      padding-left: 13px; }
+    table.solidtable th a.ordered-asc {
+      background-position: 0 -27px; }
+    table.solidtable th a.ordered-desc {
+      background-position: 0 -56px; }
+    table.solidtable th a.ordered-asc, table.solidtable th a.ordered-desc {
+      background: #e2e2e2;
+      background: -webkit-gradient(linear, left top, left bottom, from(#e2e2e2), to(#d2d4d6));
+      background: -moz-linear-gradient(-90deg, #e2e2e2, #d2d4d6);
+      filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#e2e2e2, endColorstr=#d2d4d6);
+      -ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#e2e2e2, endColorstr=#d2d4d6);
+      border-bottom: 1px solid #dfe1e2; }
+  table.solidtable tr.even td { background: #f4f5f5; }
+  table.solidtable td {
+    padding: 2px 5px 0px 5px;
+    border-bottom: 1px solid #e8e8e8;
+    vertical-align: top; 
+    word-break: break-all;}
+  table.solidtable tr.rowselected td { background: #fff0f0;  }
