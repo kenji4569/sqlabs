@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from gluon import *
 from gluon.sqlhtml import table_field, represent
+import urllib
 
 class SOLIDTABLE(TABLE):
     
@@ -22,14 +23,14 @@ class SOLIDTABLE(TABLE):
                 return None
             return c if type(c) is str else '%s' % id(c)
         _columns = []
-        for columns_inner in columns or self.sqlrows.colnames:
-            if type(columns_inner) in (list, tuple):
-                _columns_inner = []
-                for column in columns_inner:
-                    _columns_inner.append(_conver_column_key(column))
-                _columns.append(_columns_inner)
+        for cols_inner in columns or self.sqlrows.colnames:
+            if type(cols_inner) in (list, tuple):
+                _cols_inner = []
+                for col in cols_inner:
+                    _cols_inner.append(_conver_column_key(col))
+                _columns.append(_cols_inner)
             else:
-                _columns.append(_conver_column_key(columns_inner))
+                _columns.append(_conver_column_key(cols_inner))
         columns = _columns
             
         show_header = headers is not None
@@ -76,14 +77,14 @@ class SOLIDTABLE(TABLE):
                     headers[c] = {'label': _get_field_label(c)}
                 elif 'label' not in headers[c]:
                     headers[c]['label'] = _get_field_label(c)
-            for columns_inner in columns or self.sqlrows.colnames:
-                if type(columns_inner) in (list, tuple):
-                    for column in columns_inner:
-                        if column:
-                            _set_label(column)
+            for cols_inner in columns or self.sqlrows.colnames:
+                if type(cols_inner) in (list, tuple):
+                    for col in cols_inner:
+                        if col:
+                            _set_label(col)
                 else:
-                    if columns_inner:
-                        _set_label(columns_inner) 
+                    if cols_inner:
+                        _set_label(cols_inner) 
                     
         return headers
         
@@ -94,14 +95,14 @@ class SOLIDTABLE(TABLE):
         
         flat_columns = []
         max_col_lines = 1 # max row span in the table header or each table "row"
-        for columns_inner in columns:
-            if type(columns_inner) in (list, tuple):
-                for column in columns_inner:
-                    if column:
-                        flat_columns.append(column)
-                max_col_lines = max(len(columns_inner), max_col_lines)
-            elif columns_inner:
-                flat_columns.append(columns_inner)
+        for cols_inner in columns:
+            if type(cols_inner) in (list, tuple):
+                for col in cols_inner:
+                    if col:
+                        flat_columns.append(col)
+                max_col_lines = max(len(cols_inner), max_col_lines)
+            elif cols_inner:
+                flat_columns.append(cols_inner)
                 
         col_lines = [[] for i in range(max_col_lines)]
         for col_no, cols_inner in enumerate(columns):
@@ -239,9 +240,9 @@ class SOLIDTABLE(TABLE):
                                 for k in field._table._primarykey ] ))
                 r = A(r, _href='%s/%s?%s' % (self.linkto, tablename, key))
             elif field.type.startswith('list:'):
-                r = represent(field,r or [],record)
+                r = represent(field, r or [], record)
             elif field.represent:
-                r = represent(field,r,record)
+                r = represent(field, r, record)
             elif field.type == 'blob' and r:
                 r = 'DATA'
             elif field.type == 'upload':

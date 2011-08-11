@@ -17,7 +17,7 @@ def index():
                'product.description':{'label':'Details', 'class':'italic', 
                                       'width':'200px', 'truncate':38,},
                }
-    extracolumns = [{'label':A('Extra', _href='#'),
+    extracolumns = [{'label':A('Edit', _href='#'),
                      'content':lambda row, rc: A('Edit',_href='edit/%s'%row.id)},
                     {'label':A('Delete', _href='#'),
                      'content':lambda row, rc: A('Delete',_href='delete/%s'%row.id)},     
@@ -32,8 +32,7 @@ def index():
                      ['product.price', None]
                     ], 
             extracolumns=extracolumns,
-            renderstyle=True,
-            selectid=7)
+            renderstyle=True, linkto=URL('show'), selectid=7)
     return dict(table=DIV(table, STYLE('.italic {font-style: italic;}')))
 
 
