@@ -20,8 +20,10 @@ class suggest_widget(AutocompleteWidget):
                 raise HTTP(200,'')
                 
     def __call__(self,field,value,**attributes):
-        current.response.files.append(URL('static','plugin_suggest_widget/suggest.css'))
-        current.response.files.append(URL('static','plugin_suggest_widget/suggest.js'))
+        for _url in (URL('static','plugin_suggest_widget/suggest.css'),
+                     URL('static','plugin_suggest_widget/suggest.js')):
+            if _url not in current.response.files:
+                current.response.files.append(_url)
         
         default = dict(
             _type = 'text',

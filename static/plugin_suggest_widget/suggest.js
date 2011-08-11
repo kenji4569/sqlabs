@@ -1,24 +1,18 @@
 /*
  *	jquery.suggest 1.1 - 2007-08-06
- *	
  *	Uses code and techniques from following libraries:
  *	1. http://www.dyve.net/jquery/?autocomplete
- *	2. http://dev.jquery.com/browser/trunk/plugins/interface/iautocompleter.js	
- *
+ *	2. http://dev.jquery.com/browser/trunk/plugins/interface/iautocompleter.js
  *	All the new stuff written by Peter Vulgaris (www.vulgarisoip.com)	
  *	Feel free to do whatever you want with this file
- *
  */
 (function($) {
 $.suggest = function(input, options) {
   var $input = $(input).attr("autocomplete", "off");
-  
   var timeout = false;		// hold timeout ID for suggestion results to appear
-
   var preval = "";			// last recorded length of $input.val()
   var cache = [];				// cache MRU list
   var cacheSize = 0;			// size of cache in chars (bytes?)
-  
   var $results;
   if (options.resultsId!=null) {
     $results = $('#'+options.resultsId);
@@ -28,13 +22,6 @@ $.suggest = function(input, options) {
     $results.addClass(options.resultsClass).appendTo('body');
   }
   
-  if (options.showLoad==null) {
-    options.showLoad = function() {}
-  }
-  if (options.hideLoad==null) {
-    options.hideLoad = function() {}
-  }
-
   resetPosition();
   $(window)
     .load(resetPosition)		// just in case user is changing size of page while loading
@@ -90,7 +77,7 @@ $.suggest = function(input, options) {
           break;
       }
     } else {
-      if($('.ac_over').length==1 && e.keyCode==13) {
+      if($('.suggest_over').length==1 && e.keyCode==13) {
           return;
       }
       clearTimeout(timeout);
@@ -114,10 +101,7 @@ $.suggest = function(input, options) {
         } else {
           var query = {}
           query[options.keyword] = q;
-
           jQuery.ajax({type: "POST", url: options.source, data: query, 
-            'beforeSend':function(xhr){options.showLoad();},// web2py specific
-            'complete':function(xhr,text){options.hideLoad();},// web2py specific
             success: function(html) {
               $results.hide();
               displayItems(html);
@@ -231,11 +215,11 @@ $.fn.suggest = function(source, options) {
   options = options || {};
   options.source = source;
   options.delay = options.delay || 100;
-  options.resultsClass = options.resultsClass || 'ac_results';
-  options.selectClass = options.selectClass || 'ac_over';
-  options.selectedClass = options.selectedClass || 'ac_selected';
-  options.matchClass = options.matchClass || 'ac_match';
-  options.noMatchClass = options.noMatchClass || 'ac_no_match';
+  options.resultsClass = options.resultsClass || 'suggest_results';
+  options.selectClass = options.selectClass || 'suggest_over';
+  options.selectedClass = options.selectedClass || 'suggest_selected';
+  options.matchClass = options.matchClass || 'suggest_match';
+  options.noMatchClass = options.noMatchClass || 'suggest_no_match';
   options.minchars = options.minchars || 2;
   options.delimiter = options.delimiter || '\n';
   options.onSelect = options.onSelect || false;
