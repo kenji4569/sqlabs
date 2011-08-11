@@ -1,0 +1,39 @@
+div.ac_results {
+ width:120px;
+ border: 1px solid silver;
+ background-color: white;
+ padding: 0;
+ margin: 0;
+ list-style: none;
+ position: absolute;
+ z-index: 10000;
+ display: none;
+}
+div.ac_results ul {
+  width: 100%;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+div.ac_results ul  li {
+ padding: 2px 5px;
+ color: #666;
+ cursor:pointer;
+}
+
+div.ac_results ul  li span {
+ visibility: hidden;
+}
+div.ac_results ul  li.ac_over {
+  background-color: #cef;
+}
+div.ac_results ul  li.ac_match {
+  background-color: #fbb;
+}
+
+div.ac_results ul  li.ac_no_match {
+  background-color: #888;
+}
+input[type="text"].ac_selected {
+  background-color: #eff;
+}

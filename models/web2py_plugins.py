@@ -48,13 +48,14 @@ if request.controller.startswith('plugin_'):
     from gluon.storage import Storage
 
     def _to_code(lines):
-        return CODE(''.join(lines[1:]).strip(' ').strip('\n'))
+        return CODE(''.join(lines[1:]).strip(' ').strip('\n').replace('\r', ''))
         
     def _get_code(path):
         if not os.path.exists(path):
             raise HTTP(404)
         f = open(path, 'r')
         lines = f.readlines()
+        print lines
         f.close()
         return _to_code(lines)
 
