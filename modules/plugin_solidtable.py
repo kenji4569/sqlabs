@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from gluon import *
-from gluon.sqlhtml import table_field
+from gluon.sqlhtml import table_field, represent
 
 class SOLIDTABLE(TABLE):
     
@@ -118,6 +118,7 @@ class SOLIDTABLE(TABLE):
                         for _col_no in reversed(range(col_no)):
                             try:
                                 headers[columns[_col_no][i]]['_colspan'] += 1
+                                break
                             except:
                                 pass
                 if extra_rowspan:
@@ -132,6 +133,7 @@ class SOLIDTABLE(TABLE):
                     for _col_no in reversed(range(col_no)):
                         try:
                             headers[columns[_col_no]]['_colspan'] += 1
+                            break
                         except:
                             pass
                         
@@ -264,9 +266,10 @@ class SOLIDTABLE(TABLE):
         
     def _truncate_str(self, r, truncate):
         if truncate:
-            return unicode(r, 'utf8')[:truncate - 3].encode('utf8') + '...'
-        else:
-            return r
+            ur = unicode(r, 'utf8')
+            if len(ur) > truncate:
+                return ur[:truncate - 3].encode('utf8') + '...'
+        return r
             
     def _set_render_style(self):
         # original by: http://activeadmin.info/

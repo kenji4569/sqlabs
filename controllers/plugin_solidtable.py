@@ -4,8 +4,11 @@ from gluon.contrib.populate import populate
 
 db = DAL('sqlite:memory:')
 db.define_table('product', 
-    Field('name'), Field('status'), Field('description', 'text'), 
-    Field('price', 'integer'), Field('quantity', 'integer'))
+    Field('name'), Field('status', requires=IS_IN_SET(['new', 'old'])), 
+    Field('description', 'text'), 
+    Field('publish_date', 'date'),
+    Field('price', 'integer', represent=lambda v: '$%s' % v ), 
+    )
 populate(db.product, 10)
 
 def index():
@@ -17,16 +20,16 @@ def index():
     extracolumns = [{'label':A('Extra', _href='#'),
                      'content':lambda row, rc: A('Edit',_href='edit/%s'%row.id)},
                     {'label':A('Delete', _href='#'),
-                    'content':lambda row, rc: A('Delete',_href='delete/%s'%row.id),     
-                    }]
+                     'content':lambda row, rc: A('Delete',_href='delete/%s'%row.id)},     
+                    ]
     
     table = SOLIDTABLE(rows,  
             headers=headers,
             columns=[extracolumns[0], 
-                    'product.id', 
-                    ['product.name', 'product.description'], 
-                    ['product.status', None], 
-                    ['product.price', 'product.quantity']
+                     'product.id', 
+                     ['product.name', 'product.status',], 
+                     ['product.publish_date', 'product.description'], 
+                     ['product.price', None]
                     ], 
             extracolumns=extracolumns,
             renderstyle=True,
