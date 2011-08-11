@@ -8,13 +8,11 @@ class SOLIDTABLE(SQLTABLE):
     def __init__(self, sqlrows, linkto=None, upload=None, orderby=None,
             headers={}, truncate=16, columns=None, th_link='',
             extracolumns=None, selectid=None, renderstyle=False, **attributes):
-        if not sqlrows:
-            return
         TABLE.__init__(self, **attributes)
-        if '_id' not in attributes:
-            attributes['_id'] = 'solidtable_%s' % id(sqlrows)
-        self.attributes, self.sqlrows, self.linkto, self.truncate, self.selectid = (
-            attributes, sqlrows, linkto, truncate, selectid
+        if '_id' not in self.attributes:
+            self.attributes['_id'] = 'solidtable_%s' % id(self)
+        self.sqlrows, self.linkto, self.truncate, self.selectid = (
+            sqlrows, linkto, truncate, selectid
         )
         self.components = []
         
@@ -32,7 +30,7 @@ class SOLIDTABLE(SQLTABLE):
             else:
                 _columns.append(_conver_column_key(cols_inner))
         columns = _columns
-            
+        
         show_header = headers is not None
         headers = self._convert_headers(show_header and headers or {}, columns)
         if extracolumns:#new implement dict
@@ -147,7 +145,7 @@ class SOLIDTABLE(SQLTABLE):
                     tr_inner.append(TH())
                 else:
                     tr_inner.append(self._create_th(headers[col]))
-            thead_inner.append(tr_inner)
+            thead_inner.append(TR(*tr_inner))
         return THEAD(*thead_inner)
         
     def _create_th(self, header):

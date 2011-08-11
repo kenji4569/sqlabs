@@ -35,7 +35,12 @@ So we built more user-friendly multiple select widget with two select input tags
         label='Solid Table',
         short_description='A custom SQLTable with dense solid layout',
         long_description='',
-    )
+    ),
+    plugin_paginator=dict(
+        label='Pagenator',
+        short_description='',
+        long_description='',
+    ),
 )
 
 if request.controller.startswith('plugin_'):

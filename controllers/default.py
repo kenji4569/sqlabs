@@ -31,6 +31,7 @@ A("a web2py's plugin system", _href='http://web2py.com/book/default/chapter/13#P
                  ('Grid Tools',
                      _make_widgets_list(
                         'plugin_solidtable', 
+                        'plugin_paginator', 
                     )),
                 ('Custom Validators',
                      [('xxx Validator', 
