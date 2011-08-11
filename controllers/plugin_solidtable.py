@@ -4,7 +4,8 @@ from gluon.contrib.populate import populate
 
 db = DAL('sqlite:memory:')
 db.define_table('product', 
-    Field('name'), Field('status', requires=IS_IN_SET(['new', 'old'])), 
+    Field('name'), 
+    Field('status', requires=IS_IN_SET(['new', 'old'])), 
     Field('description', 'text'), 
     Field('publish_date', 'date'),
     Field('price', 'integer', represent=lambda v: '$%s' % v ), 
@@ -22,15 +23,15 @@ def index():
                     {'label':A('Delete', _href='#'),
                      'content':lambda row, rc: A('Delete',_href='delete/%s'%row.id)},     
                     ]
-    
+    # --- the structure of "columns" defines the multi-line header layout ---
     table = SOLIDTABLE(rows,  
-            headers=headers,
             columns=[extracolumns[0], 
                      'product.id', 
                      ['product.name', 'product.status',], 
                      ['product.publish_date', 'product.description'], 
                      ['product.price', None]
                     ], 
+            headers=headers,
             extracolumns=extracolumns,
             renderstyle=True, linkto=URL('show'), selectid=7)
     return dict(table=DIV(table, STYLE('.italic {font-style: italic;}')))

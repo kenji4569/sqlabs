@@ -3,7 +3,7 @@
 <p><a href="{{=URL('default', 'index')}}">← Back to the home</a></p>
 
 <h3>{{=response.web2py_plugins.plugin_label}}</h3>
-<p>{{=response.web2py_plugins.plugin_description}}</p>
+<p>{{=response.web2py_plugins.plugin_long_description or response.web2py_plugins.plugin_short_description}}</p>
 
 <hr/>
 

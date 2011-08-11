@@ -3,7 +3,7 @@ from gluon import *
 from gluon.sqlhtml import table_field, represent
 import urllib
 
-class SOLIDTABLE(TABLE):
+class SOLIDTABLE(SQLTABLE):
     
     def __init__(self, sqlrows, linkto=None, upload=None, orderby=None,
             headers={}, truncate=16, columns=None, th_link='',
@@ -46,12 +46,11 @@ class SOLIDTABLE(TABLE):
             self.components.append(self._create_thead(headers, columns, col_lines))
             
         if renderstyle:
-            self._set_render_style()
+            self.components.append(STYLE(self.style()))
         
         self.components.append(self._create_tbody(headers, columns, col_lines))
             
     def _convert_headers(self, headers, columns):
-        
         def _get_field_label(column):
             parts = column.split('.')
             field = None
@@ -73,18 +72,17 @@ class SOLIDTABLE(TABLE):
                     headers[c] = {'label': _get_field_label(c)}
         else:
             def _set_label(c):
-                if c not in headers:
-                    headers[c] = {'label': _get_field_label(c)}
-                elif 'label' not in headers[c]:
-                    headers[c]['label'] = _get_field_label(c)
+                if c:
+                    if c not in headers:
+                        headers[c] = {'label': _get_field_label(c)}
+                    elif 'label' not in headers[c]:
+                        headers[c]['label'] = _get_field_label(c)
             for cols_inner in columns or self.sqlrows.colnames:
                 if type(cols_inner) in (list, tuple):
                     for col in cols_inner:
-                        if col:
-                            _set_label(col)
+                        _set_label(col)
                 else:
-                    if cols_inner:
-                        _set_label(cols_inner) 
+                    _set_label(cols_inner) 
                     
         return headers
         
@@ -272,9 +270,9 @@ class SOLIDTABLE(TABLE):
                 return ur[:truncate - 3].encode('utf8') + '...'
         return r
             
-    def _set_render_style(self):
+    def style(self):
         # original by: http://activeadmin.info/
-        css = '''
+        return '''
 #%(id)s { width: 100%%; margin-bottom: 10px; border: 0; border-spacing: 0; border-collapse:separate;}
   #%(id)s th {
     background: #efefef;
@@ -340,6 +338,4 @@ class SOLIDTABLE(TABLE):
     word-break: break-all;}
   #%(id)s tr.rowselected td { background: #fff0f0;  }
         ''' % dict(id=self.attributes['_id']) 
-        
-        self.components.append(STYLE(css))
         

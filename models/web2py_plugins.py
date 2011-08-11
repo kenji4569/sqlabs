@@ -23,18 +23,18 @@ So we built more user-friendly multiple select widget with two select input tags
     ),
     plugin_suggest_widget=dict(
         label='Suggest Widget',
-        short_description=' ',
-        long_description=""" """,
+        short_description='',
+        long_description='',
     ),
     plugin_lazy_options_widget=dict(
         label='Lazy Options Widget',
-        short_description=' ',
-        long_description=""" """,
+        short_description='',
+        long_description='',
     ),
     plugin_solidtable=dict(
         label='Solid Table',
-        short_description='a custom SQLTable with more dense solid layout',
-        long_description=""" """,
+        short_description='A custom SQLTable with dense solid layout',
+        long_description='',
     )
 )
 
@@ -68,7 +68,8 @@ if request.controller.startswith('plugin_'):
     response.web2py_plugins = Storage(
         plugin_name=plugin_name,
         plugin_label=info_plugin['label'],
-        plugin_description=info_plugin['long_description'],
+        plugin_short_description=info_plugin['short_description'],
+        plugin_long_description=info_plugin['long_description'],
         controller_code=controller_code,
         module_code=module_code,
     )
