@@ -110,6 +110,7 @@ $.suggest = function(input, options) {
         cached = checkCache(q);
         if (cached) {
           displayItems(cached['html']);
+          nextResult()
         } else {
           var query = {}
           query[options.keyword] = q;
@@ -121,6 +122,7 @@ $.suggest = function(input, options) {
               $results.hide();
               displayItems(html);
               addToCache(q, html, html.length);
+              nextResult()
             }});
         }
       }

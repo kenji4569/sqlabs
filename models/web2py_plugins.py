@@ -55,7 +55,6 @@ if request.controller.startswith('plugin_'):
             raise HTTP(404)
         f = open(path, 'r')
         lines = f.readlines()
-        print lines
         f.close()
         return _to_code(lines)
 
