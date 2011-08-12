@@ -293,15 +293,62 @@ class SOLIDTABLE(SQLTABLE):
         return r
             
 class OrderbySelector(object):
-    def __init__(self, *orderbys):
+    def __init__(self, orderbys, orderby_var='orderby'):
         self.orderbys = orderbys
+        self.orderby_var = orderby_var
+        
+        _ivnert_orderbys = []
+        for orderby in self.orderbys:
+            if orderby.op == orderby.db._adapter.INVERT:
+                _ivnert_orderbys.append(orderby.first)
+            else:
+                _ivnert_orderbys.append(~orderby)
+        self.orderbys_dict = dict([(self._get_key(o), o) for o in orderbys + _ivnert_orderbys])
+        
+        if self.orderby_var in current.request.get_vars:
+            orderby_key = current.request.get_vars[self.orderby_var]
+            for _orderby_key, _orderby in self.orderbys_dict.items():
+                if orderby_key == _orderby_key:
+                    current_orderby = _orderby
+                    break
+            else:
+                current_orderby = None
+        else:
+            current_orderby = self.orderbys and self.orderbys[0] or None
+        self.current_orderby = current_orderby
+        
+        if current_orderby.op == current_orderby.db._adapter.INVERT:
+            self.current_field =current_orderby.first
+            self.next_orderby = self.current_field
+            self.current_class = 'orderby-desc'
+        else:
+            self.current_field = current_orderby
+            self.next_orderby = ~self.current_field
+            self.current_class = 'orderby-asc'
+        
+    def _get_key(self, orderby):
+        import md5
+        return md5.new(str(orderby)).hexdigest()
+        
+    def _url(self, orderby):
+        vars = current.request.get_vars.copy()
+        vars[self.orderby_var] = self._get_key(orderby)
+        return URL(args=current.request.args, vars=vars)
         
     def orderby(self):
-        return None
+        return self.current_orderby
         
     def __call__(self, column, label):
-        if any(column is orderby for orderby in self.orderbys):
-            return A(label, _href='#', _class='orderby')
-        else:
-            return label
+        if str(column) == str(self.current_field):
+            return A(label, _href=self._url(self.next_orderby), _class='orderby '+self.current_class)
+        
+        for orderby in self.orderbys:
+            if orderby.op == orderby.db._adapter.INVERT:
+                _column = orderby.first
+            else:
+                _column = orderby
+            if str(column) == str(_column):
+                return A(label, _href=self._url(orderby), _class='orderby')
+                
+        return label
         

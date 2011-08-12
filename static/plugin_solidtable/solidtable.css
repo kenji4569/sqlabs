@@ -46,13 +46,10 @@ table.solidtable { width: 100%%; margin-bottom: 10px; border: 0; border-spacing:
       background: url("orderby.png") no-repeat 0 4px;
       padding-left: 13px; }
     table.solidtable th a.orderby-asc {
-      background-position: 0 -27px; }
-    table.solidtable th a.orderby-desc {
       background-position: 0 -56px; }
+    table.solidtable th a.orderby-desc {
+      background-position: 0 -26px; }
     table.solidtable th a.orderby-asc, table.solidtable th a.orderby-desc {
-      background: #e2e2e2;
-      background: -webkit-gradient(linear, left top, left bottom, from(#e2e2e2), to(#d2d4d6));
-      background: -moz-linear-gradient(-90deg, #e2e2e2, #d2d4d6);
       filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#e2e2e2, endColorstr=#d2d4d6);
       -ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#e2e2e2, endColorstr=#d2d4d6);
       border-bottom: 1px solid #dfe1e2; }

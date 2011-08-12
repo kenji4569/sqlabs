@@ -4,21 +4,26 @@ from gluon.contrib.populate import populate
 
 db = DAL('sqlite:memory:')
 db.define_table('product', 
-    Field('name'), 
-    Field('status', requires=IS_IN_SET(['new', 'old'])), 
-    Field('description', 'text'), 
-    Field('publish_date', 'date'),
+    Field('name'),  Field('status', requires=IS_IN_SET(['new', 'old'])), 
+    Field('description', 'text'),  Field('publish_date', 'date'),
     Field('price', 'integer', represent=lambda v: '$%s' % v ), 
     )
 populate(db.product, 10)
 
 def index():
-    orderby_selector = OrderbySelector('product.id')
-    
     tax = db.product.price*5/100
     tax.represent = db.product.price.represent
     pretax_price = db.product.price + tax
     pretax_price.represent = db.product.price.represent
+    
+    orderby_selector = OrderbySelector([db.product.id, db.product.name, 
+                                        ~db.product.publish_date, ~pretax_price])
+    
+    # import md5
+    # print md5.new(str(db.product.id)).hexdigest()
+    # print md5.new(str(~db.product.id)).hexdigest()
+    # print md5.new(str(pretax_price)).hexdigest()
+    # print md5.new(str(~pretax_price)).hexdigest()
     
     rows = db().select(db.product.ALL, tax, pretax_price,
                        orderby=orderby_selector.orderby())
@@ -38,10 +43,10 @@ def index():
             columns=[extracolumns[0], 
                      'product.id', 
                      db.product.name,
-                     ['product.status','product.publish_date'], 
-                     ['product.price', 'product.description'], 
+                     ['product.publish_date', 'product.status'], 
+                     [pretax_price, 'product.description'], 
                      [tax, None],
-                     [pretax_price, None],
+                     ['product.price', None],
                     ], 
             headers=headers,
             extracolumns=extracolumns,
