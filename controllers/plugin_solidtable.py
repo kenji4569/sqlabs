@@ -19,12 +19,6 @@ def index():
     orderby_selector = OrderbySelector([db.product.id, db.product.name, 
                                         ~db.product.publish_date, ~pretax_price])
     
-    # import md5
-    # print md5.new(str(db.product.id)).hexdigest()
-    # print md5.new(str(~db.product.id)).hexdigest()
-    # print md5.new(str(pretax_price)).hexdigest()
-    # print md5.new(str(~pretax_price)).hexdigest()
-    
     rows = db().select(db.product.ALL, tax, pretax_price,
                        orderby=orderby_selector.orderby())
     headers = {'product.name':{'selected': True},
