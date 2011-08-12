@@ -17,16 +17,16 @@ def index():
     
     tax = db.product.price*5/100
     tax.represent = db.product.price.represent
-    taxed_price = db.product.price + tax
-    taxed_price.represent = db.product.price.represent
+    pretax_price = db.product.price + tax
+    pretax_price.represent = db.product.price.represent
     
-    rows = db().select(db.product.ALL, tax, taxed_price,
+    rows = db().select(db.product.ALL, tax, pretax_price,
                        orderby=orderby_selector.orderby())
     headers = {'product.name':{'selected': True},
                'product.description':{'label':'Details', 'class':'italic', 
                                       'width':'200px', 'truncate':38,},
                tax:{'label': 'Tax'},
-               taxed_price:{'label': 'Taxed Price'}
+               pretax_price:{'label': 'Pretax Price'}
                }
     extracolumns = [{'label':A('Edit', _href='#'),
                      'content':lambda row, rc: A('Edit',_href='edit/%s'%row.product.id)},
@@ -37,11 +37,11 @@ def index():
     table = SOLIDTABLE(rows,  
             columns=[extracolumns[0], 
                      'product.id', 
-                     'product.name',
+                     db.product.name,
                      ['product.status','product.publish_date'], 
                      ['product.price', 'product.description'], 
                      [tax, None],
-                     [taxed_price, None],
+                     [pretax_price, None],
                     ], 
             headers=headers,
             extracolumns=extracolumns,

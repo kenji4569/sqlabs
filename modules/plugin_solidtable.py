@@ -20,7 +20,7 @@ class SOLIDTABLE(SQLTABLE):
                 return None
             if type(c) == str:
                 return c
-            elif type(c) == dict:
+            elif type(c) == dict or isinstance(c, Field):
                 return str(c)
             else:
                 return c
@@ -301,7 +301,7 @@ class OrderbySelector(object):
         
     def __call__(self, column, label):
         if any(column is orderby for orderby in self.orderbys):
-            return A(label, _href='#', _class='orderable')
+            return A(label, _href='#', _class='orderby')
         else:
             return label
         
