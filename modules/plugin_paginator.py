@@ -11,7 +11,7 @@ class Paginator(DIV):
         self.perpage, self.records, self.page_var = (
             perpage, records, page_var
         )
-        self.page = int(current.request.get_vars.get(self.page_var) or 1) 
+        self.page = int(current.request.get_vars.get(self.page_var) or 1)
         
         if renderstyle:
             _url = URL('static','plugin_paginator/paginator.css')
