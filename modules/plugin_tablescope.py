@@ -33,7 +33,10 @@ class TableScope(DIV):
             self.scopes.insert(0, '__all__')
             
         self.scope = str(current.request.get_vars.get(self.scope_var) or (default or self.scopes[0]))
-        self.scoped_dataset = dataset(field==self.scope)
+        if self.scope == '__all__':
+            self.scoped_dataset = dataset
+        else:
+            self.scoped_dataset = dataset(field==self.scope)
         
         if renderstyle:
             _url = URL('static','plugin_tablescope/tablescope.css')
