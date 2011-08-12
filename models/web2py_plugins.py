@@ -56,6 +56,11 @@ So we built more user-friendly multiple select widget with two select input tags
         short_description='',
         long_description='',
     ),
+    plugin_mptt=dict(
+        label='Modified Preorder Tree Traversal',
+        short_description='',
+        long_description='',
+    ),
 )
 
 if request.controller.startswith('plugin_'):
