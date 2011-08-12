@@ -41,6 +41,21 @@ So we built more user-friendly multiple select widget with two select input tags
         short_description='',
         long_description='',
     ),
+    plugin_tablescope=dict(
+        label='Table Scope',
+        short_description='',
+        long_description='',
+    ),
+    plugin_tablecheckbox=dict(
+        label='Table Checkbox',
+        short_description='',
+        long_description='',
+    ),
+    plugin_tablepermuter=dict(
+        label='Table Permuter',
+        short_description='',
+        long_description='',
+    ),
 )
 
 if request.controller.startswith('plugin_'):

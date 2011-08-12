@@ -32,6 +32,9 @@ A("a web2py's plugin system", _href='http://web2py.com/book/default/chapter/13#P
                      _make_widgets_list(
                         'plugin_solidtable', 
                         'plugin_paginator', 
+                        'plugin_tablescope', 
+                        'plugin_tablecheckbox', 
+                        'plugin_tablepermuter', 
                     )),
                 ('Custom Validators',
                      [('xxx Validator', 
