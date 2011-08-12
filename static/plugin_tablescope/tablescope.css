@@ -1,0 +1,29 @@
+div.tablescope {
+  float: left;
+  margin-bottom: 10px;
+  font-size: 1.0em; }
+  div.tablescope .scope {
+    padding: 4px 8px 3px 8px;
+    margin-right: 4px; }
+    div.tablescope .scope a {
+      text-decoration: none;
+      font-weight: bold;
+      color: #888; }
+    div.tablescope .scope a:hover {
+      text-decoration: underline; }
+    div.tablescope .scope.selected {
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+      box-shadow: inset 0 1px 0 #cccccc;
+      -moz-box-shadow: inset 0 1px 0 #cccccc;
+      -webkit-box-shadow: inset 0 1px 0 #cccccc;
+      text-shadow: white 0 1px 0;
+      background: #efefef;
+      color: #666; }
+      div.tablescope .scope.selected em {
+        font-weight: bold;
+        font-style: normal; }
+    div.tablescope .scope .count {
+      color: #aaa;
+      font-size: 0.9em; }
