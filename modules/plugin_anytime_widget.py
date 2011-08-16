@@ -1,6 +1,21 @@
 # -*- coding: utf-8 -*-
 from gluon import *
-from gluon.sqlhtml import widget_class
+from gluon.sqlhtml import widget_class, FormWidget, StringWidget
+import datetime
+
+class AnytimeStringWidget(FormWidget):
+
+    @staticmethod
+    def widget(field, value, **attributes):
+        if field.type == 'time':
+            return anytime_widget(field, value)
+        elif field.type == 'date':
+            return anydate_widget(field, value)
+        if field.type == 'datetime':
+            return anydatetime_widget(field, value)
+        else:
+            return StringWidget.widget(field, value, **attributes)
+
 
 def _get_date_option():
     return """{

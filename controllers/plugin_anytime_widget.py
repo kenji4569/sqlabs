@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-from plugin_anytime_widget import anytime_widget, anydate_widget, anydatetime_widget
+from plugin_anytime_widget import AnytimeStringWidget
+
+SQLFORM.widgets.string = AnytimeStringWidget
 
 db = DAL('sqlite:memory:')
 db.define_table('product', 
-    Field('event_time', 'time', widget=anytime_widget),
-    Field('publish_date', 'date', widget=anydate_widget),
-    Field('created_at', 'datetime', widget=anydatetime_widget),
-    )
+    Field('event_time', 'time'), Field('publish_date', 'date'), Field('created_at', 'datetime'),
+)
     
 def index():
     form = SQLFORM(db.product)
