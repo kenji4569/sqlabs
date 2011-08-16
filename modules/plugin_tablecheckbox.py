@@ -6,11 +6,10 @@ class TableCheckbox(FORM):
     def __init__(self, id_getter=lambda row: row.id, 
                  tablecheckbox_var='tablecheckbox',
                  confirm_text_js='"Are you sure you want to submit?"',
-                 submit_button='Submit',
+                 submit_button='Submit checks',
                  **attributes):
         FORM.__init__(self, **attributes)
         self.attributes['_class'] = 'tablecheckbox'
-        self.attributes['_id'] = tablecheckbox_var
         self.tablecheckbox_var, self.confirm_text_js, self.submit_button = (
             tablecheckbox_var, confirm_text_js, submit_button
         )
@@ -33,7 +32,7 @@ jQuery(document).ready(function(){
         self.append(INPUT(_type='submit', _value=self.submit_button, 
               _onclick=self._get_submit_js(),
               _id=self._button, _disabled='disabled'))
-                 
+      
     def column(self):
         return {'label':INPUT(_type='checkbox', _name=self._checkall, 
                                 _onclick=self._get_toggle_all_js()),
@@ -42,28 +41,30 @@ jQuery(document).ready(function(){
                                               _style='text-align:center;'),
                 'width': '', 'class': '', 'selected': False}
          
-    def _get_toggle_all_js(self):
-        return """
-jQuery('input[name=%(selected)s]').prop('checked', jQuery('input[name=%(checkall)s]').is(':checked'));
-""" % dict(checkall=self._checkall, selected=self._selected)
-
-    def xml(self): 
-        return FORM.xml(self) 
-        
-    def _get_submit_js(self):
-        return """
-if(confirm(%(confirm_text_js)s)){
-    var val = []
-    jQuery("input[name=tablecheckbox_selected]").each(function(){
-        var el = jQuery(this);
-        if(el.is(':checked')) { val.push(el.val()); }
-    });
-    jQuery("input[name=tablecheckbox]").val(val);
-    return true;
-;}; return false;""" % dict(confirm_text_js=self.confirm_text_js)
-
     def accepts(self, *args, **kwds):
         accepted = FORM.accepts(self, *args, **kwds)
         if accepted:
             self.vars[self.tablecheckbox_var] = current.request.vars[self.tablecheckbox_var].split(',')
         return accepted
+        
+    def xml(self): 
+        return FORM.xml(self) 
+                
+    def _get_toggle_all_js(self):
+        return """
+jQuery('input[name=%(selected)s]').prop('checked', jQuery('input[name=%(checkall)s]').is(':checked'));
+""" % dict(checkall=self._checkall, selected=self._selected)
+
+    def _get_submit_js(self):
+        return """
+if(confirm(%(confirm_text_js)s)){
+    var val = [];
+    jQuery("input[name=%(selected)s]").each(function(){
+        var el = jQuery(this);
+        if(el.is(':checked')) { val.push(el.val()); }
+    });
+    jQuery("input[name=%(tablecheckbox)s]").val(val);
+    return true;
+;}; return false;""" % dict(confirm_text_js=self.confirm_text_js,
+                            selected=self._selected,
+                            tablecheckbox=self.tablecheckbox_var)
