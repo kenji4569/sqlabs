@@ -47,7 +47,7 @@ $.suggest = function(input, options) {
     // handling up/down/escape requires results to be visible
     // handling enter/tab requires that AND a result to be selected
     if ((/27$|38$|40$/.test(e.keyCode) && $results.is(':visible')) ||
-        (/^13$$/.test(e.keyCode) && getCurrentResult())) {
+        (/^13$|^9$/.test(e.keyCode) && getCurrentResult())) {
       switch(e.keyCode) {
         case 38: // up
           prevResult();
@@ -55,7 +55,9 @@ $.suggest = function(input, options) {
         case 40: // down
           nextResult();
           break;
-        case 13: // return // for JAP by hotcake
+        case 9:  // tab
+        case 13: // return
+              // for JAP by hotcake
           selectCurrentResult();
           break;
         case 27: //	escape
