@@ -27,6 +27,7 @@ A("a web2py's plugin system", _href='http://web2py.com/book/default/chapter/13#P
                         'plugin_multiselect_widget', 
                         'plugin_suggest_widget',
                         'plugin_lazy_options_widget',
+                        'plugin_anytime_widget',
                     )),
                  ('Grid Tools',
                      _make_widgets_list(

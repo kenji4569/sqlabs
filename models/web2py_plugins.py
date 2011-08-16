@@ -31,6 +31,11 @@ So we built more user-friendly multiple select widget with two select input tags
         short_description='',
         long_description='',
     ),
+    plugin_anytime_widget=dict(
+        label='Anytime Widget',
+        short_description='',
+        long_description='',
+    ),
     plugin_solidtable=dict(
         label='Solid Table',
         short_description='A custom SQLTable with dense solid layout',

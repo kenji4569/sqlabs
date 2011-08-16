@@ -5,13 +5,13 @@ class TableCheckbox(FORM):
     
     def __init__(self, id_getter=lambda row: row.id, 
                  tablecheckbox_var='tablecheckbox',
-                 confirm_text_js='"Are you sure you want to submit?"',
+                 confirm_message='"Are you sure you want to submit?"',
                  submit_button='Submit checks',
                  **attributes):
         FORM.__init__(self, **attributes)
         self.attributes['_class'] = 'tablecheckbox'
-        self.tablecheckbox_var, self.confirm_text_js, self.submit_button = (
-            tablecheckbox_var, confirm_text_js, submit_button
+        self.tablecheckbox_var, self.confirm_message, self.submit_button = (
+            tablecheckbox_var, confirm_message, submit_button
         )
         self._checkall = '%s_checkall' % self.tablecheckbox_var
         self._selected = '%s_selected' % self.tablecheckbox_var
@@ -57,7 +57,7 @@ jQuery('input[name=%(selected)s]').prop('checked', jQuery('input[name=%(checkall
 
     def _get_submit_js(self):
         return """
-if(confirm(%(confirm_text_js)s)){
+if(confirm(%(confirm_message)s)){
     var val = [];
     jQuery("input[name=%(selected)s]").each(function(){
         var el = jQuery(this);
@@ -65,6 +65,6 @@ if(confirm(%(confirm_text_js)s)){
     });
     jQuery("input[name=%(tablecheckbox)s]").val(val);
     return true;
-;}; return false;""" % dict(confirm_text_js=self.confirm_text_js,
+;}; return false;""" % dict(confirm_message=self.confirm_message,
                             selected=self._selected,
                             tablecheckbox=self.tablecheckbox_var)
