@@ -29,6 +29,7 @@ A("a web2py's plugin system", _href='http://web2py.com/book/default/chapter/13#P
                         'plugin_lazy_options_widget',
                         'plugin_anytime_widget',
                         'plugin_color_widget',
+                        'plugin_elrte_widget',
                     )),
                  ('Grid Tools',
                      _make_widgets_list(
