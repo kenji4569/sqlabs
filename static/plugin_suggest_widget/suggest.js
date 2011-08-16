@@ -31,13 +31,7 @@ $.suggest = function(input, options) {
     setTimeout(function() { $results.hide() }, 200);
   });
 
-  // I really hate browser detection, but I don't see any other way
-  if ($.browser.mozilla) {
-    $input.keyup(processKey);	// for JAP by hotcake
-  }
-  else {
-    $input.keydown(processKey);		// onkeydown repeats arrow keys in IE/Safari
-  }
+  $input.keydown(processKey);
   $input.focus(suggest);
 
   function resetPosition() {
@@ -53,13 +47,7 @@ $.suggest = function(input, options) {
     // handling up/down/escape requires results to be visible
     // handling enter/tab requires that AND a result to be selected
     if ((/27$|38$|40$/.test(e.keyCode) && $results.is(':visible')) ||
-        (/^13$|^9$/.test(e.keyCode) && getCurrentResult())) {
-      if (e.preventDefault) e.preventDefault();
-      if (e.stopPropagation) e.stopPropagation();
-
-      e.cancelBubble = true;
-      e.returnValue = false;
-  
+        (/^13$$/.test(e.keyCode) && getCurrentResult())) {
       switch(e.keyCode) {
         case 38: // up
           prevResult();
@@ -67,15 +55,17 @@ $.suggest = function(input, options) {
         case 40: // down
           nextResult();
           break;
-        case 9:  // tab
-        case 13: // return
-              // for JAP by hotcake
+        case 13: // return // for JAP by hotcake
           selectCurrentResult();
           break;
         case 27: //	escape
           $results.hide();
           break;
       }
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+      e.cancelBubble = true;
+      e.returnValue = false;
     } else {
       if($('.suggest_over').length==1 && e.keyCode==13) {
           return;
