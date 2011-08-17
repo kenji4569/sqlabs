@@ -29,7 +29,7 @@ def index():
         session.flash = 'submitted : %s' % request.vars.color
         redirect(URL('index'))
         
-    form_factory = SOLIDFORM.factory([Field('xxx'), Field('yyy')], Field('zzz'))
+    form_factory = SOLIDFORM.factory([Field('xxx'), Field('yyy'), Field('zzz')], Field('aaa'))
     
     
     product = db(db.product.id>0).select().first()
