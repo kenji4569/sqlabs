@@ -29,10 +29,14 @@ def index():
         session.flash = 'submitted : %s' % request.vars.color
         redirect(URL('index'))
         
+    form_factory = SOLIDFORM.factory([Field('xxx'), Field('yyy')], Field('zzz'))
+    
+    
     product = db(db.product.id>0).select().first()
-    readonly_form = SOLIDFORM(db.product, product, fields=fields, showid=False, readonly=True)
+    form_readonly = SOLIDFORM(db.product, product, fields=fields, showid=False, readonly=True)
+    
     
     style = STYLE("""input[type="text"], textarea {width:100%; max-height: 50px;} 
                      .w2p_fw {padding-right: 20px; max-width:200px;}
                      .w2p_fl {background: #eee;}""")
-    return dict(form=DIV(style, form), readonly_form=readonly_form)
+    return dict(form=DIV(style, form), form_factory=form_factory, form_readonly=form_readonly)

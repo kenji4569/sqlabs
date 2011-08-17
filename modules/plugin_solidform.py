@@ -120,3 +120,26 @@ class SOLIDFORM(SQLFORM):
                       _colspan=1), td_b)
         else:
             raise RuntimeError, 'formstyle not supported'
+       
+    @staticmethod     
+    def factory(*fields, **attributes):
+        table_name = attributes.get('table_name', 'no_table')
+        if 'table_name' in attributes:
+            del attributes['table_name']
+        
+        flat_fields = []
+        structured_fields = []
+        for inner in fields:
+            if type(inner) in (list, tuple):
+                _inner = []
+                for field in inner:
+                    _inner.append(field.name)
+                    if field:
+                        flat_fields.append(field)
+                structured_fields.append(_inner)
+            elif inner:
+                flat_fields.append(inner)
+                structured_fields.append(inner.name)
+                
+        return SOLIDFORM(DAL(None).define_table(table_name, *flat_fields), 
+                         fields=structured_fields, **attributes)
