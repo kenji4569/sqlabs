@@ -1,28 +1,35 @@
 # -*- coding: utf-8 -*-
 
 info_plugin_metas = dict(
+    plugin_solidform=dict(
+        label='Solid Form',
+        short_description='',
+        long_description='',
+    ),
     plugin_hradio_widget=dict(
         label='Horizontal Radio Widget',
+        show_image=True,
         short_description='A radio widget arranging its radio buttons horizontally.',
         long_description=SPAN(
 A("A built-in radio widget in web2py", _href="http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.RadioWidget-class.html"), 
 """ arranges its radio buttons vertically, which occupies a relatively large area. 
-It's often the case that a horizontal radio widget is more appropriate.
-So we implemented it, and further made it clickable for it's labels. 
+Here we implemented a horizontal radio widget, and further made it clickable for it's labels. 
 """),
     ),
     plugin_multiselect_widget=dict(
         label='Multiple Select Widget',
-        short_description='A more user-friendly widget for a multiple select field.',
+        show_image=True,
+        short_description='A more user-friendly multiple options widget.',
         long_description=SPAN(
-A("A default mult-select widget in web2py", _href="http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.MultipleOptionsWidget-class.html"),
+A("A built-in multiple options widget in web2py", _href="http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.MultipleOptionsWidget-class.html"),
 """ is made by a single select input tag,
 which would be difficult to handle when it had many options.
-So we built more user-friendly multiple select widget with two select input tags.
+We built more user-friendly multiple select widget with two select input tags.
 """),
     ),
     plugin_suggest_widget=dict(
         label='Suggest Widget',
+        show_image=True,
         short_description='',
         long_description='',
     ),

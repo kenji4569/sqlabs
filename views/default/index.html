@@ -10,8 +10,9 @@
 <div class="examples">
   <ul>
     {{for example in subsection[1]:}}
-    <li class="ex_container">
+    <li class="ex_container" style="position:relative;">
       <h3><a href="{{=example[1]}}">{{=example[0]}}</a></h3>
+      {{if example[3]:}}<img src="{{=example[3]}}"/>{{pass}}
       <p>{{=example[2]}}</p>
     </li>
     {{pass}}

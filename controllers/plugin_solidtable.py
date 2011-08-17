@@ -5,7 +5,9 @@ from gluon.contrib.populate import populate
 db = DAL('sqlite:memory:')
 db.define_table('product', 
     Field('name'),  Field('status', requires=IS_IN_SET(['new', 'old'])), 
-    Field('description', 'text'),  Field('publish_date', 'date'),
+    Field('description', 'text'),  
+    Field('publish_start_date', 'date', label='start'), 
+    Field('publish_end_date', 'date', label='end'),
     Field('price', 'integer', represent=lambda v: '$%s' % v ), 
     )
 populate(db.product, 10)
@@ -17,7 +19,7 @@ def index():
     pretax_price.represent = db.product.price.represent
     
     orderby_selector = OrderbySelector([db.product.id, db.product.name, 
-                                        ~db.product.publish_date, ~pretax_price])
+                                        ~db.product.publish_start_date, ~pretax_price])
     
     rows = db().select(db.product.ALL, tax, pretax_price,
                        orderby=orderby_selector.orderby())
@@ -34,10 +36,10 @@ def index():
                     ]
     # --- the structure of "columns" defines the multi-line header layout ---
     table = SOLIDTABLE(rows,  
-            columns=[extracolumns[0], 
+            columns=[[db.product.name, extracolumns[0]], 
                      'product.id', 
-                     db.product.name,
-                     ['product.publish_date', 'product.status'], 
+                     ['product.status', 'product.publish_start_date'], 
+                     [None, 'product.publish_end_date'], 
                      [pretax_price, 'product.description'], 
                      [tax, None],
                      ['product.price', None],

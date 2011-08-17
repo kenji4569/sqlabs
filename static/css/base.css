@@ -595,11 +595,35 @@ padding: 0;
 display: inline;
 float: left;
 width: 225px;
-height: 7em;
+height: 8em;
 margin: 10px 0 0 10px;
 border: 1px solid #DDD;
 border-radius: 3px;
 padding: 5px 1em;
+}
+
+.examples ul li p {
+line-height: 18px;
+}
+.examples ul li img {
+margin-top:3px;
+margin-bottom:3px;
+margin-right:10px;
+display: block;
+filter: alpha(opacity=75);
+-moz-opacity:0.75;
+opacity:0.75;
+max-height: 4.65em;
+float: left;
+
+  border: 5px solid #fff;
+  -moz-border-radius: 6px;
+  -webkit-border-radius: 6px; 
+  
+  box-shadow: 0 0 6px #979797;
+  -moz-box-shadow: 0 0 6px #979797;  
+  -webkit-box-shadow: 0 0 6px #979797;
+  
 }
 
 /*

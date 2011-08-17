@@ -15,7 +15,7 @@ class SOLIDTABLE(SQLTABLE):
         )
         self.components = []
         
-        def _conver_column_key(c):
+        def _convert_column_key(c):
             if c is None:
                 return None
             if type(c) == str:
@@ -24,36 +24,44 @@ class SOLIDTABLE(SQLTABLE):
                 return str(c)
             else:
                 return c
-        _columns = []
-        for cols_inner in columns or self.sqlrows.colnames:
-            if type(cols_inner) in (list, tuple):
-                _cols_inner = []
-                for col in cols_inner:
-                    _cols_inner.append(_conver_column_key(col))
-                _columns.append(_cols_inner)
+        
+        max_col_lines = 1 # max row span in table header or each table "row"
+        flat_columns = []
+        _converted_columns = []
+        for inner in columns or self.sqlrows.colnames:
+            if type(inner) in (list, tuple):
+                _inner = []
+                for col in inner:
+                    _col = _convert_column_key(col)
+                    flat_columns.append(str(_col))
+                    _inner.append(_col)
+                _converted_columns.append(_inner)
+                max_col_lines = max(len(inner), max_col_lines)
             else:
-                _columns.append(_conver_column_key(cols_inner))
-        columns = _columns
+                _col = _convert_column_key(_convert_column_key(inner))
+                flat_columns.append(str(_col))
+                _converted_columns.append(_col)
+        columns = _converted_columns
         
         show_header = headers is not None
         headers = self._convert_headers(show_header and headers or {}, columns)
         if extracolumns:#new implement dict
             _extracolumns = dict([(str(ec), ec) for ec in extracolumns])
-            columns.extend([c for c in _extracolumns.keys() if c not in columns])
+            columns.extend([c for c in _extracolumns.keys() if c not in flat_columns])
             headers.update(_extracolumns.items())
             
-        columns, col_lines = self._make_multine_columns(columns, headers)
+        col_lines = self._make_multine_columns(columns, headers, max_col_lines)
         
         if show_header:
-            self.components.append(self._create_thead(headers, columns, col_lines))
+            self.components.append(self._create_thead(headers, col_lines))
+            
+        self.components.append(self._create_tbody(headers, col_lines))
             
         if renderstyle:
             _url = URL('static','plugin_solidtable/solidtable.css')
             if _url not in current.response.files:
                 current.response.files.append(_url)
         
-        self.components.append(self._create_tbody(headers, columns, col_lines))
-            
     def _convert_headers(self, headers, columns):
         def _get_field_label(column):
             field = None
@@ -82,39 +90,28 @@ class SOLIDTABLE(SQLTABLE):
                         headers[c] = {'label': _get_field_label(c)}
                     elif 'label' not in headers[c]:
                         headers[c]['label'] = _get_field_label(c)
-            for cols_inner in columns or self.sqlrows.colnames:
-                if type(cols_inner) in (list, tuple):
-                    for col in cols_inner:
+            for inner in columns or self.sqlrows.colnames:
+                if type(inner) in (list, tuple):
+                    for col in inner:
                         _set_label(col)
                 else:
-                    _set_label(cols_inner) 
+                    _set_label(inner) 
                     
         return headers
         
-    def _make_multine_columns(self, columns, headers):
+    def _make_multine_columns(self, columns, headers, max_col_lines):
         for header in headers.values():
             header['_colspan'] = 1
             header['_rowspan'] = 1
         
-        flat_columns = []
-        max_col_lines = 1 # max row span in the table header or each table "row"
-        for cols_inner in columns:
-            if type(cols_inner) in (list, tuple):
-                for col in cols_inner:
-                    if col:
-                        flat_columns.append(col)
-                max_col_lines = max(len(cols_inner), max_col_lines)
-            elif cols_inner:
-                flat_columns.append(cols_inner)
-                
         col_lines = [[] for i in range(max_col_lines)]
-        for col_no, cols_inner in enumerate(columns):
-            if type(cols_inner) in (list, tuple):
-                num_lines = len(cols_inner)
+        for col_no, inner in enumerate(columns):
+            if type(inner) in (list, tuple):
+                num_lines = len(inner)
                 rowspan = max_col_lines / num_lines
                 extra_rowspan = max_col_lines % num_lines
                 for i in range((max_col_lines-extra_rowspan)/rowspan):
-                    col = cols_inner[i]
+                    col = inner[i]
                     if col:
                         headers[col]['_rowspan'] = rowspan
                         col_lines[i*rowspan].append(col)
@@ -129,7 +126,7 @@ class SOLIDTABLE(SQLTABLE):
                     for line_no in range(max_col_lines-extra_rowspan, max_col_lines):
                         col_lines[line_no].append(None)
             else:
-                col = cols_inner
+                col = inner
                 if col:
                     headers[col]['_rowspan'] = max_col_lines
                     col_lines[0].append(col)
@@ -139,11 +136,10 @@ class SOLIDTABLE(SQLTABLE):
                             headers[columns[_col_no]]['_colspan'] += 1
                             break
                         except:
-                            pass
-                        
-        return flat_columns, col_lines
+                            pass  
+        return col_lines
              
-    def _create_thead(self, headers, columns, col_lines):
+    def _create_thead(self, headers, col_lines):
         thead_inner = []
         for col_line in col_lines:
             tr_inner =[]
@@ -180,7 +176,7 @@ class SOLIDTABLE(SQLTABLE):
         if colclass:
             attrcol.update(_class=colclass)
         
-    def _create_tbody(self, headers, columns, col_lines):
+    def _create_tbody(self, headers, col_lines):
         tbody_inner = []
         for (rc, record) in enumerate(self.sqlrows):
             for col_line in col_lines:

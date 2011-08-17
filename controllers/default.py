@@ -8,7 +8,8 @@ def index():
             widgets_list.append(
                (info_plugin_meta['label'], 
                 URL(plugin_name, 'index'),
-                info_plugin_meta['short_description']) 
+                info_plugin_meta['short_description'],
+                info_plugin_meta.get('show_image') and URL('static', 'images/%s.png' % plugin_name) or None ) 
             )
         return widgets_list
         
@@ -21,8 +22,9 @@ We have developed many products using this framework, and love to share useful c
 The code parts are organized in """,
 A("a web2py's plugin system", _href='http://web2py.com/book/default/chapter/13#Plugins'),
 """. Try the demos and codes below."""),
-              [('Custom Widgets',
+              [('Form Customize',
                     _make_widgets_list(
+                        'plugin_solidform', 
                         'plugin_hradio_widget', 
                         'plugin_multiselect_widget', 
                         'plugin_suggest_widget',
@@ -31,7 +33,7 @@ A("a web2py's plugin system", _href='http://web2py.com/book/default/chapter/13#P
                         'plugin_color_widget',
                         'plugin_elrte_widget',
                     )),
-                 ('Grid Tools',
+                 ('Table Customize',
                      _make_widgets_list(
                         'plugin_solidtable', 
                         'plugin_paginator', 
@@ -43,20 +45,6 @@ A("a web2py's plugin system", _href='http://web2py.com/book/default/chapter/13#P
                      _make_widgets_list(
                         'plugin_mptt', 
                     )),
-                ('Custom Validators',
-                     [('xxx Validator', 
-                      URL('plugin_horizontal', 'index'),
-                      """xxxxxxxxxxxxxxxxxxxxxx"""
-                      ),
-                      ('yyy Validator', 
-                      URL('plugin_horizontal', 'index'),
-                      """yyyyyyyyyyyyyyyyyyy"""
-                      ),
-                      ('zzz Validator', 
-                      URL('plugin_horizontal', 'index'),
-                      """zzzzzzzzzzzzzzzzzzzz"""
-                      )
-                     ]),
             ]),
         ],
     )
