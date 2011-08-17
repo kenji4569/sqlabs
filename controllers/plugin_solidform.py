@@ -26,7 +26,7 @@ def index():
             
     form = SOLIDFORM(db.product, fields=fields)
     if form.accepts(request.vars, session):
-        session.flash = 'submitted : %s' % request.vars.color
+        session.flash = 'submitted %s' % form.vars
         redirect(URL('index'))
         
     form_factory = SOLIDFORM.factory([Field('xxx'), Field('yyy'), Field('zzz')], Field('aaa'))

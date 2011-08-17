@@ -21,7 +21,6 @@ db.product.category_2.widget = suggest_widget(
 def index():
     form = SQLFORM(db.product)
     if form.accepts(request.vars, session):
-        session.flash = 'submitted : category_1=%s category_2=%s' % (
-                                    form.vars.category_1, form.vars.category_2)
+        session.flash = 'submitted %s' % form.vars
         redirect(URL('index'))
     return dict(form=form, categories=SQLTABLE(db().select(db.category.ALL)))

@@ -25,6 +25,7 @@ A("a web2py's plugin system", _href='http://web2py.com/book/default/chapter/13#P
               [('Form Customize',
                     _make_widgets_list(
                         'plugin_solidform', 
+                        'plugin_notemptymarker',
                         'plugin_hradio_widget', 
                         'plugin_multiselect_widget', 
                         'plugin_suggest_widget',

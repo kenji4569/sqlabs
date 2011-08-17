@@ -11,7 +11,6 @@ db.product.description.widget = ElrteWidget(lang='jp')
 def index():
     form = SQLFORM(db.product)
     if form.accepts(request.vars, session):
-        print request.vars.description, len(request.vars.description)
-        session.flash = 'submitted : %s' % request.vars.description
+        session.flash = 'submitted %s' % form.vars
         redirect(URL('index'))
     return dict(form=form)

@@ -15,8 +15,7 @@ def index():
                 requires=IS_IN_SET(['update', 'delete'])))
     
     if tablecheckbox.accepts(request.vars):
-        session.flash = 'submitted : selected=%s action=%s' % (
-                            tablecheckbox.vars.tablecheckbox, tablecheckbox.vars.action)
+        session.flash = 'submitted %s' % tablecheckbox.vars
         redirect(URL('index'))
     table = SOLIDTABLE(db(db.product.id>0).select(),
                        extracolumns=[tablecheckbox.column()],

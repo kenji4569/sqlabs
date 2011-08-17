@@ -12,6 +12,6 @@ db.product.color.widget = hradio_widget
 def index():
     form = SQLFORM(db.product)
     if form.accepts(request.vars, session):
-        session.flash = 'submitted : %s' % request.vars.color
+        session.flash = 'submitted %s' % form.vars
         redirect(URL('index'))
     return dict(form=form)

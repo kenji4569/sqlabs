@@ -11,6 +11,6 @@ db.product.colors.widget = multiselect_widget
 def index():
     form = SQLFORM(db.product)
     if form.accepts(request.vars, session):
-        session.flash = 'submitted : %s' % request.vars.colors
+        session.flash = 'submitted %s' % form.vars
         redirect(URL('index'))
     return dict(form=form)

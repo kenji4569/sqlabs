@@ -6,6 +6,11 @@ info_plugin_metas = dict(
         short_description='',
         long_description='',
     ),
+    plugin_notemptymarker=dict(
+        label='Not Empty Marker',
+        short_description='',
+        long_description='',
+    ),
     plugin_hradio_widget=dict(
         label='Horizontal Radio Widget',
         show_image=True,

@@ -11,7 +11,6 @@ db.define_table('product',
 def index():
     form = SQLFORM(db.product)
     if form.accepts(request.vars, session):
-        session.flash = 'submitted : event_time=%s publish_date=%s created_at=%s' % (
-                            request.vars.event_time, request.vars.publish_date, request.vars.created_at,)
+        session.flash = 'submitted %s' % form.vars
         redirect(URL('index'))
     return dict(form=form)
