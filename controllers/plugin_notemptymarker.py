@@ -7,8 +7,8 @@ db.define_table('product',
     Field('category', requires=IS_IN_SET(['A', 'B', 'C']), label='Genre'),
     Field('publish_start_date', 'date', requires=IS_DATE()),
     Field('publish_end_date', 'date', requires=IS_EMPTY_OR(IS_DATE())),
-    Field('code', 'integer', requires=[IS_NOT_EMPTY(), IS_INT_IN_RANGE(1000)]
-),
+    Field('code', 'integer', requires=[IS_NOT_EMPTY(), IS_INT_IN_RANGE(1000)]),
+    Field('description', 'text'),
 )
 def index():
     mark_not_empty(db.product)
