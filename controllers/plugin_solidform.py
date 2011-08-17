@@ -31,10 +31,8 @@ def index():
         
     form_factory = SOLIDFORM.factory([Field('xxx'), Field('yyy'), Field('zzz')], Field('aaa'))
     
-    
     product = db(db.product.id>0).select().first()
     form_readonly = SOLIDFORM(db.product, product, fields=fields, showid=False, readonly=True)
-    
     
     style = STYLE("""input[type="text"], textarea {width:100%; max-height: 50px;} 
                      .w2p_fw {padding-right: 20px; max-width:200px;}
