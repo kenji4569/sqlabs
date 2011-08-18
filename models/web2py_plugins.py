@@ -58,6 +58,11 @@ We built more user-friendly multiple select widget with two select input tags.
         short_description='',
         long_description='',
     ),
+    plugin_uploadify_widget=dict(
+        label='Uploadify Widget',
+        short_description='',
+        long_description='',
+    ),
     plugin_solidtable=dict(
         label='Solid Table',
         short_description='A custom SQLTable with dense solid layout',

@@ -33,6 +33,7 @@ A("a web2py's plugin system", _href='http://web2py.com/book/default/chapter/13#P
                         'plugin_anytime_widget',
                         'plugin_color_widget',
                         'plugin_elrte_widget',
+                        'plugin_uploadify_widget',
                     )),
                  ('Table Customize',
                      _make_widgets_list(
