@@ -3,8 +3,8 @@ from gluon import *
 
 class ElrteWidget(object):
     
-    def __init__(self, lang=None):
-        self.lang = lang
+    def __init__(self, lang=None, toolbar='default'):
+        self.lang, self.toolbar = lang, toolbar
 
     def __call__(self, field, value):   
         _urls = [URL('static','plugin_elrte_widget/css/smoothness/jquery-ui-1.8.13.custom.css'),
@@ -33,23 +33,17 @@ class ElrteWidget(object):
         script = SCRIPT(""" 
 (function($) {
 $(document).ready(function() {
-    elRTE.prototype.options.panels.web2pyPanel1 = [
-        'pastetext', 'pasteformattext', 'removeformat', 'undo', 'redo'];
-    elRTE.prototype.options.panels.web2pyPanel2 = [
-        'formatblock', 'fontsize', 'fontname'];
-    elRTE.prototype.options.panels.web2pyPanel3 = [
-        'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript'];
-    elRTE.prototype.options.panels.web2pyPanel4 = [
-        'forecolor', 'hilitecolor', 'justifyleft', 'justifyright',
-        'justifycenter', 'justifyfull', 'outdent', 'indent'];
-    elRTE.prototype.options.panels.web2pyPanel5 = [
-    'link', 'unlink', 'image', 'insertorderedlist', 'insertunorderedlist',
-    'horizontalrule', 'blockquote', 'div', 'stopfloat', 'css', 'nbsp'];
-    elRTE.prototype.options.toolbars.web2pyToolbar = [
-        'web2pyPanel1', 'web2pyPanel2', 'web2pyPanel3', 
-        'web2pyPanel4', 'web2pyPanel5', 'tables'];
-    $('#%(id)s').elrte({cssClass: 'el-rte', lang: '%(lang)s', toolbar:  'web2pyToolbar'});
-});})(jQuery);""" % dict(id=_id, lang=self.lang or ''))
+var opts = elRTE.prototype.options;
+opts.panels.default_1 = ['pastetext', 'pasteformattext', 'removeformat', 'undo', 'redo'];
+opts.panels.default_2 = ['formatblock', 'fontsize', 'fontname'];
+opts.panels.default_3 = ['bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript'];
+opts.panels.default_4 = ['forecolor', 'hilitecolor', 'justifyleft', 'justifyright',
+                  'justifycenter', 'justifyfull', 'outdent', 'indent'];
+opts.panels.default_5 = ['link', 'unlink', 'image', 'insertorderedlist', 'insertunorderedlist',
+                  'horizontalrule', 'blockquote', 'div', 'stopfloat', 'css', 'nbsp'];
+opts.toolbars.default = ['default_1', 'default_2', 'default_3', 'default_4', 'default_5', 'tables'];
+$('#%(id)s').elrte({cssClass: 'el-rte', lang: '%(lang)s', toolbar: '%(toolbar)s'});
+});})(jQuery);""" % dict(id=_id, lang=self.lang or '', toolbar=self.toolbar))
 
         return SPAN(script, TEXTAREA((value!=None and str(value)) or '', **attr))
        

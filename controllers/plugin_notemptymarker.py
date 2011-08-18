@@ -10,6 +10,7 @@ db.define_table('product',
     Field('code', 'integer', requires=[IS_NOT_EMPTY(), IS_INT_IN_RANGE(1000)]),
     Field('description', 'text'),
 )
+
 def index():
     mark_not_empty(db.product)
     
