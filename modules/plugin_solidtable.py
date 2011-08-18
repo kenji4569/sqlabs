@@ -120,7 +120,7 @@ class SOLIDTABLE(SQLTABLE):
                             try:
                                 headers[columns[_col_no][i]]['_colspan'] += 1
                                 break
-                            except:
+                            except KeyError:
                                 pass
                 if extra_rowspan:
                     for line_no in range(max_col_lines-extra_rowspan, max_col_lines):
@@ -135,7 +135,7 @@ class SOLIDTABLE(SQLTABLE):
                         try:
                             headers[columns[_col_no]]['_colspan'] += 1
                             break
-                        except:
+                        except KeyError:
                             pass  
         return col_lines
              

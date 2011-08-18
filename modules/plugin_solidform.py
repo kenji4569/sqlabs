@@ -38,7 +38,7 @@ class SOLIDFORM(SQLFORM):
                                 try:
                                     row_spans[self.structured_fields[_row_no][i]] += 1
                                     break
-                                except:
+                                except KeyError:
                                     pass
                     if extra_colspan:
                         for line_no in range(max_row_lines-extra_colspan, max_row_lines):
@@ -53,7 +53,7 @@ class SOLIDFORM(SQLFORM):
                             try:
                                 row_spans[self.structured_fields[_row_no]] += 1
                                 break
-                            except:
+                            except KeyError:
                                 pass
             
             self.row_spans = row_spans
