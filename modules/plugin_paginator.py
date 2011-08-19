@@ -4,12 +4,12 @@ from gluon import *
 
 class Paginator(DIV): 
 
-    def __init__(self, perpage=10, records=100, 
+    def __init__(self, pagenate=10, records=100, 
                  renderstyle=False, page_var='page', **attributes):
         DIV.__init__(self, **attributes)
         self.attributes['_class'] = 'paginator'
-        self.perpage, self.records, self.page_var = (
-            perpage, records, page_var
+        self.pagenate, self.records, self.page_var = (
+            pagenate, records, page_var
         )
         self.page = int(current.request.get_vars.get(self.page_var) or 1)
         
@@ -24,12 +24,12 @@ class Paginator(DIV):
         return URL(args=current.request.args, vars=vars)
 
     def limitby(self): 
-        return (self.perpage*(self.page-1), self.perpage*self.page)
+        return (self.pagenate*(self.page-1), self.pagenate*self.page)
       
     def xml(self): 
-        pages = (self.records - 1) / self.perpage + 1
-        if (self.records > self.perpage and
-            pages == 1 and pages * self.perpage != self.records):
+        pages = (self.records - 1) / self.pagenate + 1
+        if (self.records > self.pagenate and
+            pages == 1 and pages * self.pagenate != self.records):
             pages = 2
         elif pages == 0 and self.records != 0:
             pages = 1 
@@ -72,43 +72,43 @@ class Paginator(DIV):
             
         return DIV.xml(self) 
       
-class PerpageSelector(SPAN):
+class PagenateSelector(SPAN):
     
-    def __init__(self, perpages=(10, 25, 50, 100),
-                 perpage_var='perpage', page_var='page', **attributes):
+    def __init__(self, pagenates=(10, 25, 50, 100),
+                 pagenate_var='pagenate', page_var='page', **attributes):
         SPAN.__init__(self, **attributes)
-        self.attributes['_class'] = 'perpage_selector'
-        self.perpages, self.perpage_var, self.page_var  = (
-            perpages, perpage_var, page_var
+        self.attributes['_class'] = 'pagenate_selector'
+        self.pagenates, self.pagenate_var, self.page_var  = (
+            pagenates, pagenate_var, page_var
         )
-        self.perpage = int(current.request.get_vars.get(self.perpage_var, perpages[0]))
+        self.pagenate = int(current.request.get_vars.get(self.pagenate_var, pagenates[0]))
         
-    def _url(self, perpage):
+    def _url(self, pagenate):
         vars = current.request.get_vars.copy()
         vars[self.page_var] = 1
-        vars[self.perpage_var] = perpage
+        vars[self.pagenate_var] = pagenate
         return URL(args=current.request.args, vars=vars)
   
     def xml(self): 
-        def _get_perpage_link(_perpage):
-            if _perpage == self.perpage:
-                return str(_perpage)
+        def _get_pagenate_link(_pagenate):
+            if _pagenate == self.pagenate:
+                return str(_pagenate)
             else:
-                return A(_perpage, _href=self._url(_perpage)).xml()
-        inner = XML(current.T('Per page: ') +
-                 ', '.join([_get_perpage_link(_perpage) for _perpage in self.perpages])) 
+                return A(_pagenate, _href=self._url(_pagenate)).xml()
+        inner = XML(current.T('Paginate: ') +
+                 ', '.join([_get_pagenate_link(_pagenate) for _pagenate in self.pagenates])) 
         return SPAN(inner, **self.attributes).xml()
                     
 class PagingInfo(SPAN):
-    def __init__(self, page, perpage, records, **attributes):
+    def __init__(self, page, pagenate, records, **attributes):
         SPAN.__init__(self, **attributes)
         self.attributes['_class'] = 'paging_info'
-        self.page, self.perpage, self.records  = (
-            page, perpage, records
+        self.page, self.pagenate, self.records  = (
+            page, pagenate, records
         )
         
     def xml(self): 
         inner = XML(current.T('Display: <b>%(start)s - %(end)s</b> of <b>%(total)s</b>') % 
-              dict(start=(self.page - 1)*self.perpage + 1, end=self.page*self.perpage, 
+              dict(start=(self.page - 1)*self.pagenate + 1, end=self.page*self.pagenate, 
                    total=self.records))
         return SPAN(inner, **self.attributes).xml()
