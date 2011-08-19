@@ -3,6 +3,10 @@ from gluon import *
 from gluon.sqlhtml import AutocompleteWidget
 
 class suggest_widget(AutocompleteWidget):
+
+    def _create_item(self, field, row):
+        return B(row[field.name])
+        
     def callback(self):
         if self.keyword in self.request.vars:
             field = self.fields[0]
@@ -11,10 +15,10 @@ class suggest_widget(AutocompleteWidget):
             if rows:
                 if self.is_reference:
                     id_field = self.fields[1]
-                    raise HTTP(200,UL(*[LI(B(s[field.name]), SPAN(s[id_field.name])) 
-                                                            for s in rows]).xml())
+                    raise HTTP(200,UL(*[LI(self._create_item(field, row), SPAN(row[id_field.name])) 
+                                                            for row in rows]).xml())
                 else:
-                    raise HTTP(200,UL(*[LI(B(s[field.name])) for s in rows]).xml())
+                    raise HTTP(200,UL(*[LI(self._create_item(field, row)) for row in rows]).xml())
             else:
                 raise HTTP(200,'')
                 
