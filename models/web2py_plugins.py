@@ -3,11 +3,13 @@
 info_plugin_metas = dict(
     plugin_solidform=dict(
         label='Solid Form',
+        show_image=True,
         short_description='',
         long_description='',
     ),
     plugin_notemptymarker=dict(
         label='Not Empty Marker',
+        show_image=True,
         short_description='',
         long_description='',
     ),
@@ -40,26 +42,31 @@ We built more user-friendly multiple select widget with two select input tags.
     ),
     plugin_lazy_options_widget=dict(
         label='Lazy Options Widget',
+        show_image=True,
         short_description='',
         long_description='',
     ),
     plugin_anytime_widget=dict(
         label='Anytime Widget',
+        show_image=True,
         short_description='',
         long_description='',
     ),
     plugin_color_widget=dict(
         label='Color Widget',
+        show_image=True,
         short_description='',
         long_description='',
     ),
     plugin_elrte_widget=dict(
-        label='elRTE WYSIWYG editor Widget',
+        label='elRTE WYSIWYG Widget',
+        show_image=True,
         short_description='',
         long_description='',
     ),
     plugin_uploadify_widget=dict(
         label='Uploadify Widget',
+        show_image=True,
         short_description='',
         long_description='',
     ),

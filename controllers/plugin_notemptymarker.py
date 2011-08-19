@@ -18,4 +18,7 @@ def index():
     if form.accepts(request.vars, session):
         session.flash = 'submitted %s' % form.vars
         redirect(URL('index'))
-    return dict(form=form)
+    style = STYLE("""input[type="text"], select, textarea {width:100%; max-height: 50px;} 
+                     .w2p_fw {padding-right: 20px; max-width:200px;}
+                     .w2p_fl {background: #eee;}""")
+    return dict(form=DIV(style, form))
