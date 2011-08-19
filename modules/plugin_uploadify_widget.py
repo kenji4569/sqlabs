@@ -96,36 +96,49 @@ def uploadify_widget(field, value, download_url=None, **attributes):
         raise HTTP(200, newfilename)
         
     script = SCRIPT("""
-var uploadify_uploading_%(id)s = [];
-var uploadify_uploaded_%(id)s = [];
+var uploadify_uploading = [];
+var uploadify_uploaded = [];
 jQuery(document).ready(function() {
 var el = jQuery('#%(id)s');
 var file_el = jQuery('#%(file_id)s');
 var form_el = jQuery(el.get(0).form);
 form_el.submit(function() {
     var not_empty_message = "%(not_empty_message)s";
-    if (not_empty_message!="" && uploadify_uploading_%(id)s.indexOf(file_el.attr('id'))==-1) {
+    if (not_empty_message!="" && uploadify_uploading.indexOf(file_el.attr('id'))==-1) {
         el.parent().prepend(jQuery("<div class='error'>"+not_empty_message+"</div>"));
         return false;
     }
     
     file_el.uploadifyUpload();
-    if (uploadify_uploading_%(id)s.length!=0) { return false; }
+    if (uploadify_uploading.length != 0) { return false; }
     else { return true; }
 });
+function cancel() {
+    var idx = uploadify_uploading.indexOf(file_el.attr('id'));
+    if (idx != -1) {
+        delete uploadify_uploading[idx];
+        uploadify_uploaded.push(undefined);
+    }
+}
 file_el.uploadify({
 'buttonText': '%(button_text)s',
 'uploader'  : '%(uploader)s',
 'script'    : '%(script)s',
 'cancelImg' : '%(cancel_img)s',
 'auto'      : false,
-'onSelect'    : function(event,ID,fileObj) {
-    uploadify_uploading_%(id)s.push(file_el.attr('id'));
+'onSelect'    : function(event, ID, fileObj) {
+    uploadify_uploading.push(file_el.attr('id'));
+},
+'onCancel'    : function(event, ID, fileObj, data) {
+    cancel()
+},
+'onError'     : function (event, ID, fileObj, errorObj) {
+    cancel()
 },
 'onComplete': function(event, ID, fileObj, response, data) {
     el.val(response);
-    uploadify_uploaded_%(id)s.push(file_el.attr('id'));
-    if (uploadify_uploading_%(id)s.length == uploadify_uploaded_%(id)s.length) {
+    uploadify_uploaded.push(file_el.attr('id'));
+    if (uploadify_uploading.length == uploadify_uploaded.length) {
         setTimeout(function(){form_el.get(0).submit();}, 200);
     }
 },
