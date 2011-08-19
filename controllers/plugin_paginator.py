@@ -1,5 +1,5 @@
  # -*- coding: utf-8 -*-
-from plugin_paginator import Paginator, PagenateSelector, PagingInfo
+from plugin_paginator import Paginator, PagenateSelector, PaginateInfo
 from plugin_solidtable import SOLIDTABLE
 from gluon.contrib.populate import populate
 
@@ -13,10 +13,10 @@ def index():
     pagenate_selector = PagenateSelector()
     paginator = Paginator(pagenate=pagenate_selector.pagenate, renderstyle=True) 
     paginator.records = db(query).count()
-    paging_info = PagingInfo(paginator.page, paginator.pagenate, paginator.records)
+    paginate_info = PaginateInfo(paginator.page, paginator.pagenate, paginator.records)
     
     rows = db(query).select(limitby=paginator.limitby()) 
     table = SOLIDTABLE(rows, renderstyle=True)
     
     return dict(table=table, paginator=paginator, 
-                pagenate_selector=pagenate_selector, paging_info=paging_info) 
+                pagenate_selector=pagenate_selector, paginate_info=paginate_info) 

@@ -99,10 +99,10 @@ class PagenateSelector(SPAN):
                  ', '.join([_get_pagenate_link(_pagenate) for _pagenate in self.pagenates])) 
         return SPAN(inner, **self.attributes).xml()
                     
-class PagingInfo(SPAN):
+class PaginateInfo(SPAN):
     def __init__(self, page, pagenate, records, **attributes):
         SPAN.__init__(self, **attributes)
-        self.attributes['_class'] = 'paging_info'
+        self.attributes['_class'] = 'pagenate_info'
         self.page, self.pagenate, self.records  = (
             page, pagenate, records
         )
