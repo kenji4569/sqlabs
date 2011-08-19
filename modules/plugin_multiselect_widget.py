@@ -47,7 +47,7 @@ jQuery(document).ready(function() {
     select_el = SELECT(_id=select_el_id, _size=size, _style="width:%spx" % width, _multiple=True,
                        _name=field.name, requires=field.requires,
                        *selected_opts)
-    
+    attributes['_style'] = attributes.get('_style', 'padding-bottom:10px;')
     return DIV(script_el, unselected_el, BR(),
                CENTER(
                     INPUT(_type='button', _value='↓  %s  ↓' % current.T('register'), 
@@ -59,5 +59,5 @@ jQuery(document).ready(function() {
                 _style='padding:5px 0px;width:%spx;' % width),
                select_el,
                _id='%s_%s' % (field._tablename, field.name),
-               _style='padding-bottom:10px;')
+               **attributes)
     

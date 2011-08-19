@@ -6,7 +6,7 @@ class ElrteWidget(object):
     def __init__(self, lang=None, toolbar='default'):
         self.lang, self.toolbar = lang, toolbar
 
-    def __call__(self, field, value):   
+    def __call__(self, field, value, **attributes):   
         _urls = [URL('static','plugin_elrte_widget/css/smoothness/jquery-ui-1.8.13.custom.css'),
                  URL('static','plugin_elrte_widget/css/elrte.min.css'),
                  URL('static','plugin_elrte_widget/css/elrte-inner.css'),
@@ -45,5 +45,5 @@ opts.toolbars.default = ['default_1', 'default_2', 'default_3', 'default_4', 'de
 $('#%(id)s').elrte({cssClass: 'el-rte', lang: '%(lang)s', toolbar: '%(toolbar)s'});
 });})(jQuery);""" % dict(id=_id, lang=self.lang or '', toolbar=self.toolbar))
 
-        return SPAN(script, TEXTAREA((value!=None and str(value)) or '', **attr))
+        return SPAN(script, TEXTAREA((value!=None and str(value)) or '', **attr), **attributes)
        

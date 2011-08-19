@@ -22,7 +22,7 @@ class suggest_widget(AutocompleteWidget):
             else:
                 raise HTTP(200,'')
                 
-    def __call__(self,field,value,**attributes):
+    def __call__(self, field, value, **attributes):
         for _url in (URL('static','plugin_suggest_widget/suggest.css'),
                      URL('static','plugin_suggest_widget/suggest.js')):
             if _url not in current.response.files:
@@ -50,7 +50,7 @@ jQuery('#%(id)s').suggest(
                resultsId:'%(div_id)s', minchars:'%(min_length)s'})""" % 
                              dict(id=attr['_id'], url=self.url, name=field.name, div_id=div_id,
                                   keyword=self.keyword, min_length=self.min_length))
-            return TAG[''](INPUT(**attr),INPUT(_type='hidden',_id=key3,_value=value,
+            return TAG[''](INPUT(**attr), INPUT(_type='hidden',_id=key3,_value=value,
                                                _name=field.name,requires=field.requires),
                            DIV(_id=div_id,_style='position:absolute;'))
         else:
@@ -61,5 +61,5 @@ jQuery('#%(id)s').suggest(
                resultsId:'%(div_id)s', minchars:'%(min_length)s'})""" %
                              dict(id=attr['_id'], url=self.url, div_id=div_id,
                                   keyword=self.keyword, min_length=self.min_length))
-            return TAG[''](INPUT(**attr),DIV(_id=div_id,_style='position:absolute;'))
+            return TAG[''](INPUT(**attr), DIV(_id=div_id,_style='position:absolute;'))
             

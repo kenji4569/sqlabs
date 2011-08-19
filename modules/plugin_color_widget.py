@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from gluon import *
 
-def color_widget(field, value):
+def color_widget(field, value, **attributes):
     for _url in (URL('static','plugin_color_widget/css/colorpicker.css'),
                  URL('static','plugin_color_widget/css/layout.css'),
                  URL('static','plugin_color_widget/js/colorpicker.js'),
@@ -41,4 +41,4 @@ if (this.value) {
 });
 });
     """ % dict(id=_id))
-    return SPAN(script, INPUT(**attr))
+    return SPAN(script, INPUT(**attr), **attributes)

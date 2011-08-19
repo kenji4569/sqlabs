@@ -31,7 +31,7 @@ def _set_files():
             current.response.files.append(_url)
          
 
-def anytime_widget(field, value): 
+def anytime_widget(field, value, **attributes): 
     _set_files()
     _id = '%s_%s' % (field._tablename, field.name)
     attr = dict(
@@ -49,10 +49,10 @@ jQuery.extend({format: "%%H:%%i:%%S", labelTitle: "%(title)s",
            hour=current.T('Hour'), minute=current.T('Minute'), second=current.T('Second'),
            date_option=_get_date_option()))
     
-    return SPAN(script, INPUT(**attr))
+    return SPAN(script, INPUT(**attr), **attributes)
 
     
-def anydate_widget(field, value): 
+def anydate_widget(field, value, **attributes): 
     _set_files()
     _id = '%s_%s' % (field._tablename, field.name)
     attr = dict(
@@ -68,9 +68,9 @@ jQuery.extend({format: "%%Y-%%m-%%d", labelTitle: "%(title)s"},
 """ % dict(id=_id, title=current.T('Choose date time'), 
            date_option=_get_date_option()))
     
-    return SPAN(script, INPUT(**attr))
+    return SPAN(script, INPUT(**attr), **attributes)
     
-def anydatetime_widget(field, value): 
+def anydatetime_widget(field, value, **attributes): 
     _set_files()
     _id = '%s_%s' % (field._tablename, field.name)
     attr = dict(
@@ -88,4 +88,4 @@ jQuery.extend({format: "%%Y-%%m-%%d %%H:%%i:00", labelTitle: "%(title)s",
            hour=current.T('Hour'), minute=current.T('Minute'),
            date_option=_get_date_option()))
     
-    return SPAN(script, INPUT(**attr))
+    return SPAN(script, INPUT(**attr), **attributes)

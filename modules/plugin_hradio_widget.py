@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from gluon import *
 
-def hradio_widget(field, value): 
+def hradio_widget(field, value, **attributes): 
     rows = SQLFORM.widgets.radio.widget(field,value).elements('tr') 
     inner = []
     for row in rows:
@@ -11,4 +11,4 @@ def hradio_widget(field, value):
                           SPAN(label, _onclick='jQuery(this).parent().children("input").click();', 
                                _style='cursor:pointer;'), 
                           _style='padding-right:10px;'))
-    return DIV(*inner)
+    return DIV(*inner, **attributes)
