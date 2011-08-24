@@ -2,10 +2,14 @@
 from plugin_uploadify_widget import (
     uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_FILENAME, IS_UPLOADIFY_LENGTH
 )
+import random
 
 table = db.define_table('plugin_uploadify_widget', 
+    Field('name', default=''.join([random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890') 
+                                        for i in range(10)])),
     Field('image', 'upload', autodelete=True),
-    Field('text', 'upload', autodelete=True))
+    Field('text', 'upload', autodelete=True),
+    )
     
 table.image.widget = uploadify_widget
 table.image.requires = [IS_UPLOADIFY_IMAGE(), IS_UPLOADIFY_LENGTH(10240)]
@@ -25,7 +29,8 @@ def index():
         redirect(URL('index'))
     
     records = db(table.id>0).select(orderby=~table.id)
-    records = SQLTABLE(records, upload=URL('download'), linkto=lambda f, t, r: URL('edit', args=f))
+    records = SQLTABLE(records, headers="labels",
+                       upload=URL('download'), linkto=lambda f, t, r: URL('edit', args=f))
     return dict(form=form, records=records)
     
 def edit():
