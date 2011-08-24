@@ -3,19 +3,16 @@
 info_plugin_metas = dict(
     plugin_solidform=dict(
         label='Solid Form',
-        show_image=True,
         short_description='',
         long_description='',
     ),
     plugin_notemptymarker=dict(
         label='Not Empty Marker',
-        show_image=True,
         short_description='',
         long_description='',
     ),
     plugin_hradio_widget=dict(
         label='Horizontal Radio Widget',
-        show_image=True,
         short_description='A radio widget arranging its radio buttons horizontally.',
         long_description=SPAN(
 A("A built-in radio widget in web2py", _href="http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.RadioWidget-class.html"), 
@@ -25,7 +22,6 @@ Here we implemented a horizontal radio widget, and further made it clickable for
     ),
     plugin_multiselect_widget=dict(
         label='Multiple Select Widget',
-        show_image=True,
         short_description='A more user-friendly multiple options widget.',
         long_description=SPAN(
 A("A built-in multiple options widget in web2py", _href="http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.MultipleOptionsWidget-class.html"),
@@ -36,37 +32,31 @@ We built more user-friendly multiple select widget with two select input tags.
     ),
     plugin_suggest_widget=dict(
         label='Suggest Widget',
-        show_image=True,
         short_description='',
         long_description='',
     ),
     plugin_lazy_options_widget=dict(
         label='Lazy Options Widget',
-        show_image=True,
         short_description='',
         long_description='',
     ),
     plugin_anytime_widget=dict(
         label='Anytime Widget',
-        show_image=True,
         short_description='',
         long_description='',
     ),
     plugin_color_widget=dict(
         label='Color Widget',
-        show_image=True,
         short_description='',
         long_description='',
     ),
     plugin_elrte_widget=dict(
         label='elRTE WYSIWYG Widget',
-        show_image=True,
         short_description='',
         long_description='',
     ),
     plugin_uploadify_widget=dict(
         label='Uploadify Widget',
-        show_image=True,
         short_description='',
         long_description='',
     ),
@@ -97,8 +87,10 @@ We built more user-friendly multiple select widget with two select input tags.
     ),
     plugin_mptt=dict(
         label='Modified Preorder Tree Traversal',
+        show_image=False,
         short_description='',
         long_description='',
+        status='under-construction',
     ),
 )
 

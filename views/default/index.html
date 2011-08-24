@@ -1,21 +1,24 @@
 {{extend 'layout.html'}}
+
 <img src="{{=URL('static', 'images/front.jpg')}}" width=790>
 
-{{for section in sections:}}
-<h3>{{=section[0]}}</h3>
-<p>{{=section[1]}}</p>
-{{for subsection in section[2]:}}
-<h4>{{=subsection[0]}}</h4>
-<div class="examples">
-  <ul>
-    {{for example in subsection[1]:}}
-    <li class="ex_container" style="position:relative;">
-      <h3><a href="{{=example[1]}}">{{=example[0]}}</a></h3>
-      {{if example[3]:}}<img src="{{=example[3]}}"/>{{pass}}
-      <p>{{=example[2]}}</p>
-    </li>
-    {{pass}}
-  </ul>
+<div id="products">
+<dl>
+{{for key, info in products:}}
+
+<dt>
+  <h3>{{=info['label']}}</h3>
+  <p>{{=info['description']}}</p>
+  {{if info.get('status') == 'under-construction':}}
+  <div class="under-construction">under construction</div>
+  {{else:}}
+  <div class="try-demo"><a href="{{=URL(key, 'index')}}">Try Demo</a></div>
+  {{pass}}
+</dt>
+<dd>
+  <img src="{{=URL('static', 'images/products/%s.jpg' % key)}}" />
+</dd>
+<hr/>
+{{pass}}
+</dl>
 </div>
-{{pass}}
-{{pass}}

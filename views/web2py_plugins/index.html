@@ -1,0 +1,37 @@
+{{extend 'layout.html'}}
+<a class="github-ribbon" href="https://github.com/sqlabs/sqlabs"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/71eeaab9d563c2b3c590319b398dd35683265e85/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub"></a>
+  
+<img src="{{=URL('static', 'images/front.jpg')}}" width=790>
+
+{{for key, info, subsections in sections:}}
+<h3>{{=info['label']}}</h3>
+<p>{{=info['description']}}</p>
+{{for subsection in subsections:}}
+<h4>{{=subsection[0]}}</h4>
+<div class="examples">
+  <ul>
+    {{for detail_key, detail in subsection[1]:}}
+    <li id="{{=detail_key}}" class="ex_container" style="position:relative;">
+      <h3>
+        {{if detail.get('status') == 'under-construction':}}
+          {{=detail['label']}}
+        {{else:}}
+          <a href="{{=URL(detail_key, 'index')}}">{{=detail['label']}}</a>
+        {{pass}}
+      </h3>
+      {{if detail.get('show_image', True):}}
+        <a href="{{=URL(detail_key, 'index')}}">
+          <img src="{{=URL('static', 'images/%s.png' % detail_key)}}"/>
+        </a>
+      {{pass}}
+      {{if detail.get('status') == 'under-construction':}}
+        <div class="under-construction">under construction</div>
+      {{else:}}
+        <p>{{=detail['short_description']}}</p>
+      {{pass}}
+    </li>
+    {{pass}}
+  </ul>
+</div>
+{{pass}}
+{{pass}}
