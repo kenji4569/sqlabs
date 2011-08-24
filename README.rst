@@ -7,7 +7,6 @@ About
 The aim for this project is to showcases developmental products created by S-cubism.
 
 Currently you can try demos for plugins of Web2py framework, and view their sources.
-Other products to be published are still under construction.
 
 License
 -----------------------------------------
