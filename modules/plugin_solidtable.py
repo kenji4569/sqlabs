@@ -323,8 +323,10 @@ class OrderbySelector(object):
             self.current_class = 'orderby-asc'
         
     def _get_key(self, orderby):
-        import md5
-        return md5.new(str(orderby)).hexdigest()
+        import hashlib
+        m = hashlib.md5()
+        m.update(str(orderby))
+        return m.hexdigest()
         
     def _url(self, orderby):
         vars = current.request.get_vars.copy()

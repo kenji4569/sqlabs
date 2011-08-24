@@ -655,21 +655,26 @@ filter: alpha(opacity=75);
 opacity:0.75;
 max-height: 4.65em;
 float: left;
-
-  border: 5px solid #fff;
-  -moz-border-radius: 6px;
-  -webkit-border-radius: 6px; 
-  
-  box-shadow: 0 0 6px #979797;
-  -moz-box-shadow: 0 0 6px #979797;  
-  -webkit-box-shadow: 0 0 6px #979797;
-  
+border: 5px solid #fff;
+-moz-border-radius: 6px;
+-webkit-border-radius: 6px; 
+box-shadow: 0 0 6px #979797;
+-moz-box-shadow: 0 0 6px #979797;  
+-webkit-box-shadow: 0 0 6px #979797;
 }
 
 a.github-ribbon:hover {
-  filter: alpha(opacity=75);
-  -moz-opacity:0.75;
-  opacity:0.75;
+filter: alpha(opacity=75);
+-moz-opacity:0.75;
+opacity:0.75;
+}
+
+.socialbutton {
+display: block;
+}
+.socialbutton div {
+margin-right: 15px;
+float: right;
 }
 
 
