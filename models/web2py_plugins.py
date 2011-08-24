@@ -3,17 +3,17 @@
 info_plugin_metas = dict(
     plugin_solidform=dict(
         label='Solid Form',
-        short_description='',
+        short_description='A custom SQLFORM with denser layout',
         long_description='',
     ),
     plugin_notemptymarker=dict(
-        label='Not Empty Marker',
-        short_description='',
+        label='Not-Empty Marker',
+        short_description='Automatically adding not-empty marker for forms',
         long_description='',
     ),
     plugin_hradio_widget=dict(
         label='Horizontal Radio Widget',
-        short_description='A radio widget arranging its radio buttons horizontally.',
+        short_description='A radio widget arranging its radio buttons horizontally',
         long_description=SPAN(
 A("A built-in radio widget in web2py", _href="http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.RadioWidget-class.html"), 
 """ arranges its radio buttons vertically, which occupies a relatively large area. 
@@ -22,7 +22,7 @@ Here we implemented a horizontal radio widget, and further made it clickable for
     ),
     plugin_multiselect_widget=dict(
         label='Multiple Select Widget',
-        short_description='A more user-friendly multiple options widget.',
+        short_description='A user-friendly multiple options widget',
         long_description=SPAN(
 A("A built-in multiple options widget in web2py", _href="http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.MultipleOptionsWidget-class.html"),
 """ is made by a single select input tag,
@@ -32,57 +32,57 @@ We built more user-friendly multiple select widget with two select input tags.
     ),
     plugin_suggest_widget=dict(
         label='Suggest Widget',
-        short_description='',
+        short_description='A refined autocomplete widget',
         long_description='',
     ),
     plugin_lazy_options_widget=dict(
         label='Lazy Options Widget',
-        short_description='',
+        short_description='A lazy loading options widget triggered by a js event',
         long_description='',
     ),
     plugin_anytime_widget=dict(
         label='Anytime Widget',
-        short_description='',
+        short_description='A date-time picker widget using anytime.js',
         long_description='',
     ),
     plugin_color_widget=dict(
         label='Color Widget',
-        short_description='',
+        short_description='A color picker widget using colorpicker.js',
         long_description='',
     ),
     plugin_elrte_widget=dict(
         label='elRTE WYSIWYG Widget',
-        short_description='',
+        short_description='A WYSIWYG editor widget using elRTE.js',
         long_description='',
     ),
     plugin_uploadify_widget=dict(
         label='Uploadify Widget',
-        short_description='',
+        short_description='A file upload widget using uploadify.js',
         long_description='',
     ),
     plugin_solidtable=dict(
         label='Solid Table',
-        short_description='A custom SQLTable with dense solid layout',
+        short_description='A custom SQLTable with denser layout',
         long_description='',
     ),
     plugin_paginator=dict(
         label='Pagenator',
-        short_description='',
+        short_description='A standard paginator',
         long_description='',
     ),
     plugin_tablescope=dict(
         label='Table Scope',
-        short_description='',
+        short_description='A standard table scope selector',
         long_description='',
     ),
     plugin_tablecheckbox=dict(
         label='Table Checkbox',
-        short_description='',
+        short_description='Attaching checkboxes to a table',
         long_description='',
     ),
     plugin_tablepermuter=dict(
         label='Table Permuter',
-        short_description='',
+        short_description='Making table rows permutable',
         long_description='',
     ),
     plugin_mptt=dict(
