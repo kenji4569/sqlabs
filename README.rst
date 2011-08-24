@@ -4,17 +4,18 @@ Sqlabs
 About
 -----------------------------------------
 
-Demos for developmental products by S-cubism.
-Currently demos for plugins based on Web2py framework are available.
-Other products are still under construction.
+The aim for this project is to showcases developmental products created by S-cubism.
+
+Currently you can try demos for plugins of Web2py framework, and view their sources.
+Other products to be published are still under construction.
 
 License
 -----------------------------------------
 
-The source code we have developed and published here is licensed under MIT license.
+The source code we have developed in the project is licensed under MIT license.
 
 Contribution
 -----------------------------------------
 
 We are welcome your feedback.
-For web2py-plugins, please send your pull requests to the project.
+For the web2py-plugins, please send your pull requests to the project.
