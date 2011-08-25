@@ -4,9 +4,10 @@ from plugin_color_widget import color_widget
 db = DAL('sqlite:memory:')
 db.define_table('product', Field('color', widget=color_widget))
 
-# --- inject the color widget ---
+################################ The core ######################################
+# Iinject the color widget
 db.product.color.widget = color_widget
-# -------------------------------
+################################################################################
 
 def index():
     form = SQLFORM(db.product)

@@ -4,9 +4,11 @@ db = DAL('sqlite:memory:')
 db.define_table('product', Field('colors', 'list:integer'))
 db.product.colors.requires = IS_EMPTY_OR(IS_IN_SET([(1, 'red'), (2, 'blue'), (3, 'green')],
                                                   multiple=True)) 
-# --- inject the multiple select widget ---
+
+################################ The core ######################################
+# Inject the multiple select widget
 db.product.colors.widget = multiselect_widget
-# -----------------------------------------
+################################################################################
 
 def index():
     form = SQLFORM(db.product)

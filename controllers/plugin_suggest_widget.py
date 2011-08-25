@@ -10,11 +10,17 @@ db.define_table('product',
     
 db.category.bulk_insert([{'name':'AAA'}, {'name':'AAC'}, {'name':'ABC'}, 
                          {'name':'BBB'}, {'name':'CCC'}])
-                         
-db.product.category_1.widget = suggest_widget(db.category.name, limitby=(0,10), min_length=1,
-    keyword='_autocomplete_category_1_%(fieldname)s')
-db.product.category_2.widget = suggest_widget(db.category.name, id_field=db.category.id, limitby=(0,10), min_length=1,
+                      
+################################ The core ######################################   
+# Inject the suggest widget
+db.product.category_1.widget = suggest_widget(db.category.name, limitby=(0,10), min_length=1)
+# Inject the another suggest widget
+# In this case, you have to specify the keyword argument to avoid conflict.
+# You can also pass the id_field argument as in web2py's autocomplete widget.
+db.product.category_2.widget = suggest_widget(db.category.name, 
+    id_field=db.category.id, limitby=(0,10), min_length=1,
     keyword='_autocomplete_category_2_%(fieldname)s') 
+################################################################################
      
 def index():
     form = SQLFORM(db.product)

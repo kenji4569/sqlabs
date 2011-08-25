@@ -12,8 +12,11 @@ db.define_table('product',
 )
 
 def index():
+################################ The core ######################################
+    # Modify the filed labels of db.product attaching not-empty markers
     mark_not_empty(db.product)
-    
+################################################################################
+
     form = SQLFORM(db.product, separator='')
     if form.accepts(request.vars, session):
         session.flash = 'submitted %s' % form.vars

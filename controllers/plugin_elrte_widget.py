@@ -4,9 +4,10 @@ from plugin_elrte_widget import ElrteWidget
 db = DAL('sqlite:memory:')
 db.define_table('product', Field('description', 'text'))
 
-# --- inject the elrte widget ---
+################################ The core ######################################
+# Inject the elrte widget
 db.product.description.widget = ElrteWidget(lang='jp')
-# ------------------------------------------
+################################################################################
 
 def index():
     form = SQLFORM(db.product)

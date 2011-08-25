@@ -3,11 +3,16 @@ from plugin_anytime_widget import anytime_widget, anydate_widget, anydatetime_wi
 
 db = DAL('sqlite:memory:')
 db.define_table('product', 
-    Field('event_time', 'time', widget=anytime_widget), 
-    Field('publish_date', 'date', widget=anydate_widget), 
-    Field('created_at', 'datetime', widget=anydatetime_widget),
+    Field('event_time', 'time'), Field('publish_date', 'date'), Field('created_at', 'datetime'),
 )
-    
+
+################################ The core ######################################
+# Inject the corresponding anytime widgets for time, date, and datetime fields
+db.product.event_time.widget = anytime_widget
+db.product.publish_date.widget = anydate_widget
+db.product.created_at.widget = anydatetime_widget
+################################################################################
+
 def index():
     form = SQLFORM(db.product)
     if form.accepts(request.vars, session):

@@ -4,9 +4,7 @@ from plugin_suggest_widget import suggest_widget
 
 db = DAL('sqlite:memory:') 
 db.define_table('category', Field('name'))
-db.define_table('color', 
-    Field('category', db.category), 
-    Field('name'))
+db.define_table('color', Field('category', db.category), Field('name'))
 db.define_table('product', 
     Field('category', db.category, comment='<- type "A" or "B"'),
     Field('color', db.color,  
@@ -22,8 +20,7 @@ for category in db(db.category.id>0).select():
     elif category.name == 'B':
         db.color.bulk_insert([{'category': _id, 'name':'green'}])
      
-
-db.product.category.widget=suggest_widget(db.category.name, id_field=db.category.id, 
+db.product.category.widget = suggest_widget(db.category.name, id_field=db.category.id, 
                                           limitby=(0,10), min_length=1)
                                           
 ################################ The core ######################################

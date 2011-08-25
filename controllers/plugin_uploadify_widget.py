@@ -11,12 +11,16 @@ table = db.define_table('plugin_uploadify_widget',
     Field('text', 'upload', autodelete=True),
     )
     
+################################ The core ######################################
+# Inject the uploadify widget
+# The "requires" needs custom validators.
 table.image.widget = uploadify_widget
 table.image.requires = [IS_UPLOADIFY_IMAGE(), IS_UPLOADIFY_LENGTH(10240)]
-
+# Inject the another uploadify widget with different requires
 table.text.widget = uploadify_widget
 table.text.requires = IS_EMPTY_OR([IS_UPLOADIFY_FILENAME(extension='txt'), 
                                           IS_UPLOADIFY_LENGTH(1024)])
+################################################################################
     
 if db(table.id>0).count() > 5:
     last = db(table.id>0).select(orderby=~table.id).first()

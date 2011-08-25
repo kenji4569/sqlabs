@@ -14,12 +14,14 @@ db.product.bulk_insert([{'status':1}, {'status':1}, {'status':1}, {'status':2},
 def index():
     dataset = db(db.product.id>0)
     
+################################ The core ######################################
     scope_1 = TableScope(dataset, db.product.status, renderstyle=True)
-    table_1 = SOLIDTABLE(scope_1.scoped_dataset.select(), renderstyle=True)
+    rows_1 = scope_1.scoped_dataset.select()
     
     scope_2 = TableScope(dataset, db.product.status, all=False, default=2, 
                          scope_var='scope_2', renderstyle=True)
-    table_2 = SOLIDTABLE(scope_2.scoped_dataset.select(), renderstyle=True)
+    rows_2 = scope_2.scoped_dataset.select()
+################################################################################
     
-    return dict(sample_1=dict(table=table_1, scope=scope_1),
-                sample_2=dict(table=table_2, scope=scope_2))
+    return dict(sample_1=dict(table=SOLIDTABLE(rows_1, renderstyle=True), scope=scope_1),
+                sample_2=dict(table=SOLIDTABLE(rows_2, renderstyle=True), scope=scope_2))

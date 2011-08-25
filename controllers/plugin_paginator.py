@@ -10,12 +10,15 @@ populate(db.product, 99)
 def index():
     query = db.product.id > 0
     
+################################ The core ######################################
     pagenate_selector = PagenateSelector()
     paginator = Paginator(pagenate=pagenate_selector.pagenate, renderstyle=True) 
     paginator.records = db(query).count()
     paginate_info = PaginateInfo(paginator.page, paginator.pagenate, paginator.records)
     
     rows = db(query).select(limitby=paginator.limitby()) 
+################################################################################
+
     table = SOLIDTABLE(rows, renderstyle=True)
     
     return dict(table=table, paginator=paginator, 
