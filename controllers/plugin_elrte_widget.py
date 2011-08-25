@@ -4,9 +4,11 @@ from plugin_elrte_widget import ElrteWidget
 db = DAL('sqlite:memory:')
 db.define_table('product', Field('description', 'text'))
 
+lang = T.accepted_language.split('-')[0].replace('ja', 'jp')
 ################################ The core ######################################
 # Inject the elrte widget
-db.product.description.widget = ElrteWidget(lang='jp')
+# You can specify the language for the editor.
+db.product.description.widget = ElrteWidget(lang=lang)
 ################################################################################
 
 def index():

@@ -11,11 +11,14 @@ def index():
     
 ################################ The core ######################################
     tablecheckbox = TableCheckbox()
+    
+    # Insert an extra element to select an action
     tablecheckbox.components.insert(0, 
         SELECT('update', 'delete', _name='action', _style='width:70px;',
                 requires=IS_IN_SET(['update', 'delete'])))
     
     if tablecheckbox.accepts(request.vars):
+        # Selected record ids will be submitted
         session.flash = 'submitted %s' % tablecheckbox.vars
         redirect(URL('index'))
         

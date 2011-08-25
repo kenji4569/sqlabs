@@ -2,13 +2,14 @@
 from plugin_uploadify_widget import (
     uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_FILENAME, IS_UPLOADIFY_LENGTH
 )
+from plugin_notemptymarker import mark_not_empty, unmark_not_empty
 import random
 
 table = db.define_table('plugin_uploadify_widget', 
     Field('name', default=''.join([random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890') 
                                         for i in range(10)])),
-    Field('image', 'upload', autodelete=True),
-    Field('text', 'upload', autodelete=True),
+    Field('image', 'upload', autodelete=True, comment='<- upload an image file(max file size=10k)'),
+    Field('text', 'upload', autodelete=True, comment='<- upload a txt file (max file size=1k)'),
     )
     
 ################################ The core ######################################
@@ -26,12 +27,15 @@ if db(table.id>0).count() > 5:
     last = db(table.id>0).select(orderby=~table.id).first()
     db(table.id<=last.id-5).delete()
 
+mark_not_empty(table)
+    
 def index():
     form = SQLFORM(table, upload=URL('download'))
     if form.accepts(request.vars, session):
         session.flash = 'submitted %s' % form.vars
         redirect(URL('index'))
     
+    unmark_not_empty(table)
     records = db(table.id>0).select(orderby=~table.id)
     records = SQLTABLE(records, headers="labels",
                        upload=URL('download'), linkto=lambda f, t, r: URL('edit', args=f))

@@ -2,13 +2,12 @@
 
 @cache(request.env.path_info, time_expire=10, cache_model=cache.ram)
 def index():
+    info_plugin_metas = get_info_plugin_metas()
     d = dict(
         sections=[
             ('web2py_plugins', info_products['web2py_plugins'],
-              [('Form Customize',
+              [('Form Widgets',
                     map(lambda k: (k, info_plugin_metas[k]), (
-                        'plugin_solidform', 
-                        'plugin_notemptymarker',
                         'plugin_hradio_widget', 
                         'plugin_multiselect_widget', 
                         'plugin_suggest_widget',
@@ -17,6 +16,11 @@ def index():
                         'plugin_color_widget',
                         'plugin_elrte_widget',
                         'plugin_uploadify_widget',
+                    ))),
+                ('Form Customize',
+                    map(lambda k: (k, info_plugin_metas[k]), (
+                        'plugin_solidform', 
+                        'plugin_notemptymarker',
                     ))),
                 ('Table Customize',
                      map(lambda k: (k, info_plugin_metas[k]), (

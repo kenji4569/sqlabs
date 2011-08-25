@@ -13,7 +13,9 @@ def index():
     
 ################################ The core ######################################
     tablepermuter = TablePermuter(table.attributes['_id'], renderstyle=True)
+    
     if tablepermuter.accepts(request.vars):
+        # Permuted row indices will be submitted
         permuted_record_ids = [records[idx].id for idx in tablepermuter.vars.tablepermuter]
         session.flash = 'submitted : permuted_record_ids=%s' % permuted_record_ids
         redirect(URL('index'))
