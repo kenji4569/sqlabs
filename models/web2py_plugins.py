@@ -199,6 +199,8 @@ This is a kind of form object and submits permuted row indices.
 
 if request.controller.startswith('plugin_'):
     import os
+    from gluon.admin import apath
+    from gluon.fileutils import listdir
     from gluon.storage import Storage
 
     def _to_code(lines):
@@ -226,6 +228,14 @@ if request.controller.startswith('plugin_'):
     # load the module (source) code
     module_code = _get_code('modules', '%s.py' % plugin_name)
     
+    # Get static files
+    def _get_statics():
+        statics = listdir(apath('sqlabs/static/%s/' % plugin_name, r=request), '[^\.#].*')
+        statics = [x.replace('\\','/') for x in statics]
+        statics.sort()
+        return statics
+    statics = cache.ram('statics:%s' % plugin_name, _get_statics, time_expire=10)
+    
     info_plugin = get_info_plugin_metas()[plugin_name]
     response.web2py_plugins = Storage(
         plugin_name=plugin_name,
@@ -234,5 +244,6 @@ if request.controller.startswith('plugin_'):
         plugin_long_description=info_plugin['long_description'],
         controller_code=controller_code,
         module_code=module_code,
+        statics=statics
     )
     response.view = 'web2py_plugins.html'

@@ -677,6 +677,31 @@ margin-right: 15px;
 float: right;
 }
 
+.folder {
+display: block;
+padding: 4px 0 4px 40px;
+background: url(../images/folder_sm.png) no-repeat;
+margin: 0.5em 0;
+}
+.folder a {
+font-family: Arial, Helvetica, 'Liberation Sans', Sans, sans-serif;
+text-decoration: none;
+}
+.file {
+font-weight: bold;
+}
+.sublist {
+margin-left: 0;
+border-left: 1px dotted #aaa;
+padding-left: 0.5em;
+margin-top: 0.5em;
+margin-bottom: 0.0em;
+}
+.component_contents li {
+list-style: none;
+}
+
+
 
 /*
  * Media queries for responsive design

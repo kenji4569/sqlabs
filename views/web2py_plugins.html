@@ -35,3 +35,47 @@
 </ul>
 
 <p></p>
+<hr/>
+
+<h4>Static files</h4>
+{{statics = response.web2py_plugins.statics}}
+<div id="static_inner" class="component_contents">
+  <div class="controls comptools">
+  </div>
+  {{if not statics:}}<p><strong>{{=T("There are no static files")}}</strong></p>{{pass}}
+  <ul>
+    {{
+    path=[]
+    for file in statics+['']:
+      items=file.split('/')
+      file_path=items[:-1]
+      filename=items[-1]
+      while path!=file_path:          
+          if len(file_path)>=len(path) and all([v==file_path[k] for k,v in enumerate(path)]):
+              path.append(file_path[len(path)])
+              thispath='static__'+'__'.join(path)
+    }}
+    <li class="folder">
+    <a href="javascript:collapse('{{=thispath}}');" class="file">{{=path[-1]}}/</a>
+    <ul id="{{=thispath}}" style="display: none;" class="sublist">{{
+          else:
+              path = path[:-1]
+      }}
+    </ul></li>
+    {{
+              pass
+          pass
+      if filename:
+      }}<li>
+      <span class="file">
+	<a href="{{=URL(c='static',f='%s/%s' % (response.web2py_plugins.plugin_name, file))}}">{{=filename}}</a>
+      </span>
+    </li>{{
+          pass
+      pass
+    }}
+    {{pass}}
+  </ul>
+</div>
+
+<p></p>
