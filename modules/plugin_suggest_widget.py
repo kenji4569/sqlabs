@@ -4,13 +4,36 @@ from gluon.sqlhtml import AutocompleteWidget
 
 class suggest_widget(AutocompleteWidget):
 
+    def __init__(self, field, id_field=None, db=None,
+                 orderby=None, limitby=(0,10),
+                 keyword='_autocomplete_%(fieldname)s',
+                 min_length=2):
+        request = current.request
+        self.request = request
+        self.keyword = keyword % dict(fieldname=field.name)
+        self.db = db or field._db
+        self.orderby = orderby
+        self.limitby = limitby
+        self.min_length = min_length
+        self.fields=[field]
+        if id_field:
+            self.is_reference = True
+            self.fields.append(id_field)
+        else:
+            self.is_reference = False
+        if hasattr(request,'application'):
+            self.url = Url(r=request, args=request.args)
+            self.callback()
+        else:
+            self.url = request
+
     def _create_item(self, field, row):
         return B(row[field.name])
         
     def callback(self):
-        if self.keyword in self.request.vars:
+        if self.keyword in current.request.vars:
             field = self.fields[0]
-            rows = self.db(field.like(self.request.vars[self.keyword]+'%')
+            rows = self.db(field.like(current.request.vars[self.keyword]+'%')
                           ).select(orderby=self.orderby,limitby=self.limitby,*self.fields)
             if rows:
                 if self.is_reference:

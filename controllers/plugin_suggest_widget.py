@@ -11,11 +11,9 @@ db.define_table('product',
 db.category.bulk_insert([{'name':'AAA'}, {'name':'AAC'}, {'name':'ABC'}, 
                          {'name':'BBB'}, {'name':'CCC'}])
                          
-db.product.category_1.widget = suggest_widget(
-    request, db.category.name, limitby=(0,10), min_length=1,
+db.product.category_1.widget = suggest_widget(db.category.name, limitby=(0,10), min_length=1,
     keyword='_autocomplete_category_1_%(fieldname)s')
-db.product.category_2.widget = suggest_widget(
-    request, db.category.name, id_field=db.category.id, limitby=(0,10), min_length=1,
+db.product.category_2.widget = suggest_widget(db.category.name, id_field=db.category.id, limitby=(0,10), min_length=1,
     keyword='_autocomplete_category_2_%(fieldname)s') 
      
 def index():

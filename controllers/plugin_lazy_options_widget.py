@@ -21,14 +21,21 @@ for category in db(db.category.id>0).select():
         db.color.bulk_insert([{'category': _id, 'name':'red'}, {'category': _id, 'name':'blue'}])
     elif category.name == 'B':
         db.color.bulk_insert([{'category': _id, 'name':'green'}])
-           
-db.product.category.widget=suggest_widget(request, db.category.name, 
-                            id_field=db.category.id, limitby=(0,10), min_length=1)
-db.product.color.widget = lazy_options_widget(request, db.product.color,
+     
+
+db.product.category.widget=suggest_widget(db.category.name, id_field=db.category.id, 
+                                          limitby=(0,10), min_length=1)
+                                          
+################################ The core ######################################
+# The lazy_options_widget receives js events
+# called "product_category__selected" and "product_category__unselected"
+# which will be triggered by the above suggest_widget.
+db.product.color.widget = lazy_options_widget(
                   'product_category__selected', 'product_category__unselected',
                   lambda category_id: (db.color.category==category_id), 
                   request.vars.category,
                   orderby=db.color.id)
+################################################################################
      
 def index():
     form = SQLFORM(db.product)

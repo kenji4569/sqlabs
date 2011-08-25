@@ -92,6 +92,62 @@ We built more user-friendly multiple select widget with two select input tags.
         long_description='',
         status='under-construction',
     ),
+    plugin_treeviewer=dict(
+        label='Tree Viewer',
+        show_image=False,
+        short_description='',
+        long_description='',
+        status='under-construction',
+    ),
+    plugin_revision_crud=dict(
+        label='Revision CRUD',
+        show_image=False,
+        short_description='',
+        long_description='',
+        status='under-construction',
+    ),
+    plugin_generic_menu=dict(
+        label='Generic Menu',
+        show_image=False,
+        short_description='',
+        long_description='',
+        status='under-construction',
+    ),
+    plugin_tagging=dict(
+        label='Tagging',
+        show_image=False,
+        short_description='',
+        long_description='',
+        status='under-construction',
+    ),
+    plugin_recommender=dict(
+        label='Recommender',
+        show_image=False,
+        short_description='',
+        long_description='',
+        status='under-construction',
+    ),
+    plugin_crontools=dict(
+        label='Cron Tools',
+        show_image=False,
+        short_description='',
+        long_description='',
+        status='under-construction',
+    ),
+    plugin_deploytools=dict(
+        label='Deploy Tools',
+        show_image=False,
+        short_description='',
+        long_description='',
+        status='under-construction',
+    ),
+    plugin_testtools=dict(
+        label='Test Tools',
+        show_image=False,
+        short_description='',
+        long_description='',
+        status='under-construction',
+    ),
 )
 
 if request.controller.startswith('plugin_'):
@@ -101,13 +157,16 @@ if request.controller.startswith('plugin_'):
     def _to_code(lines):
         return CODE(''.join(lines[1:]).strip(' ').strip('\n').replace('\r', ''))
         
-    def _get_code(path):
-        if not os.path.exists(path):
-            raise HTTP(404)
-        f = open(path, 'r')
-        lines = f.readlines()
-        f.close()
-        return _to_code(lines)
+    def _get_code(directory, filename):
+        path = os.path.join(request.folder, directory, filename)
+        def _get_code_core():
+            if not os.path.exists(path):
+                raise HTTP(404)
+            f = open(path, 'r')
+            lines = f.readlines()
+            f.close()
+            return _to_code(lines)
+        return cache.ram('code:%s/%s' % (directory, filename), _get_code_core, time_expire=10)
 
     plugin_name = request.controller
     
@@ -115,10 +174,10 @@ if request.controller.startswith('plugin_'):
     local_import(plugin_name, reload=True)
     
     # load the controll (usage) code
-    controller_code = _get_code(os.path.join(request.folder, 'controllers', '%s.py' % plugin_name))
+    controller_code = _get_code('controllers', '%s.py' % plugin_name)
     
     # load the module (source) code
-    module_code = _get_code(os.path.join(request.folder, 'modules', '%s.py' % plugin_name))
+    module_code = _get_code('modules', '%s.py' % plugin_name)
     
     info_plugin = info_plugin_metas[plugin_name]
     response.web2py_plugins = Storage(

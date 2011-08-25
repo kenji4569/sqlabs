@@ -3,38 +3,20 @@ from gluon import *
 
 class lazy_options_widget(SQLFORM.widgets.options):
 
-    def __init__(self, request, field, 
-                 on_key, off_key, where,
+    def __init__(self, on_key, off_key, where,
                  trigger=None, default='---',
                  keyword='_lazy_options_%(fieldname)s',
                  orderby=None):
-        self.request, self.on_key, self.off_key, self.where, self.trigger, self.default, self.orderby = (
-            request, on_key, off_key, where, trigger, default, orderby
+        self.on_key, self.off_key, self.where = (
+            on_key, off_key, where
         )
-        self.keyword = keyword % dict(fieldname=field.name)
-            
-        requires = field.requires
-        if not isinstance(requires, (list, tuple)):
-            requires = [requires]
-        if requires:
-            if hasattr(requires[0], 'options'):
-                self.require = requires[0]
-            else:
-                raise SyntaxError, 'widget cannot determine options of %s'  % field
-
-        self.el_id = '%s_%s' % (field._tablename, field.name)
-        self.disp_el_id = '%s__display' % self.el_id
-        self.hidden_el_id = '%s__hidden' % self.el_id
-        
-        if hasattr(request,'application'):
-            self.url = URL(r=request, args=request.args)
-            self.callback()
-        else:
-            self.url = request
+        self.trigger, self.default, self.keyword, self.orderby = (
+            trigger, default, keyword, orderby
+        )
         
     def callback(self):
-        if self.keyword in self.request.vars:
-            trigger = self.request.vars[self.keyword]
+        if self.keyword in current.request.vars:
+            trigger = current.request.vars[self.keyword]
             raise HTTP(200, self._get_select_el(trigger))
         
     def _get_select_el(self, trigger, value=None):
@@ -50,6 +32,29 @@ class lazy_options_widget(SQLFORM.widgets.options):
             return self.default
         
     def __call__(self, field, value, **attributes):
+        self.keyword = self.keyword % dict(fieldname=field.name)
+            
+        requires = field.requires
+        if not isinstance(requires, (list, tuple)):
+            requires = [requires]
+        if requires:
+            if hasattr(requires[0], 'options'):
+                self.require = requires[0]
+            else:
+                raise SyntaxError, 'widget cannot determine options of %s'  % field
+
+        self.el_id = '%s_%s' % (field._tablename, field.name)
+        self.disp_el_id = '%s__display' % self.el_id
+        self.hidden_el_id = '%s__hidden' % self.el_id
+        
+        request = current.request
+        if hasattr(request,'application'):
+            self.url = URL(r=request, args=request.args)
+            self.callback()
+        else:
+            self.url = request
+        
+    
         script_el = SCRIPT("""
 jQuery(document).ready(function() {
     jQuery("body").bind("%(on_key)s", function(e, val) {

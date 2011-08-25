@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
+@cache(request.env.path_info, time_expire=10, cache_model=cache.ram)
 def index():
-    return dict(
+    d = dict(
         sections=[
             ('web2py_plugins', info_products['web2py_plugins'],
               [('Form Customize',
@@ -25,10 +26,22 @@ def index():
                         'plugin_tablecheckbox', 
                         'plugin_tablepermuter', 
                     ))),
-                ('Cateogry Tools',
+                ('Content Enhancement',
                      map(lambda k: (k, info_plugin_metas[k]), (
                         'plugin_mptt', 
+                        'plugin_treeviewer',
+                        'plugin_revision_crud',
+                        'plugin_generic_menu',
+                        'plugin_tagging',
+                        'plugin_recommender',
+                    ))),
+                ('Others Tools',
+                     map(lambda k: (k, info_plugin_metas[k]), (
+                        'plugin_crontools', 
+                        'plugin_deploytools',
+                        'plugin_testtools',
                     ))),
             ]),
         ],
     )
+    return response.render(d)

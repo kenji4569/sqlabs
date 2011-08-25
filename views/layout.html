@@ -19,7 +19,6 @@
   $(document).ready(function() {
     $('.google_plusone').socialbutton('google_plusone', {size: 'medium'});
     $('.facebook_like').socialbutton('facebook_like', {button: 'button_count'});
-    $('.facebook_share').socialbutton('facebook_share');
     $('.twitter').socialbutton('twitter', {button: 'horizontal'});
   })})(jQuery);
   //--></script>
@@ -43,11 +42,10 @@
     </div>
     <div id='main'>
       {{if SHOW_SOCIAL:}}
-      <div class="socialbutton">
-        <div class="google_plusone" style="width:45px;"></div>
-        <div class="twitter" style="width:120px;"></div>
+      <div class="socialbutton" style="height:32px;">
         <div class="facebook_like" style="width:120px;"></div>
-        <div class="facebook_share" style="width:55px;"></div>
+        <div class="twitter" style="width:120px;"></div>
+        <div class="google_plusone" style="width:60px;"></div>
       </div>
       {{pass}}
       {{include}}
