@@ -36,6 +36,10 @@
 <!--[if IE 8 ]>    <body class="ie8"> <![endif]-->
 <!--[if IE 9 ]>    <body class="ie9"> <![endif]-->
 <!--[if (gt IE 9)|!(IE)]><!--> <body> <!--<![endif]-->
+  {{if FACEBOOK_SDK:}}
+    {{=XML(FACEBOOK_SDK)}}
+  {{pass}}
+  
   <div class="flash">{{=response.flash or ''}}</div>
   
   <div id="container">
@@ -49,12 +53,12 @@
     <div id='main'>
       {{if SHOW_SOCIAL:}}
       <div class="socialbutton" style="height:32px;">
-        <div class="facebook_like" style="width:120px;"></div>
-        <div class="twitter" style="width:120px;"></div>
-        <div class="google_plusone" style="width:60px;"></div>
         {{if T.accepted_language == 'ja':}}
-          <div class="hatena" style="width:50px;"></div>
+          <div class="hatena" style="width:60px;height:32px;"></div>
         {{pass}}
+        <div class="google_plusone" style="width:90px;height:32px;"></div>
+        <div class="facebook_like" style="width:120px;height:32px;"></div>
+        <div class="twitter" style="width:130px;height:32px;"></div>
       </div>
       {{pass}}
       {{include}}

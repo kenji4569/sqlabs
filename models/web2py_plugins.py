@@ -220,7 +220,7 @@ if request.controller.startswith('plugin_'):
     plugin_name = request.controller
     
     # reload the plugin module
-    local_import(plugin_name, reload=True)
+    local_import(plugin_name, reload=MODULE_RELOAD)
     
     # load the controll (usage) code
     controller_code = _get_code('controllers', '%s.py' % plugin_name)

@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
 
+MODULE_RELOAD = True
 SHOW_SOCIAL = False
 GOOGLE_ANALYTICS = ""
+FACEBOOK_SDK = ""
+FACEBOOK_COMMENTS = ""

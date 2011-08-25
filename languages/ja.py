@@ -3,6 +3,7 @@
 '%Y-%m-%d': '%Y-%m-%d',
 '%Y-%m-%d %H:%M:%S': '%Y-%m-%d %H:%M:%S',
 '%s is a powerful opensource web framework based on python programming language.\nWe have developed many products using this framework, and then love to share useful code parts derived from the development.\nThe code parts are organized in %s, and easily available.': '%s は強力なオープンソースのウェブ・フレームワークです。プログラミング言語はPythonを使用しています。これまで、このフレームワークを用いて多くの製品を開発してきました。そこで、この開発から派生した有用なコード部品を共有したいと思います。コード部品は %s に基づいて整理されいて、簡単に利用可能です。',
+'All': 'All',
 'Are you sure you want to delete this object?': 'このオブジェクトを削除してもよろしいですか?',
 'Back to the list': '一覧に戻る',
 'Cloudmap is a visual search engine for any contents with user evaluations.': 'Cloudmap is a visual search engine for any contents with user evaluations.',

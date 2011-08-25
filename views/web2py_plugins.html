@@ -28,6 +28,12 @@
 <p></p>
 <hr/>
 
+
+{{if FACEBOOK_COMMENTS:}}
+{{=XML(FACEBOOK_COMMENTS % URL('index'))}}
+{{pass}}
+<hr/>
+
 <h4>{{=T("Source code")}}</h4>
 <ul>
   <li>

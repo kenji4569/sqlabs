@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from gluon import *
 from gluon.sqlhtml import AutocompleteWidget
+from html import URL as Url
 
 class suggest_widget(AutocompleteWidget):
 
