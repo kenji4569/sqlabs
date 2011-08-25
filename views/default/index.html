@@ -10,9 +10,9 @@
   <h3>{{=info['label']}}</h3>
   <p>{{=info['description']}}</p>
   {{if info.get('status') == 'under-construction':}}
-  <div class="under-construction">under construction</div>
+  <div class="under-construction">{{=T('under construction')}}</div>
   {{else:}}
-  <div class="try-demo"><a href="{{=URL(key, 'index')}}">Try Demo</a></div>
+  <div class="try-demo"><a href="{{=URL(key, 'index')}}">{{=T('See Demo')}}</a></div>
   {{pass}}
 </dt>
 <dd>

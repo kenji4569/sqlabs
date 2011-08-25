@@ -20,6 +20,9 @@
     $('.google_plusone').socialbutton('google_plusone', {size: 'medium'});
     $('.facebook_like').socialbutton('facebook_like', {button: 'button_count'});
     $('.twitter').socialbutton('twitter', {button: 'horizontal'});
+    {{if T.accepted_language == 'ja':}}
+      $('.hatena').socialbutton('hatena');
+    {{pass}}
   })})(jQuery);
   //--></script>
   {{pass}}
@@ -36,7 +39,7 @@
     <div id='header'>
       {{block header}}
       <h1><a href="/" title="SQLabs"><img src="{{=URL('static', 'images/logo.jpg')}}" alt="SQLabs"/></a></h1>
-      <h3>Demos for developmental products by <a href="http://s-cubism.jp/">S-cubism.</a></h3>
+      <h3>{{=XML(T("Introducing new products or services being developed by %s") % A('S-cubism', _href='http://s-cubism.jp/').xml())}}</h3>
       <hr/>
       {{end}}
     </div>
@@ -46,6 +49,9 @@
         <div class="facebook_like" style="width:120px;"></div>
         <div class="twitter" style="width:120px;"></div>
         <div class="google_plusone" style="width:60px;"></div>
+        {{if T.accepted_language == 'ja':}}
+          <div class="hatena" style="width:50px;"></div>
+        {{pass}}
       </div>
       {{pass}}
       {{include}}

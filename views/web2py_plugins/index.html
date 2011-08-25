@@ -25,7 +25,7 @@
         </a>
       {{pass}}
       {{if detail.get('status') == 'under-construction':}}
-        <div class="under-construction">under construction</div>
+        <div class="under-construction">{{=T('under construction')}}</div>
       {{else:}}
         <p>{{=detail['short_description']}}</p>
       {{pass}}

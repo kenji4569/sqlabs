@@ -1,21 +1,23 @@
 {{extend 'layout.html'}}
 <a class="github-ribbon" href="https://github.com/sqlabs/sqlabs"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/71eeaab9d563c2b3c590319b398dd35683265e85/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub"></a>
   
-<p><a href="{{=URL('web2py_plugins', 'index')}}#{{=response.web2py_plugins.plugin_name}}">← Back to the list page</a></p>
+<p class="backto"><a href="{{=URL('web2py_plugins', 'index')}}#{{=response.web2py_plugins.plugin_name}}">
+  ← {{=T('Back to the list')}}
+</a></p>
 
 <h3>{{=response.web2py_plugins.plugin_label}}</h3>
 <p>{{=response.web2py_plugins.plugin_long_description or response.web2py_plugins.plugin_short_description}}</p>
 
 <hr/>
 
-<h4>Demo</h4>
+<h4>{{=T("Demo")}}</h4>
 
 {{=BEAUTIFY(response._vars)}}
 
 <p></p>
 <hr/>
 
-<h4>Usage code</h4>
+<h4>{{=T("Usage")}}</h4>
 <ul>
   <li>
     <span>controllers/{{=response.web2py_plugins.plugin_name}}.py</span>
@@ -26,7 +28,7 @@
 <p></p>
 <hr/>
 
-<h4>Source code</h4>
+<h4>{{=T("Source code")}}</h4>
 <ul>
   <li>
     <span>modules/{{=response.web2py_plugins.plugin_name}}.py</span>
@@ -37,12 +39,12 @@
 <p></p>
 <hr/>
 
-<h4>Static files</h4>
+<h4>{{=T("Static files")}}</h4>
 {{statics = response.web2py_plugins.statics}}
 <div id="static_inner" class="component_contents">
   <div class="controls comptools">
   </div>
-  {{if not statics:}}<p><strong>{{=T("There are no static files")}}</strong></p>{{pass}}
+  {{if not statics:}}<p class="nofiles">{{=T("There are no static files")}}</p>{{pass}}
   <ul>
     {{
     path=[]

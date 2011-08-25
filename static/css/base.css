@@ -539,7 +539,6 @@ font-family: "Georgia", "Times New Roman", Helvetica, Arial, sans-serif;
 #header h3 {
 float:left;padding-left:10px;padding-top:40px;
 color: #999;
-font-style: italic;
 font-weight: normal;
 }
 
@@ -567,6 +566,7 @@ background: url('../images/warning.png') no-repeat;
 padding-left: 35px;
 color: #888;
 font-size: 18px;
+padding-top: 2px;
 }
 
 .try-demo a{
@@ -699,6 +699,16 @@ margin-bottom: 0.0em;
 }
 .component_contents li {
 list-style: none;
+}
+.nofiles{
+color: #666;
+}
+
+p.backto {
+margin-top: -25px;
+}
+.backto a {
+text-decoration: none;
 }
 
 
