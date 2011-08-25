@@ -26,6 +26,9 @@
   })})(jQuery);
   //--></script>
   {{pass}}
+  {{if GOOGLE_ANALYTICS:}}
+    {{=XML(GOOGLE_ANALYTICS)}}
+  {{pass}}
 </head>
    
 <!--[if lt IE 7 ]> <body class="ie6"> <![endif]-->

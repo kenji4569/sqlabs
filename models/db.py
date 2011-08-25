@@ -7,16 +7,15 @@ response.generic_patterns = ['*'] if request.is_local else []
 info_products = dict(
     web2py_plugins= dict(
         label='web2py-plugins',
-        description=SPAN(A('Web2py', _href='http://www.web2py.com'), """ 
-is a powerful opensource web framework based on python programming language.
-We have developed many products using this framework, and love to share useful code parts from the development.
-The code parts are organized in """,
-A("a web2py's plugin system", _href='http://web2py.com/book/default/chapter/13#Plugins'),
-"""."""),
+        description=XML(T("""%s is a powerful opensource web framework based on python programming language.
+We have developed many products using this framework, and then love to share useful code parts derived from the development.
+The code parts are organized in %s, and easily available.""") % (
+        A('Web2py', _href='http://www.web2py.com').xml(), 
+        A(T("a web2py's plugin system"), _href='http://web2py.com/book/default/chapter/13#Plugins').xml())),
     ),
     cloudmap=dict(
         label='cloudmap',
-        description=SPAN("""Cloudmap is a visual search engine for any contents with user evaluations."""),
+        description=XML(T("""Cloudmap is a visual search engine for any contents with user evaluations.""")),
         status='under-construction',
     ),
     nanahoshi_cms=dict(
