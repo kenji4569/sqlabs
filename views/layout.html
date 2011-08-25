@@ -4,6 +4,15 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <title>{{=response.title or request.application}}</title>
+  
+  <meta property="og:title" content="{{=response.title or request.application}}" />
+  <meta property="og:type" content="product" />
+  <meta property="og:url" content="{{=ROOT_URL}}/" />
+  <meta property="og:image" content="{{=ROOT_URL}}{{=response.image or URL('static', 'images/logo.jpg')}}" />
+  <meta property="og:site_name" content="sqlabs" />
+  <meta property="fb:admins" content="{{=FACEBOOK_OG_ADMIN}}" />
+  
+  
   <meta name="google-site-verification" content="" />
   <meta name="application-name" content="{{=request.application}}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">

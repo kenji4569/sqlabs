@@ -28,9 +28,8 @@
 <p></p>
 <hr/>
 
-
-{{if FACEBOOK_COMMENTS:}}
-{{=XML(FACEBOOK_COMMENTS % URL('index'))}}
+{{if FACEBOOK_SDK:}}
+<div id="fb-root"></div><script src="http://connect.facebook.net/en_US/all.js#xfbml=1"></script><fb:comments href="{{=ROOT_URL}}{{=URL('index')}}" num_posts="2" width="700"></fb:comments>
 {{pass}}
 <hr/>
 

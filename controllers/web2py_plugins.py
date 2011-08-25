@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+    
+response.image = URL('static', 'images/products/web2py_plugins.jpg')
 
 @cache(request.env.path_info, time_expire=10, cache_model=cache.ram)
 def index():

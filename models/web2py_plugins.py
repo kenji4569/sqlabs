@@ -244,6 +244,7 @@ if request.controller.startswith('plugin_'):
         plugin_long_description=info_plugin['long_description'],
         controller_code=controller_code,
         module_code=module_code,
-        statics=statics
+        statics=statics,
     )
+    response.image = URL('static', 'images/%s.png' % plugin_name)
     response.view = 'web2py_plugins.html'
