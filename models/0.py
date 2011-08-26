@@ -6,6 +6,7 @@ GOOGLE_ANALYTICS = ""
 FACEBOOK_SDK = ""
 FACEBOOK_COMMENTS = ""
 FACEBOOK_OG_ADMIN = ""
+FACEBOOK_LANG = 'en_US'
 ROOT_URL = ""
 
 MAIL_SERVER = 'logging' # or 'localhost:25' or 'smtp.gmail.com:587'  
