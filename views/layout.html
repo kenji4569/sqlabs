@@ -59,8 +59,11 @@
       {{end}}
     </div>
     <div id='main'>
-      {{if SHOW_SOCIAL:}}
+      {{if request.controller == 'default' and request.function == 'contact':}}
+      <br/>
+      {{elif SHOW_SOCIAL:}}
       <div class="socialbutton" style="height:32px;">
+        <a class="contact" href="{{=URL('default', 'contact', vars={'redirect': request.env.path_info})}}">{{=T('Contact us')}}</a>
         {{if T.accepted_language == 'ja':}}
           <div class="hatena" style="width:60px;height:32px;"></div>
         {{pass}}

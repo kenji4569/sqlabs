@@ -1,0 +1,18 @@
+{{extend 'layout.html'}}
+<p class="backto"><a href="{{=request.vars.redirect or URL('default', 'index')}}">
+  ← {{=T('Back')}}
+</a></p>
+
+<h3>{{=T('Contact')}}</h3>
+<hr/>
+
+{{if T.accepted_language == 'ja':}}
+下記、お客様の個人情報につきましては、お客様のお問合せへのご回答にのみ使用させていただきます。<br/>
+なお、詳しくは<a href="http://s-cubism.jp/policy.html">プライバシーポリシー</a>をご確認ください。<br/>
+{{else:}}
+Please, feel free to contact us anytime.
+{{pass}}
+<br/>
+
+{{=form}}
+<br/>

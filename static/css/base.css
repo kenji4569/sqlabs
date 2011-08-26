@@ -722,10 +722,20 @@ font-weight: bold;
 }
 
 .language {
-  float: right;
+float: right;
 }
 .language select {
-  width: auto;
+width: auto;
+}
+
+a.contact {
+padding-left: 30px;
+font-size: 16px;
+overflow:hidden;
+background: url('../images/mail.png') no-repeat;
+text-decoration: none;
+float: right;
+font-weight: bold;
 }
 
 

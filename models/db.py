@@ -20,12 +20,12 @@ The code parts are organized in %s, and easily available.""") % (
     ),
     nanahoshi_cms=dict(
         label='nanahoshi-cms',
-        description='CMS based on web2py',
+        description=XML(T("""CMS based on Web2py.""")),
         status='under-construction',
     ),
     nanahoshi_db=dict(
         label='nanahoshi-db',
-        description='NoSQL package based on a distributed KVS',
+        description=XML(T("""NoSQL package based on Cassandra.""")),
         status='under-construction',
     ),
 )
