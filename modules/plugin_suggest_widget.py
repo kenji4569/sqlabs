@@ -9,8 +9,6 @@ class suggest_widget(AutocompleteWidget):
                  orderby=None, limitby=(0,10),
                  keyword='_autocomplete_%(fieldname)s',
                  min_length=2):
-        request = current.request
-        self.request = request
         self.keyword = keyword % dict(fieldname=field.name)
         self.db = db or field._db
         self.orderby = orderby
@@ -22,6 +20,8 @@ class suggest_widget(AutocompleteWidget):
             self.fields.append(id_field)
         else:
             self.is_reference = False
+            
+        request = current.request
         if hasattr(request,'application'):
             self.url = Url(r=request, args=request.args)
             self.callback()

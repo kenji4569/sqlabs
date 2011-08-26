@@ -2,135 +2,126 @@
 
 def get_info_plugin_metas(): 
     return dict(
-    plugin_solidform=dict(
-        label='Solid Form',
-        short_description=T('A custom SQLFORM with denser layout'),
-        long_description=SPAN("""
-A custom """, A('SQLFORM', _href='http://web2py.com/book/default/chapter/07#SQLFORM'),
-""" with denser layout using multi-line columns. 
-You can specify structured fields corresponding to the layout.
-Other functionarities are same as SQLFORM, including facotry and readonly forms.
-""")),
-    plugin_notemptymarker=dict(
-        label='Not-Empty Marker',
-        short_description=T('Adding not-empty marker to a field label'),
-        long_description="""
-This plugin automatically attaches not-empty markers to forms 
-for each "not-empty" field, based on field validators.
-Note that the current implemntation changes field labels.
-        """,
-    ),
     plugin_hradio_widget=dict(
         label='Horizontal Radio Widget',
-        short_description=T('A radio widget arranging its radio buttons horizontally'),
-        long_description=SPAN(
-A('A built-in radio widget in web2py', _href='http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.RadioWidget-class.html'), 
-""" arranges its radio buttons vertically, which occupies a relatively large area. 
+        short_description=T('A radio widget arranging its buttons horizontally'),
+        long_description=XML(T("""
+%s arranges its radio buttons vertically, which occupies a relatively large area. 
 Here we implemented a horizontal radio widget, and further made it clickable for it's labels. 
-"""),
+""") % A(T('A built-in radio widget'), _href='http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.RadioWidget-class.html').xml())
     ),
     plugin_multiselect_widget=dict(
         label='Multiple Select Widget',
         short_description=T('A user-friendly multiple options widget'),
-        long_description=SPAN(
-A('A built-in multiple options widget in web2py', _href='http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.MultipleOptionsWidget-class.html'),
-""" is made by a single select input tag,
+        long_description=XML(T("""
+%s is made by a single select tag,
 which would be difficult to handle when it had many options.
-We built more user-friendly multiple select widget with two select input tags.
-"""),
+We built more user-friendly multiple select widget with two select tags.  
+""") % A(T('A built-in multiple options widget'), _href='http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.MultipleOptionsWidget-class.html').xml())   
     ),
     plugin_suggest_widget=dict(
         label='Suggest Widget',
         short_description=T('A refined autocomplete widget'),
-        long_description=SPAN(""" 
-The suggest widget is an alternative for """,
-A("a built-in autocomplete widget in web2py", _href='http://web2py.com/book/default/chapter/07#Widgets'), """.
-It uses """, A('a suggest.js', _href='http://www.vulgarisoip.com/2007/08/06/jquerysuggest-11/'), 
-""" with some modifications to handle non-us charcters. 
-Further, it visualize a selecting status at each typing step."""),
+        long_description=XML(T("""
+The suggest widget is an alternative for %s.
+It uses %s with some modifications to handle non-us charcters. 
+Further, it visualize a selecting status at each typing step.
+""") % (A(T("a built-in autocomplete widget"), _href='http://web2py.com/book/default/chapter/07#Widgets').xml(),
+        A('suggest.js', _href='http://www.vulgarisoip.com/2007/08/06/jquerysuggest-11/').xml()))
     ),
     plugin_lazy_options_widget=dict(
         label='Lazy Options Widget',
         short_description=T('A lazy loading options widget triggered by a js event'),
-        long_description=SPAN("""
-The lazy options widget receives js events and sends ajax requests 
-to fill its select options as in """, 
-A('the normal options widget', _href='http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.OptionsWidget-class.html'), """.
-"""),),
+        long_description=XML(T("""
+The lazy options widget receives js events and sends ajax requests to populate its select options as in %s.
+""") % A(T('a built-in options widget'), _href='http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.OptionsWidget-class.html').xml())
+    ),
     plugin_anytime_widget=dict(
         label='Anytime Widget',
         short_description=T('A date-time picker widget using anytime.js'),
-        long_description=SPAN("""
-This plugin provides picker widgets for time, date and datetime fileds, 
-using """, A('anytime.js', _href='http://www.ama3.com/anytime/'), """.
-"""),),
+        long_description=XML(T("""
+This plugin provides time, date and datetime picker widgets using %s.
+""") % A('anytime.js', _href='http://www.ama3.com/anytime/').xml())
+    ),
     plugin_color_widget=dict(
         label='Color Widget',
         short_description=T('A color picker widget using colorpicker.js'),
-        long_description=SPAN("""
-This plugin provides a color picker widget, 
-using """, A('colorpicker.js', _href='http://www.eyecon.ro/colorpicker/'), """.
-Picked color is displayed in forms.
-"""),),
+        long_description=XML(T("""
+This plugin provides a color picker widget, using %s. Picked color is displayed in forms. 
+""") % A('colorpicker.js', _href='http://www.eyecon.ro/colorpicker/').xml())
+    ),
     plugin_elrte_widget=dict(
         label='elRTE WYSIWYG Widget',
         short_description=T('A WYSIWYG editor widget using elRTE.js'),
-        long_description=SPAN("""
-A WYSIWYG editor widget
-using """, A('elRTE.js', _href='http://elrte.org/'), """.
-You can specify the language for the editor via a contructor argument.
-"""),),
+        long_description=XML(T("""
+A WYSIWYG editor widget using %s. You can specify your language by a contructor argument.
+""") % A('elRTE.js', _href='http://elrte.org/').xml())
+    ),
     plugin_uploadify_widget=dict(
         label='Uploadify Widget',
         short_description=T('A file upload widget using uploadify.js'),
-        long_description=SPAN("""
-A file upload widget 
-using """, A('uploadify.js', _href='http://www.uploadify.com/'), """.
-The uploadify turns a file input to a flash-based file uploader,
+        long_description=XML(T("""
+A file upload widget using %s.
+The uploadify turns a file input tag into a flash-based file uploader,
 which displays a progress bar and enables ajax upload. 
-"""),),
+""") % A('uploadify.js', _href='http://www.uploadify.com/').xml())
+    ),
+    plugin_solidform=dict(
+        label='Solid Form',
+        short_description=T('A custom SQLFORM for denser layout'),
+        long_description=XML(T("""
+A custom %s for denser layout using multi-line columns. 
+You can specify structured fields corresponding to the layout.
+Other functionarities are same as SQLFORM, including facotry and readonly forms.
+""") % A('SQLFORM', _href='http://web2py.com/book/default/chapter/07#SQLFORM').xml())
+    ),
+    plugin_notemptymarker=dict(
+        label='Not-Empty Marker',
+        short_description=T('Add not-empty markers to field labels'),
+        long_description=XML(T("""
+This plugin automatically attaches not-empty markers to labels of "not-empty" fields of a form, 
+based on field validators.
+"""))
+    ),
     plugin_solidtable=dict(
         label='Solid Table',
-        short_description=T('A custom SQLTABLE with denser layout'),
-        long_description=SPAN("""
-A custom """, A('SQLTABLE', _href='http://web2py.com/book/default/chapter/06#Serializing-Rows-in-Views'),
-""" with denser layout using multi-line rows. 
+        short_description=T('A custom SQLTABLE for denser layout'),
+        long_description=XML(T("""
+A custom %s for denser layout using multi-line rows. 
 You can specify structured fields corresponding to the layout.
-The interface of the class is backward-compatible to the SQLTABLE,
+The interface of the class keeps backward-compatible to the SQLTABLE,
 and enables more flexible customization.
-"""),),
+""") % A('SQLTABLE', _href='http://web2py.com/book/default/chapter/06#Serializing-Rows-in-Views').xml())
+    ),
     plugin_paginator=dict(
         label='Pagenator',
         short_description=T('A standard paginator'),
-        long_description=SPAN("""
-A standard paginator used with SQLTABLE. The basic design is inspired by """, 
-A('this discussion', _href='http://groups.google.com/group/web2py/browse_frm/thread/d1ec3ded48839071#'), 
-""".
-"""),
+        long_description=XML(T("""
+A standard paginator which can be used with SQLTABLE. The basic design is inspired by %s.
+""") % A(T('this discussion'), _href='http://groups.google.com/group/web2py/browse_frm/thread/d1ec3ded48839071#').xml())
     ),
     plugin_tablescope=dict(
         label='Table Scope',
-        short_description=T('A standard table scope selector'),
-        long_description="""
-The table scope selects db records based on values of a field such as status,
-and counts records for each value of the field.""",
+        short_description=T('A scope selector for table records'),
+        long_description=T("""
+This plugin provides buttons to select table records by a value of a field,
+showing the record count for each value of the field.
+"""),
     ),
     plugin_tablecheckbox=dict(
         label='Table Checkbox',
-        short_description=T('Attaching checkboxes to a table'),
-        long_description=""" 
-The table checkbox provides an extra column with checkboxes for records in a table.
-This is a kind of form object and submits selected record ids.
-""",
+        short_description=T('A table column composed of checkboxes'),
+        long_description=T("""
+The plugin provides a form object which is an extra table column composed of checkboxes to select multiple records,
+and submits selected record ids.
+"""),
     ),
     plugin_tablepermuter=dict(
         label='Table Permuter',
-        short_description=T('Making table rows permutable'),
-        long_description=SPAN(""" 
-The table permuter makes table rows permutable using """,
-A('jquery.tablednd.js', _href='http://www.isocra.com/2008/02/table-drag-and-drop-jquery-plugin/'), """.
-This is a kind of form object and submits permuted row indices.
-"""),
+        short_description=T('Make table rows permutable'),
+        long_description=XML(T("""
+This plugin a form object which makes table rows permutable using %s, and submits permuted row indices.
+""") % A('jquery.tablednd.js', _href='http://www.isocra.com/2008/02/table-drag-and-drop-jquery-plugin/').xml())
     ),
     plugin_mptt=dict(
         label='Modified Preorder Tree Traversal',

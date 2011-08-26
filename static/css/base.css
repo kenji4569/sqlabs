@@ -703,7 +703,7 @@ color: #666;
 }
 
 p.backto {
-margin-top: -25px;
+margin-top: -30px;
 }
 .backto a {
 text-decoration: none;
@@ -730,7 +730,7 @@ width: auto;
 
 a.contact {
 padding-left: 30px;
-font-size: 16px;
+font-size: 14px;
 overflow:hidden;
 background: url('../images/mail.png') no-repeat;
 text-decoration: none;
