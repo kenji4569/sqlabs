@@ -61,15 +61,17 @@
     <div id='main'>
       {{if request.controller == 'default' and request.function == 'contact':}}
       <br/>
-      {{elif SHOW_SOCIAL:}}
+      {{else:}}
       <div class="socialbutton" style="height:32px;">
-        <a class="contact" href="{{=URL('default', 'contact', vars={'redirect': request.env.path_info})}}">{{=T('Contact us')}}</a>
-        {{if T.accepted_language == 'ja':}}
-          <div class="hatena" style="width:60px;height:32px;"></div>
+        {{if SHOW_SOCIAL:}}
+          <a class="contact" href="{{=URL('default', 'contact', vars={'redirect': request.env.path_info})}}">{{=T('Contact us')}}</a>
+          {{if T.accepted_language == 'ja':}}
+            <div class="hatena" style="width:60px;height:32px;"></div>
+          {{pass}}
+          <div class="google_plusone" style="width:90px;height:32px;"></div>
+          <div class="facebook_like" style="width:120px;height:32px;"></div>
+          <div class="twitter" style="width:130px;height:32px;"></div>
         {{pass}}
-        <div class="google_plusone" style="width:90px;height:32px;"></div>
-        <div class="facebook_like" style="width:120px;height:32px;"></div>
-        <div class="twitter" style="width:130px;height:32px;"></div>
       </div>
       {{pass}}
       {{include}}

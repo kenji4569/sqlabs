@@ -41,7 +41,7 @@ opts.panels.default_4 = ['forecolor', 'hilitecolor', 'justifyleft', 'justifyrigh
                   'justifycenter', 'justifyfull', 'outdent', 'indent'];
 opts.panels.default_5 = ['link', 'unlink', 'image', 'insertorderedlist', 'insertunorderedlist',
                   'horizontalrule', 'blockquote', 'div', 'stopfloat', 'css', 'nbsp'];
-opts.toolbars.default = ['default_1', 'default_2', 'default_3', 'default_4', 'default_5', 'tables'];
+opts.toolbars = {'default': ['default_1', 'default_2', 'default_3', 'default_4', 'default_5', 'tables']};
 $('#%(id)s').elrte({cssClass: 'el-rte', lang: '%(lang)s', toolbar: '%(toolbar)s'});
 });})(jQuery);""" % dict(id=_id, lang=self.lang or '', toolbar=self.toolbar))
 

@@ -24,7 +24,7 @@ def index():
     if form_marked.accepts(request.vars, session):
         session.flash = 'submitted %s' % form_marked.vars
         redirect(URL('index'))
-    if form_unmarked.accepts(request.vars, session):
+    if form_unmarked.accepts(request.vars, session, formname='unmarked'):
         session.flash = 'submitted %s' % form_unmarked.vars
         redirect(URL('index'))
     style = STYLE("""input[type="text"], select, textarea {width:100%; max-height: 50px;} 

@@ -50,8 +50,6 @@ table.solidtable { width: 100%%; margin-bottom: 10px; border: 0; border-spacing:
     table.solidtable th a.orderby-desc {
       background-position: 0 -26px; }
     table.solidtable th a.orderby-asc, table.solidtable th a.orderby-desc {
-      filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#e2e2e2, endColorstr=#d2d4d6);
-      -ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#e2e2e2, endColorstr=#d2d4d6);
       border-bottom: 1px solid #dfe1e2; }
   table.solidtable tr.even td { background: #f4f5f5; }
   table.solidtable td {

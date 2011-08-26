@@ -35,6 +35,9 @@ def index():
     if form.accepts(request.vars, session):
         session.flash = 'submitted %s' % form.vars
         redirect(URL('index'))
+    if form_factory.accepts(request.vars, session, formname='factory'):
+        session.flash = 'submitted %s' % form_factory.vars
+        redirect(URL('index'))
      
     style = STYLE("""input[type="text"], textarea {width:100%; max-height: 50px;} 
                      .w2p_fw {padding-right: 20px; max-width:200px;}
