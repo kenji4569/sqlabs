@@ -6,7 +6,7 @@ GOOGLE_ANALYTICS = ""
 FACEBOOK_SDK = ""
 FACEBOOK_COMMENTS = ""
 FACEBOOK_OG_ADMIN = ""
-SITE_URL = ""
+ROOT_URL = ""
 
 MAIL_SERVER = 'logging' # or 'localhost:25' or 'smtp.gmail.com:587'  
 MAIL_SENDER = 'you@gmail.com' 
