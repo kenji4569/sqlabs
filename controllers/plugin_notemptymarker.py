@@ -8,7 +8,7 @@ db.define_table('product',
     Field('publish_start_date', 'date', requires=IS_DATE()),
     Field('publish_end_date', 'date', requires=IS_EMPTY_OR(IS_DATE())),
     Field('code', 'integer', requires=[IS_NOT_EMPTY(), IS_INT_IN_RANGE(1000)]),
-    Field('description', 'text'),
+    Field('description', 'text', requires=IS_LENGTH(100, 1)),
 )
 
 def index():

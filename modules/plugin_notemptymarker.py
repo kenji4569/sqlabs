@@ -2,6 +2,9 @@
 from gluon import *
 
 def _is_not_empty(requires):
+    if isinstance(requires, IS_LENGTH):
+        return bool(requires.minsize)
+        
     return isinstance(requires, 
                 (IS_ALPHANUMERIC, IS_DATE, IS_DATE_IN_RANGE, IS_DATETIME, 
                  IS_DATETIME_IN_RANGE, IS_DECIMAL_IN_RANGE,
