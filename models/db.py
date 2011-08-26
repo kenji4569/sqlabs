@@ -7,8 +7,8 @@ response.generic_patterns = ['*'] if request.is_local else []
 info_products = dict(
     web2py_plugins= dict(
         label='web2py-plugins',
-        description=XML(T("""%s is a powerful opensource web framework based on python programming language.
-Here we love to share useful code parts derived from the development using this framework.
+        description=XML(T("""A collection of plugins of %s, a opensource Python web framework.
+Here we love to share useful code parts produced by our development with the framework.
 The code parts are organized in %s, and easily available.""") % (
         A('Web2py', _href='http://www.web2py.com').xml(), 
         A(T("a web2py's plugin system"), _href='http://web2py.com/book/default/chapter/13#Plugins').xml())),

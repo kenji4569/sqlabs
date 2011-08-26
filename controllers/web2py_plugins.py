@@ -2,7 +2,7 @@
     
 response.image = URL('static', 'images/products/web2py_plugins.jpg')
 
-@cache(request.env.path_info, time_expire=10, cache_model=cache.ram)
+@cache('%s-%s' % (request.env.path_info, T.accepted_language), time_expire=10, cache_model=cache.ram)
 def index():
     info_plugin_metas = get_info_plugin_metas()
     d = dict(
@@ -51,3 +51,23 @@ def index():
         ],
     )
     return response.render(d)
+    
+def pack_plugin():
+    from gluon.admin import plugin_pack
+    app = request.application
+    filename = ''
+    if len(request.args) == 1:
+        fname = 'web2py.plugin.%s.w2p' % request.args[0]
+        filename = plugin_pack(app, request.args[0], request)
+    if filename:
+        response.headers['Content-Type'] = 'application/w2p'
+        disposition = 'attachment; filename=%s' % fname
+        response.headers['Content-Disposition'] = disposition
+        f = open(filename, 'rb')
+        try:
+            return f.read()
+        finally:
+            f.close()
+    else:
+        session.flash = T('internal error')
+        redirect(URL('index'))

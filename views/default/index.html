@@ -4,8 +4,10 @@
 
 <div id="products">
 <dl>
-{{for key, info in products:}}
-
+{{for i, (key, info) in enumerate(products):}}
+{{if i>0:}}
+<hr/>
+{{pass}}
 <dt>
   <h3>{{=info['label']}}</h3>
   <p>{{=info['description']}}</p>
@@ -18,7 +20,6 @@
 <dd>
   <img src="{{=URL('static', 'images/products/%s.jpg' % key)}}" />
 </dd>
-<hr/>
 {{pass}}
 </dl>
 </div>

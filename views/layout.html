@@ -12,7 +12,6 @@
   <meta property="og:site_name" content="sqlabs" />
   <meta property="fb:admins" content="{{=FACEBOOK_OG_ADMIN}}" />
   
-  
   <meta name="google-site-verification" content="" />
   <meta name="application-name" content="{{=request.application}}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -74,7 +73,19 @@
     </div>
     <div id='footer'>
       <hr/>
-      <p>@ 2011 <a href="http://s-cubism.jp/">S-cubism</a>. Powered by <a href="http://www.web2py.com/">Web2py Framework</a>.</p>
+      <p>
+        @ 2011 <a href="http://s-cubism.jp/">S-cubism</a>. Powered by <a href="http://www.web2py.com/">Web2py Framework</a>.
+        {{if hasattr(T,'get_possible_languages'):}}
+          <span class="language">
+          {{=T('language')}}
+          <select name="language" onchange="var date = new Date();cookieDate=date.setTime(date.getTime()+(100*24*60*60*1000));document.cookie='language='+this.options[this.selectedIndex].value+'; expires='+cookieDate+'; path=/';window.location.reload()">
+          {{for language in T.get_possible_languages():}}
+            <option {{=T.accepted_language==language and 'selected' or ''}} >{{=language}}</option>
+          {{pass}}
+          </select>
+          </span>
+        {{pass}}
+      </p>
     </div>
   </div>
   <!--[if lt IE 7 ]>

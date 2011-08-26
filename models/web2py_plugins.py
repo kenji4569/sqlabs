@@ -13,7 +13,7 @@ Other functionarities are same as SQLFORM, including facotry and readonly forms.
 """)),
     plugin_notemptymarker=dict(
         label='Not-Empty Marker',
-        short_description='Automatically adding not-empty marker for forms',
+        short_description='Adding not-empty marker to a field label',
         long_description="""
 This plugin automatically attaches not-empty markers to forms 
 for each "not-empty" field, based on field validators.

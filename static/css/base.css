@@ -360,8 +360,7 @@ h6 {font-size: 0.8em;}
 #wrapper {margin: 0 auto;} 
 #wrapper {background-color: #fff; padding: 5px;} 
 #statusbar { margin: 5px 0px 20px 0px;}
-#footer {    
-    margin-top: 30px;    
+#footer {     
     padding: 5px;    
 }
 #statusbar, #footer {    
@@ -619,7 +618,6 @@ margin: 0px;
 }
 
 .examples {
-overflow: auto;
 list-style: none;
 margin-bottom: 1.2em;
 padding: 0;
@@ -711,6 +709,24 @@ margin-top: -25px;
 text-decoration: none;
 }
 
+.download {
+padding-left: 35px;
+padding-top: 2px;
+margin-bottom: 15px;
+background: url('../images/download.png') no-repeat;
+}
+.download a{
+text-decoration:none;
+font-size: 16px;
+font-weight: bold;
+}
+
+.language {
+  float: right;
+}
+.language select {
+  width: auto;
+}
 
 
 /*

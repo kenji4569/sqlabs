@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-@cache(request.env.path_info, time_expire=10, cache_model=cache.ram)
+@cache('%s-%s' % (request.env.path_info, T.accepted_language), time_expire=10, cache_model=cache.ram)
 def index():
     d = dict(
         products=[
