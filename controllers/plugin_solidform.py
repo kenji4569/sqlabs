@@ -12,17 +12,24 @@ db.define_table('product',
 populate(db.product, 1)
 
 def index():
+    request_fields = request.vars.fields or 'default'
+
 ################################ The core ######################################
     # Specify structured fields for the multi-line form layout.
     # A "None" indicates an empty line over which the precedent line spans
-    fields = [['name', 'category'], 
-              ['code', 'keywords'], 
-              ['publish_start_date', None], 
-              ['publish_end_date', None], 
-              'url',
-              ['description', 'price'], 
-              [None, 'point'], 
-              'memo']
+    if request_fields == 'default':
+        fields = [['name', 'category'], 
+                  ['code', 'keywords'], 
+                  ['publish_start_date', None], 
+                  ['publish_end_date', None], 
+                  'url',
+                  ['description', 'price'], 
+                  [None, 'point'], 
+                  'memo']
+    elif request_fields == 'fields_2':
+        fields = [['name', 'category'], 
+                  None,
+                  ['code', 'keywords']]
     # Standard usage
     form = SOLIDFORM(db.product, fields=fields)
     # Factory usage
@@ -42,4 +49,7 @@ def index():
     style = STYLE("""input[type="text"], textarea {width:100%; max-height: 50px;} 
                      .w2p_fw {padding-right: 20px; max-width:200px;}
                      .w2p_fl {background: #eee;}""")
-    return dict(form=DIV(style, form), form_factory=form_factory, form_readonly=form_readonly)
+    return dict(form=DIV(style, form), form__factory=form_factory, form__readonly=form_readonly,
+                form_args=DIV(A('fields=default', _href=URL(vars={'fields':'default'})), ' ',
+                              A('fields=fields_2', _href=URL(vars={'fields':'fields_2'})), ' ',
+                               ))

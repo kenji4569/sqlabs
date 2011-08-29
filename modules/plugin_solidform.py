@@ -7,17 +7,21 @@ class SOLIDFORM(SQLFORM):
     def __init__(self, *args, **kwds):
         self.structured_fields = kwds.get('fields')
         
+        _precedent_row_len = 1
         if self.structured_fields:
             flat_fields = []
             max_row_lines = 1
-            for inner in self.structured_fields:
+            for i, inner in enumerate(self.structured_fields):
                 if type(inner) in (list, tuple):
                     for field in inner:
                         if field:
                             flat_fields.append(field)
                     max_row_lines = max(len(inner), max_row_lines)
+                    _precedent_row_len = len(inner)
                 elif inner:
                     flat_fields.append(inner)
+                else:
+                    self.structured_fields[i] = [inner for i in range(_precedent_row_len)]
             
             row_spans = dict((e, 1) for e in flat_fields)
             col_spans = dict((e, 1) for e in flat_fields)
