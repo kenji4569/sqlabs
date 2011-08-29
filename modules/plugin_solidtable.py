@@ -74,13 +74,16 @@ class SOLIDTABLE(SQLTABLE):
             
         if headers=='fieldname:capitalize':
             headers = {}
-            for c in columns:
-                if c:
+            def _set_label(c):
+                if type(c) == str:
                     headers[c] = {'label': ' '.join([w.capitalize() 
                                     for w in c.split('.')[-1].split('_')])}
+                elif c:
+                    headers[c] = {'label': _get_field_label(c)}
+                    
         elif headers=='labels':
             headers = {}
-            for c in columns:
+            def _set_label(c):
                 if c:
                     headers[c] = {'label': _get_field_label(c)}
         else:
@@ -90,12 +93,12 @@ class SOLIDTABLE(SQLTABLE):
                         headers[c] = {'label': _get_field_label(c)}
                     elif 'label' not in headers[c]:
                         headers[c]['label'] = _get_field_label(c)
-            for inner in columns or self.sqlrows.colnames:
-                if type(inner) in (list, tuple):
-                    for col in inner:
-                        _set_label(col)
-                else:
-                    _set_label(inner) 
+        for inner in columns or self.sqlrows.colnames:
+            if type(inner) in (list, tuple):
+                for col in inner:
+                    _set_label(col)
+            else:
+                _set_label(inner) 
                     
         return headers
         

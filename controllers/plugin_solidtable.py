@@ -18,6 +18,8 @@ def index():
     pretax_price = db.product.price + tax
     pretax_price.represent = db.product.price.represent
     
+    request_headers = request.vars.headers or 'headers'
+    
 ################################ The core ######################################
     # A custom orderby selector for the solidtable.
     orderby_selector = OrderbySelector([db.product.id, db.product.name, 
@@ -26,7 +28,7 @@ def index():
     rows = db().select(db.product.ALL, tax, pretax_price,
                        orderby=orderby_selector.orderby())
                        
-    # The headers is a dictionary of dictionaries for update default values.
+    # The headers variable is a dictionary of dictionaries for updating default values.
     # Custom fields such as "tax" can be passed to the dictionary keys.
     headers = {'product.name':{'selected': True},
                'product.description':{'label':'Details', 'class':'italic', 
@@ -54,12 +56,16 @@ def index():
             ]
 
     table = SOLIDTABLE(rows,  
-            columns=columns, headers=headers, extracolumns=extracolumns,
+            columns=columns, extracolumns=extracolumns,
+            headers=headers if request_headers == 'headers' else request_headers, 
             orderby=orderby_selector,
             renderstyle=True, linkto=URL('show'), selectid=lambda r: r.product.id==7)
 ################################################################################
             
-    return dict(table=DIV(table, STYLE('.italic {font-style: italic;}')))
+    return dict(table=DIV(table, STYLE('.italic {font-style: italic;}')),
+                table_args=DIV(A('headers=headers', _href=URL(vars={'headers':'headers'})), ' ',
+                               A('headers=labels', _href=URL(vars={'headers':'labels'})), ' ',
+                               A('headers=fieldname:capitalize', _href=URL(vars={'headers':'fieldname:capitalize'}))))
 
 
 
