@@ -1,13 +1,20 @@
 # -*- coding: utf-8 -*-
-from plugin_multiselect_widget import multiselect_widget
+from plugin_multiselect_widget import hmultiselect_widget, vmultiselect_widget
 db = DAL('sqlite:memory:')
-db.define_table('product', Field('colors', 'list:integer'))
-db.product.colors.requires = IS_EMPTY_OR(IS_IN_SET([(1, 'red'), (2, 'blue'), (3, 'green')],
-                                                  multiple=True)) 
+db.define_table('product', 
+    Field('colors', 'list:integer',
+          requires = IS_EMPTY_OR(IS_IN_SET([(1, 'red'), (2, 'blue'), (3, 'green')],
+                                                  multiple=True))),
+    Field('shapes',
+          requires = IS_EMPTY_OR(IS_IN_SET(['circle', 'square', 'triangle'],
+                                                  multiple=True))),
+)
 
 ################################ The core ######################################
-# Inject the multiple select widget
-db.product.colors.widget = multiselect_widget
+# Inject the horizontal multiple select widget 
+db.product.colors.widget = hmultiselect_widget
+# Inject the vertical multiple select widget 
+db.product.shapes.widget = vmultiselect_widget
 ################################################################################
 
 def index():

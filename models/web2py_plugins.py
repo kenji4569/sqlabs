@@ -16,7 +16,8 @@ Here we implemented a horizontal radio widget, and further made it clickable for
         long_description=XML(T("""
 %s is made by a single select tag,
 which would be difficult to handle when it had many options.
-We built more user-friendly multiple select widget with two select tags.  
+We built more user-friendly multiple select widget with two select tags.
+You can choice between horizontal or vertical layout.
 """) % A(T('A built-in multiple options widget'), _href='http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.MultipleOptionsWidget-class.html').xml())   
     ),
     plugin_suggest_widget=dict(
