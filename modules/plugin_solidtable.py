@@ -317,14 +317,17 @@ class OrderbySelector(object):
             current_orderby = self.orderbys and self.orderbys[0] or None
         self.current_orderby = current_orderby
         
-        if current_orderby.op == current_orderby.db._adapter.INVERT:
-            self.current_field =current_orderby.first
-            self.next_orderby = self.current_field
-            self.current_class = 'orderby-desc'
+        if current_orderby:
+            if current_orderby.op == current_orderby.db._adapter.INVERT:
+                self.current_field =current_orderby.first
+                self.next_orderby = self.current_field
+                self.current_class = 'orderby-desc'
+            else:
+                self.current_field = current_orderby
+                self.next_orderby = ~self.current_field
+                self.current_class = 'orderby-asc'
         else:
             self.current_field = current_orderby
-            self.next_orderby = ~self.current_field
-            self.current_class = 'orderby-asc'
         
     def _get_key(self, orderby):
         import hashlib
