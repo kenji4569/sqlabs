@@ -18,7 +18,8 @@ def index():
     pretax_price = db.product.price + tax
     pretax_price.represent = db.product.price.represent
     
-    request_headers = request.vars.headers or 'headers'
+    request_headers = request.vars.headers or 'default'
+    request_columns = request.vars.columns or 'default'
     
 ################################ The core ######################################
     # A custom orderby selector for the solidtable.
@@ -27,15 +28,19 @@ def index():
     
     rows = db().select(db.product.ALL, tax, pretax_price,
                        orderby=orderby_selector.orderby())
-                       
-    # The headers variable is a dictionary of dictionaries for updating default values.
-    # Custom fields such as "tax" can be passed to the dictionary keys.
-    headers = {'product.name':{'selected': True},
-               'product.description':{'label':'Details', 'class':'italic', 
-                                      'width':'200px', 'truncate':38,},
-               tax:{'label': 'Tax'},
-               pretax_price:{'label': 'Pretax Price'}
-               }
+             
+    if request_headers == 'default':
+        # The "headers" is a dictionary of dictionaries for updating default values.
+        # Custom fields such as "tax" can be passed to the dictionary keys.
+        headers = {'product.name':{'selected': True},
+                   'product.description':{'label':'Details', 'class':'italic', 
+                                          'width':'200px', 'truncate':38,},
+                   tax:{'label': 'Tax'},
+                   pretax_price:{'label': 'Pretax Price'}
+                   }
+    else:
+        # The "headers" can be 'labels' or 'fieldname:capitalize'
+        headers = request_headers
                
     extracolumns = [{'label':A('Edit', _href='#'),
                      'content':lambda row, rc: A('Edit',_href='edit/%s'%row.product.id)},
@@ -46,26 +51,37 @@ def index():
     # The structure of "columns" defines the multi-line table layout
     # A "None" indicates an empty line over which the precedent line spans
     # Custom fields such as "tax" and extracolumns can be passed to the list of lists.
-    columns=[[db.product.name, extracolumns[0]], 
-             'product.id', 
-             ['product.status', 'product.publish_start_date'], 
-             [None, 'product.publish_end_date'], 
-             [pretax_price, 'product.description'], 
-             [tax, None],
-             ['product.price', None],
-            ]
+    if request_columns == 'default':
+        columns=[[db.product.name, extracolumns[0]], 
+                 'product.id', 
+                 ['product.status', 'product.publish_start_date'], 
+                 [None, 'product.publish_end_date'], 
+                 [pretax_price, 'product.description'], 
+                 [tax, None],
+                 ['product.price', None],
+                ]
+    elif request_columns == 'columns_2':
+        columns=[[db.product.name, extracolumns[0]], 
+                 None,
+                 [pretax_price, 'product.description'], 
+                 None,
+                 [tax, None],
+                ]
 
     table = SOLIDTABLE(rows,  
             columns=columns, extracolumns=extracolumns,
-            headers=headers if request_headers == 'headers' else request_headers, 
+            headers=headers, 
             orderby=orderby_selector,
             renderstyle=True, linkto=URL('show'), selectid=lambda r: r.product.id==7)
 ################################################################################
             
     return dict(table=DIV(table, STYLE('.italic {font-style: italic;}')),
-                table_args=DIV(A('headers=headers', _href=URL(vars={'headers':'headers'})), ' ',
+                table_args=DIV(A('headers=default', _href=URL(vars={'headers':'default'})), ' ',
                                A('headers=labels', _href=URL(vars={'headers':'labels'})), ' ',
-                               A('headers=fieldname:capitalize', _href=URL(vars={'headers':'fieldname:capitalize'}))))
+                               A('headers=fieldname:capitalize', _href=URL(vars={'headers':'fieldname:capitalize'})), ' ',
+                               A('columns=default', _href=URL(vars={'columns':'default'})), ' ',
+                               A('columns=columns_2', _href=URL(vars={'columns':'columns_2'})), ' ',
+                               ))
 
 
 

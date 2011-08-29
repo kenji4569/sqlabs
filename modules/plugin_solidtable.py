@@ -28,19 +28,27 @@ class SOLIDTABLE(SQLTABLE):
         max_col_lines = 1 # max row span in table header or each table "row"
         flat_columns = []
         _converted_columns = []
+        _precedent_col_len = 1
         for inner in columns or self.sqlrows.colnames:
             if type(inner) in (list, tuple):
                 _inner = []
                 for col in inner:
                     _col = _convert_column_key(col)
-                    flat_columns.append(str(_col))
+                    if _col:
+                        flat_columns.append(str(_col))
                     _inner.append(_col)
                 _converted_columns.append(_inner)
                 max_col_lines = max(len(inner), max_col_lines)
+                _precedent_col_len = len(inner)
             else:
                 _col = _convert_column_key(_convert_column_key(inner))
-                flat_columns.append(str(_col))
-                _converted_columns.append(_col)
+                if _col:
+                    flat_columns.append(str(_col))
+                    _converted_columns.append(_col)
+                    _precedent_col_len = 1
+                else:
+                    _converted_columns.append([_col for i in range(_precedent_col_len)])
+                    
         columns = _converted_columns
         
         show_header = headers is not None
@@ -133,13 +141,7 @@ class SOLIDTABLE(SQLTABLE):
                 if col:
                     headers[col]['_rowspan'] = max_col_lines
                     col_lines[0].append(col)
-                else:
-                    for _col_no in reversed(range(col_no)):
-                        try:
-                            headers[columns[_col_no]]['_colspan'] += 1
-                            break
-                        except KeyError:
-                            pass  
+                    
         return col_lines
              
     def _create_thead(self, headers, col_lines):
@@ -200,6 +202,9 @@ class SOLIDTABLE(SQLTABLE):
         return TBODY(*tbody_inner)
         
     def _create_td(self, header, colname, record, rc):
+        attrcol = dict()
+        self._apply_colclass(attrcol, header)
+             
         if 'content' in header:
             r = header['content'](record, rc)
         else:
@@ -209,7 +214,7 @@ class SOLIDTABLE(SQLTABLE):
                     r = record._extra[_colname]
                     if hasattr(colname, 'represent'):
                         r = colname.represent(r)
-                    return TD(r)
+                    return TD(r, **attrcol)
                 else:
                     raise KeyError("Column %s not found (SQLTABLE)" % _colname)
             
@@ -277,10 +282,6 @@ class SOLIDTABLE(SQLTABLE):
                     r = self._truncate_str(r, header.get('truncate') or self.truncate)
                 else:
                     r = self._truncate_str(r, self.truncate)
-                    
-        attrcol = dict()
-        if isinstance(header, dict):
-            self._apply_colclass(attrcol, header)
                     
         return TD(r,**attrcol)
         
