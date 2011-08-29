@@ -4,7 +4,7 @@ response.image = URL('static', 'images/products/web2py_plugins.jpg')
 
 @cache('%s-%s' % (request.env.path_info, T.accepted_language), time_expire=10, cache_model=cache.ram)
 def index():
-    response.meta.description = T("""A collection of plugins of %s, a opensource Python web framework.
+    response.meta.description = T("""A collection of plugins of %s, an opensource Python web framework.
 Here we love to share useful code parts produced by our development with the framework.
 The code parts are organized in %s, and easily available.""") % ('Web2py', T("a web2py's plugin system"))
     info_plugin_metas = get_info_plugin_metas()

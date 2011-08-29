@@ -20,7 +20,6 @@
 'A WYSIWYG editor widget using elRTE.js': 'elRTE.jsを用いたA WYSIWYGエディターウィジェット',
 'A built-in multiple options widget': '組み込みの複数オプションウィジェット',
 'A built-in radio widget': '組み込みのラジオウィジェット',
-'A collection of plugins of %s, a opensource Python web framework.\nHere we love to share useful code parts produced by our development with the framework.\nThe code parts are organized in %s, and easily available.': 'A collection of plugins of %s, a opensource Python web framework.\nHere we love to share useful code parts produced by our development with the framework.\nThe code parts are organized in %s, and easily available.',
 'A collection of plugins of %s, an opensource Python web framework.\nHere we love to share useful code parts produced by our development with the framework.\nThe code parts are organized in %s, and easily available.': 'オープンソースのPythonウェブ・フレームワーク %s のプラグイン集です。ここでは、このフレームワークによる開発で生み出された有用なコード部品を共有したいと思います。コード部品は %s に基づいて整理されいて、簡単に利用可能です。',
 'A color picker widget using colorpicker.js': 'colorpicker.jsを用いた色選択ウィジェット',
 'A custom SQLFORM for denser layout': 'より密なレイアウトのためのカスタムSQLFORM',

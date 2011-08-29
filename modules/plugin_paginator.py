@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# This plugins is licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+# Authors: Kenji Hosoda <hosoda@s-cubism.jp>
 # original by http://groups.google.com/group/web2py/browse_frm/thread/d1ec3ded48839071#
 from gluon import *
 

@@ -194,10 +194,10 @@ if request.controller.startswith('plugin_'):
     from gluon.fileutils import listdir
     from gluon.storage import Storage
 
-    def _to_code(lines):
-        return CODE(''.join(lines[1:]).strip(' ').strip('\n').replace('\r', ''))
+    def _to_code(lines, linestart):
+        return CODE(''.join(lines[linestart:]).strip(' ').strip('\n').replace('\r', ''))
         
-    def _get_code(directory, filename):
+    def _get_code(directory, filename, linestart):
         path = os.path.join(request.folder, directory, filename)
         def _get_code_core():
             if not os.path.exists(path):
@@ -205,7 +205,7 @@ if request.controller.startswith('plugin_'):
             f = open(path, 'r')
             lines = f.readlines()
             f.close()
-            return _to_code(lines)
+            return _to_code(lines, linestart)
         return cache.ram('code:%s/%s' % (directory, filename), _get_code_core, time_expire=10)
 
     plugin_name = request.controller
@@ -214,10 +214,10 @@ if request.controller.startswith('plugin_'):
     local_import(plugin_name, reload=MODULE_RELOAD)
     
     # load the controll (usage) code
-    controller_code = _get_code('controllers', '%s.py' % plugin_name)
+    controller_code = _get_code('controllers', '%s.py' % plugin_name, linestart=1)
     
     # load the module (source) code
-    module_code = _get_code('modules', '%s.py' % plugin_name)
+    module_code = _get_code('modules', '%s.py' % plugin_name, linestart=3)
     
     # Get static files
     def _get_statics():
