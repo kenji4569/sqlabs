@@ -138,9 +138,8 @@ class SOLIDTABLE(SQLTABLE):
                         col_lines[line_no].append(None)
             else:
                 col = inner
-                if col:
-                    headers[col]['_rowspan'] = max_col_lines
-                    col_lines[0].append(col)
+                headers[col]['_rowspan'] = max_col_lines
+                col_lines[0].append(col)
                     
         return col_lines
              

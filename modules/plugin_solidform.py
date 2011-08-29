@@ -49,16 +49,8 @@ class SOLIDFORM(SQLFORM):
                             row_lines[line_no].append(None)
                 else:
                     field = inner
-                    if field:
-                        col_spans[field] = max_row_lines
-                        row_lines[0].append(field)
-                    else:
-                        for _row_no in reversed(range(row_no)):
-                            try:
-                                row_spans[self.structured_fields[_row_no]] += 1
-                                break
-                            except KeyError:
-                                pass
+                    col_spans[field] = max_row_lines
+                    row_lines[0].append(field)
             
             self.row_spans = row_spans
             self.col_spans = col_spans
