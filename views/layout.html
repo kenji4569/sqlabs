@@ -26,11 +26,11 @@
   <script type="text/javascript"><!--
   (function($){
   $(document).ready(function() {
-    $('.google_plusone').socialbutton('google_plusone', {size: 'medium'});
-    $('.facebook_like').socialbutton('facebook_like', {button: 'button_count', url:'{{=ROOT_URL}}{{=URL("index")}}'});
-    $('.twitter').socialbutton('twitter', {button: 'horizontal'});
+    $('.google_plusone').socialbutton('google_plusone', {size: 'medium', href: '{{=ROOT_URL}}{{=URL("index")}}'});
+    $('.facebook_like').socialbutton('facebook_like', {button: 'button_count', url: '{{=ROOT_URL}}{{=URL("index")}}'});
+    $('.twitter').socialbutton('twitter', {button: 'horizontal', url: '{{=ROOT_URL}}{{=URL("index")}}'});
     {{if T.accepted_language == 'ja':}}
-      $('.hatena').socialbutton('hatena');
+      $('.hatena').socialbutton('hatena', {url: '{{=ROOT_URL}}{{=URL("index")}}'});
     {{pass}}
   })})(jQuery);
   //--></script>
