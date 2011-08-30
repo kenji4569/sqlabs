@@ -21,7 +21,7 @@ class ElrteWidget(object):
             if _url not in current.response.files:
                 current.response.files.append(_url)
                 
-        if current.request.vars.description == '&nbsp;':
+        if current.request.vars.description in ('<p>&nbsp;</p>', '&nbsp;'):
             current.request.vars.description = ''
         if current.request.vars.description:
             current.request.vars.description = current.request.vars.description.strip(' ')
@@ -44,7 +44,14 @@ opts.panels.default_4 = ['forecolor', 'hilitecolor', 'justifyleft', 'justifyrigh
 opts.panels.default_5 = ['link', 'unlink', 'image', 'insertorderedlist', 'insertunorderedlist',
                   'horizontalrule', 'blockquote', 'div', 'stopfloat', 'css', 'nbsp'];
 opts.toolbars = {'default': ['default_1', 'default_2', 'default_3', 'default_4', 'default_5', 'tables']};
-$('#%(id)s').elrte({cssClass: 'el-rte', lang: '%(lang)s', toolbar: '%(toolbar)s'});
+
+if(typeof String.prototype.trim !== 'function') {
+  String.prototype.trim = function() {
+    return this.replace(/^\s+|\s+$/g, ''); 
+  }
+}
+
+$('#%(id)s').elrte({cssClass: 'el-rte', lang: '%(lang)s', toolbar: '%(toolbar)s'}); 
 });})(jQuery);""" % dict(id=_id, lang=self.lang or '', toolbar=self.toolbar))
 
         return SPAN(script, TEXTAREA((value!=None and str(value)) or '', **attr), **attributes)
