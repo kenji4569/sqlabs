@@ -5,8 +5,8 @@ from gluon import *
 
 class ElrteWidget(object):
     
-    def __init__(self, lang=None, toolbar='default'):
-        self.lang, self.toolbar = lang, toolbar
+    def __init__(self, lang=None, toolbar='default', fm_open="''"):
+        self.lang, self.toolbar, self.fm_open = lang, toolbar, fm_open
 
     def __call__(self, field, value, **attributes):   
         _urls = [URL('static','plugin_elrte_widget/css/smoothness/jquery-ui-1.8.13.custom.css'),
@@ -51,11 +51,11 @@ if(typeof String.prototype.trim !== 'function') {
   }
 }
 var el = $('#%(id)s');
-if(!jQuery.support.opacity){
+if(!$.support.opacity){
    if (el.text() == '') { el.text('<p>&nbsp;</p>')} 
 }
-el.elrte({cssClass: 'el-rte', lang: '%(lang)s', toolbar: '%(toolbar)s'}); 
-});})(jQuery);""" % dict(id=_id, lang=self.lang or '', toolbar=self.toolbar))
+el.elrte({cssClass: 'el-rte', lang: '%(lang)s', toolbar: '%(toolbar)s', fmOpen : %(fm_open)s }); 
+});})(jQuery);""" % dict(id=_id, lang=self.lang or '', toolbar=self.toolbar, fm_open=self.fm_open))
         
         return SPAN(script, TEXTAREA((value!=None and str(value)) or '', **attr), **attributes)
        
