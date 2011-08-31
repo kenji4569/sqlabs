@@ -50,8 +50,11 @@ if(typeof String.prototype.trim !== 'function') {
     return this.replace(/^\s+|\s+$/g, ''); 
   }
 }
-
-$('#%(id)s').elrte({cssClass: 'el-rte', lang: '%(lang)s', toolbar: '%(toolbar)s'}); 
+var el = $('#%(id)s');
+if(!jQuery.support.opacity){
+   if (el.text() == '') { el.text('<p>&nbsp;</p>')} 
+}
+el.elrte({cssClass: 'el-rte', lang: '%(lang)s', toolbar: '%(toolbar)s'}); 
 });})(jQuery);""" % dict(id=_id, lang=self.lang or '', toolbar=self.toolbar))
         
         return SPAN(script, TEXTAREA((value!=None and str(value)) or '', **attr), **attributes)
