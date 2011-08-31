@@ -53,6 +53,6 @@ if(typeof String.prototype.trim !== 'function') {
 
 $('#%(id)s').elrte({cssClass: 'el-rte', lang: '%(lang)s', toolbar: '%(toolbar)s'}); 
 });})(jQuery);""" % dict(id=_id, lang=self.lang or '', toolbar=self.toolbar))
-
+        
         return SPAN(script, TEXTAREA((value!=None and str(value)) or '', **attr), **attributes)
        
