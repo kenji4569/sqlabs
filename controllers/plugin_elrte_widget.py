@@ -67,7 +67,7 @@ def upload_or_choose():
     _get_src = lambda r: URL(request.controller, 'download', r.image)
     records = DIV([IMG(_src=_get_src(r), 
                        _onclick="jQuery.data(document.body, 'elrte_callback')('%s');jQuery('.plugin_mmodal').hide();" % _get_src(r),
-                       _style='max-width:50px;max-height:50px,margin:5px;cursor:pointer;') 
+                       _style='max-width:50px;max-height:50px;margin:5px;cursor:pointer;') 
                     for r in records])
     return BEAUTIFY(dict(form=form, info=info, records=records))
     
