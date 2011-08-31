@@ -55,7 +55,7 @@ This plugin provides a color picker widget, using %s. Picked color is displayed 
         label='elRTE WYSIWYG Widget',
         short_description=T('A WYSIWYG editor widget using elRTE.js'),
         long_description=XML(T("""
-A WYSIWYG editor widget using %s. You can specify your language by a contructor argument.
+A WYSIWYG editor widget using %s. You can specify your language by a contructor argument, and include your image chooser.
 """) % A('elRTE.js', _href='http://elrte.org/').xml())
     ),
     plugin_uploadify_widget=dict(

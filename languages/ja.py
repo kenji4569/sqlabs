@@ -2,7 +2,7 @@
 {
 "\n%s arranges its radio buttons vertically, which occupies a relatively large area. \nHere we implemented a horizontal radio widget, and further made it clickable for it's labels. \n": '%sはラジオボタンを垂直に配置するため、少し広めの領域を占めてしまいます。そこで水平のラジオウィジェットを実装し、さらにラベルをクリック可能にしました。',
 '\n%s is made by a single select tag,\nwhich would be difficult to handle when it had many options.\nWe built more user-friendly multiple select widget with two select tags.\nYou can choice between horizontal or vertical layout.\n': '%s は単一のセレクトタグからなり、多数のオプションを持つ場合に扱うのが困難になります。そこで、より使い勝手のよい、２つのセレクトタグからなる複数選択ウィジェットを作成しました。水平まはた垂直のレイアウトを選ぶことができます。\r\n',
-'\nA WYSIWYG editor widget using %s. You can specify your language by a contructor argument.\n': '%sを使用したWYSIWYGエディターウィジェットです。コンストラクタの引数で使用言語を指定することができます。\r\n',
+'\nA WYSIWYG editor widget using %s. You can specify your language by a contructor argument, and include your image chooser.\n': '%sを使用したWYSIWYGエディターウィジェットです。コンストラクタの引数で使用言語を指定することができ、さらに独自の画像選択機能を組み込むことができます。\r\n',
 '\nA custom %s for denser layout using multi-line columns. \nYou can specify structured fields corresponding to the layout.\nOther functionarities are same as SQLFORM, including facotry and readonly forms.\n': 'より密なレイアウトのための複合カラムを用いたカスタム%sです。レイアウトに対応する構造化したフィールドを指定することができます。他の機能はSQLFORMと同じで、factoryやreadonlyフォームも利用可能です。',
 '\nA custom %s for denser layout using multi-line rows. \nYou can specify structured fields corresponding to the layout.\nThe interface of the class keeps backward-compatible to the SQLTABLE,\nand enables more flexible customization.\n': 'より密なレイアウトのための複合行を用いたカスタム%sです。レイアウトに対応する構造化したフィールドを指定することができます。クラスのインタフェースはSQLTABLEと後方互換を保ちつつ、より柔軟なカスタマイズが可能です。\r\n',
 '\nA file upload widget using %s.\nThe uploadify turns a file input tag into a flash-based file uploader,\nwhich displays a progress bar and enables ajax upload. \n': '%sを用いたファイルアップロードウィジェットです。uploadifyはファイルのインプタグをflashベースのファイルアップローダーに変換します。これにより、プログレスバーが表示され、ajaxアップロードが可能になります。\r\n',
@@ -107,6 +107,7 @@
 'enter date as %(format)s': 'enter date as %(format)s',
 'enter from %(min)g to %(max)g characters': '%(min)g ～ %(max)g の文字を入力してください',
 'enter time as hh:mm:ss (seconds, am, pm optional)': 'enter time as hh:mm:ss (seconds, am, pm optional)',
+'invalid image': 'invalid image',
 'language': '言語',
 'register': '登録',
 'this discussion': 'この議論',

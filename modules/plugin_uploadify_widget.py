@@ -7,6 +7,11 @@ from gluon.sqlhtml import UploadWidget
 from gluon.storage import Storage
 
 BUTTON_TEXT = 'SELECT FILES'
+FILES = ( URL('static', 'plugin_uploadify_widget/uploadify.css'),
+          URL('static', 'plugin_uploadify_widget/swfobject.js'),
+          URL('static', 'plugin_uploadify_widget/jquery.uploadify.v2.1.4.min.js'),
+          URL('static', 'plugin_uploadify_widget/uploadify.css'),
+         )
 
 class IS_UPLOADIFY_IMAGE(IS_IMAGE):
     def _call(self, value): 
@@ -43,11 +48,7 @@ class IS_UPLOADIFY_LENGTH(IS_LENGTH):
 
 
 def _set_files():
-    for _url in ( URL('static', 'plugin_uploadify_widget/uploadify.css'),
-                  URL('static', 'plugin_uploadify_widget/swfobject.js'),
-                  URL('static', 'plugin_uploadify_widget/jquery.uploadify.v2.1.4.min.js'),
-                  URL('static', 'plugin_uploadify_widget/uploadify.css'),
-                 ):
+    for _url in FILES:
         if _url not in current.response.files:
             current.response.files.append(_url)
             
@@ -104,16 +105,29 @@ jQuery(document).ready(function() {
 var el = jQuery('#%(id)s');
 var file_el = jQuery('#%(file_id)s');
 var form_el = jQuery(el.get(0).form);
-form_el.submit(function() {
+
+$.fn.bindFirst = function(name, fn) {
+    this.bind(name, fn);
+    var handlers = this.data('events')[name.split('.')[0]];
+    var handler = handlers.pop();
+    handlers.splice(0, 0, handler);
+};
+form_el.bindFirst('submit', function (e) {
     var not_empty_message = "%(not_empty_message)s";
     if (not_empty_message!="" && uploadify_uploading.indexOf(file_el.attr('id'))==-1) {
         el.parent().prepend(jQuery("<div class='error'>"+not_empty_message+"</div>"));
         return false;
     }
-    
-    file_el.uploadifyUpload();
-    if (uploadify_uploading.length != 0) { return false; }
-    else { return true; }
+    if (uploadify_uploading.length != 0){
+        if (uploadify_uploading.length == uploadify_uploaded.length) {
+            return !%(ajax)s;
+        } else {
+            if (%(ajax)s) { e.stopImmediatePropagation(); }
+            file_el.uploadifyUpload(); 
+            return false;
+        }
+    }
+    return !%(ajax)s;
 });
 function cancel() {
     var idx = uploadify_uploading.indexOf(file_el.attr('id'));
@@ -131,17 +145,13 @@ file_el.uploadify({
 'onSelect'    : function(event, ID, fileObj) {
     uploadify_uploading.push(file_el.attr('id'));
 },
-'onCancel'    : function(event, ID, fileObj, data) {
-    cancel()
-},
-'onError'     : function (event, ID, fileObj, errorObj) {
-    cancel()
-},
+'onCancel'    : function(event, ID, fileObj, data) { cancel() },
+'onError'     : function (event, ID, fileObj, errorObj) { cancel() },
 'onComplete': function(event, ID, fileObj, response, data) {
     el.val(response);
     uploadify_uploaded.push(file_el.attr('id'));
     if (uploadify_uploading.length == uploadify_uploaded.length) {
-        setTimeout(function(){form_el.get(0).submit();}, 200);
+        setTimeout(function(){form_el.submit();}, 200);
     }
 },
 'fileExt'   : '%(fileext)s',
@@ -158,6 +168,7 @@ file_el.uploadify({
               fileext=fileext,
               size_limit=size_limit,
               not_empty_message=not_empty_message or '',
+              ajax='true' if current.request.ajax else 'false',
          ))
           
     if '_formkey' in current.request.vars:
