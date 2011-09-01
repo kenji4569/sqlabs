@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from plugin_elrte_widget import ElrteWidget
-from plugin_mmodal import PluginMModal
 from plugin_uploadify_widget import (
     uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_LENGTH
 )
@@ -31,16 +30,27 @@ def index():
         lang = 'en'
 
     # set image chooser window
-    image_chooser = PluginMModal( # (this could be refactored more)
-        title='Select',
-        content=LOAD('plugin_elrte_widget', 'upload_or_choose', ajax=True).xml().replace('<!--', '').replace('//-->', ''),
-        close="close")
+    import uuid
+    mmodal_id = str(uuid.uuid4())
+    def get_mmodal(content, title='Select', close="close", width=70, height=70):
+        # original by web2py's welcome application
+        return ("""<div id="%(id)s" class="plugin_mmodal" style="display:none"><div style="position:absolute;top:0%%;left:0%%;width:100%%;height:100%%;background-color:black;z-index:1001;-moz-opacity:0.8;opacity:.80;opacity:0.8;"></div>
+                   <div class="dialog" style="position:absolute;top:%(top)s%%;left:%(left)s%%;width:%(width)s%%;height:%(height)s%%;padding:16px;border:2px solid black;background-color:white;opacity:1.0;z-index:1002;overflow:auto;">
+                   <span style="font-weight:bold">%(title)s</span><span style="float:right">[<a href="#" onclick="jQuery(\'#%(id)s\').hide();return false;">%(close)s</a>]</span><hr/><div id="c%(id)s">%(content)s</div></div></div>""" % 
+                dict(title=title,content=content,close=close,id=mmodal_id,left=(100-width)/2,top=(100-height)/2,width=width,height=height))
+    
     fm_open = """function(callback){
 var el = jQuery("#%s");
 if (el.length == 0) {el = jQuery(%s); jQuery(document.body).append(el);}
+var maxZ = Math.max.apply(null,jQuery.map(jQuery('body > *'), function(e,n){
+           return parseInt(jQuery('.ui-dialog').css('zIndex'))||1 ;
+           }));
+el.children('.dialog').css('zIndex', maxZ + 10); 
 el.show();
 jQuery.data(document.body, 'elrte_callback', callback)
-}""" % (image_chooser.id, json.dumps(image_chooser.xml()))
+}""" % (mmodal_id, json.dumps(get_mmodal(
+            content=LOAD('plugin_elrte_widget', 'upload_or_choose', ajax=True).xml().replace('<!--', '').replace('//-->', ''),
+    )))
 
     ################################ The core ######################################
     # Inject the elrte widget
@@ -62,7 +72,7 @@ def upload_or_choose():
     if form.accepts(request.vars, session):
         info = 'submitted %s' % form.vars
     
-    records = disk_db(image_table.id>0).select(orderby=~image_table.id)
+    records = disk_db(image_table.id>0).select(orderby=~image_table.id, limitby=(0,3))
     _get_src = lambda r: URL(request.controller, 'download', r.image)
     records = DIV([IMG(_src=_get_src(r), 
                        _onclick="jQuery.data(document.body, 'elrte_callback')('%s');jQuery('.plugin_mmodal').hide();" % _get_src(r),
