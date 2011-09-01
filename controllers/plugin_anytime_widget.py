@@ -49,5 +49,8 @@ def test():
         form = LOAD('plugin_anytime_widget', 'test', args='ajax', ajax=True)
     else:
         form = SQLFORM(db.product)
+        if form.accepts(request.vars, session):
+            session.flash = 'submitted %s' % form.vars
+            redirect(URL('index'))
         
     return dict(back=A('back', _href=URL('index')), jquery_ui=jquery_ui, form=form)

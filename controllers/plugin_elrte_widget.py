@@ -2,7 +2,7 @@
 from plugin_elrte_widget import ElrteWidget
 from plugin_mmodal import PluginMModal
 from plugin_uploadify_widget import (
-    uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_LENGTH, FILES as UPLOADIFY_FILES
+    uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_LENGTH
 )
 import gluon.contrib.simplejson as json
 
@@ -54,7 +54,6 @@ jQuery.data(document.body, 'elrte_callback', callback)
         session.flash = 'submitted %s' % form.vars
         redirect(URL('index'))
         
-    response.files += UPLOADIFY_FILES # the uploadify files need to be loaded before ajax (presumably). 
     return dict(form=form)
     
 def upload_or_choose():

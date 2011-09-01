@@ -39,7 +39,7 @@ def index():
     records = db(table.id>0).select(orderby=~table.id)
     records = SQLTABLE(records, headers="labels",
                        upload=URL('download'), linkto=lambda f, t, r: URL('edit', args=f))
-    return dict(form=form, records=records)
+    return dict(form=form, records=records, tests=[A('test_load', _href=URL('test'))])
     
 def edit():
     record = db(table.id==request.args(0)).select().first() or redirect('index')
@@ -52,3 +52,14 @@ def edit():
     
 def download():
     return response.download(request,db)
+    
+def test():
+    if request.args(0) == 'ajax':
+        form = SQLFORM(table)
+        if form.accepts(request.vars, session):
+            response.flash = DIV('submitted %s' % form.vars).xml()
+            db.commit()
+        return form
+        
+    form = LOAD('plugin_uploadify_widget', 'test', args='ajax', ajax=True)
+    return dict(back=A('back', _href=URL('index')), form=form)
