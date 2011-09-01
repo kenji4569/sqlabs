@@ -22,7 +22,7 @@ function load_%(name)s_file(file) {
         jQuery.get(file);
     } else if (file.slice(-4) == '.css') {
         if (document.createStyleSheet){document.createStyleSheet(file);}
-        else{jQuery('<link rel="stylesheet" type="text/css" href="' + file + '" />').appendTo('head');}
+        else{jQuery('<link rel="stylesheet" type="text/css" href="' + file + '" />').prependTo('head');}
     }
 }
 jQuery(document).ready(function() {  
