@@ -21,7 +21,8 @@ function load_%(name)s_file(file) {
     if (file.slice(-3) == '.js') {
         jQuery.get(file);
     } else if (file.slice(-4) == '.css') {
-        jQuery('head').prepend(jQuery('<link rel="stylesheet" type="text/css" href="' + file + '">'));
+        if (document.createStyleSheet){document.createStyleSheet(file);}
+        else{jQuery('<link rel="stylesheet" type="text/css" href="' + file + '" />').appendTo('head');}
     }
 }
 jQuery(document).ready(function() {  
