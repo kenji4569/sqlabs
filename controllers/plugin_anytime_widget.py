@@ -7,7 +7,6 @@ db.define_table('product',
     Field('created_at', 'datetime'), 
     Field('updated_at', 'datetime'),
 )
-
 ################################ The core ######################################
 # Inject the corresponding anytime widgets for time, date, and datetime fields
 db.product.event_time.widget = anytime_widget
@@ -21,27 +20,34 @@ def index():
     if form.accepts(request.vars, session):
         session.flash = 'submitted %s' % form.vars
         redirect(URL('index'))
-    return dict(form=form, test=[A('test_with_jquery_ui', _href=URL('test_with_jquery_ui')),
-                                 A('test_load', _href=URL('test_load'))])
+    return dict(form=form, tests=[A('test_with_jquery_ui', _href=URL('test', args='with_jquery_ui')),
+                                 A('test_load', _href=URL('test', args=['_', 'load'])),
+                                 A('test_load_with_jquery_ui', _href=URL('test', args=['with_jquery_ui', 'load'])),
+                                 ])
     
-def test_with_jquery_ui():
-    response.files += (
-        'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/base/jquery-ui.css',
-        'http://static.jquery.com/ui/css/demo-docs-theme/ui.theme.css',
-        URL('static', 'js/jquery-ui.min.js'), URL('static', 'js/jquery.ui.dialog.js'),
-        URL('static', 'js/jquery.ui.tabs.js'), URL('static', 'js/jquery.ui.themeswitcher.js'))
-    extra = DIV(
-        DIV(_id='switcher'), BR(), DIV('aaa', _id='dialog'), 
-        DIV(UL(LI(A('xxx', _href='#xxx')),LI(A('yyy', _href='#yyy')),LI(A('zzz', _href='#zzz'))),
-            DIV(P('xxx'), _id='xxx'),DIV(P('yyy'), _id='yyy'),DIV(P('zzz'), _id='zzz'),
-            _id='example'),
-        SCRIPT("$().ready(function(){var $tabs = $('#example').tabs();$('#dialog').dialog();$('#switcher').themeswitcher();});"))
-    return dict(back=A('back', _href=URL('index')), extra=extra, form=SQLFORM(db.product))
-
-def test_load():
+def test():
     if request.args(0) == 'ajax':
         form = SQLFORM(db.product)
         if form.accepts(request.vars, session):
             response.flash = DIV('submitted %s' % form.vars).xml()
         return form
-    return dict(form=LOAD('plugin_anytime_widget', 'test_load', args='ajax', ajax=True))
+    elif request.args(0) == 'with_jquery_ui':
+        response.files += (
+            'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/base/jquery-ui.css',
+            'http://static.jquery.com/ui/css/demo-docs-theme/ui.theme.css',
+            URL('static', 'js/jquery-ui.min.js'), URL('static', 'js/jquery.ui.dialog.js'),
+            URL('static', 'js/jquery.ui.tabs.js'), URL('static', 'js/jquery.ui.themeswitcher.js'))
+        jquery_ui = DIV(
+            DIV(_id='switcher'), BR(), 
+            DIV(UL(LI(A('xxx', _href='#xxx')),LI(A('yyy', _href='#yyy'))),
+                DIV(P('xxx'), _id='xxx'),DIV(P('yyy'), _id='yyy'),
+                _id='example'),
+            SCRIPT("$().ready(function(){var $tabs = $('#example').tabs();});"))
+    else:
+        jquery_ui = ''
+    if request.args(1) == 'load':
+        form = LOAD('plugin_anytime_widget', 'test', args='ajax', ajax=True)
+    else:
+        form = SQLFORM(db.product)
+        
+    return dict(back=A('back', _href=URL('index')), jquery_ui=jquery_ui, form=form)

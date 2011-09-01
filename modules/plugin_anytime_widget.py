@@ -8,14 +8,12 @@ import datetime
 FILES = (URL('static','plugin_anytime_widget/anytime.css'),
          URL('static','plugin_anytime_widget/anytime.js'))
 
-def _set_files(files):
-    for f in files:
-        if f not in current.response.files:
-            current.response.files.append(f)
-            
 def _get_init_js(setup_js, core_js, check_js, files):
     if current.request.ajax:
         return """
+if(! Array.indexOf) {
+  Array.prototype.indexOf = function(o){for(var i in this) {if(this[i] == o) {return i;}} return -1;}
+}
 var %(name)s_files = [];
 function load_%(name)s_file(file) {
     if (%(name)s_files.indexOf(file) != -1) {return;}
@@ -23,25 +21,25 @@ function load_%(name)s_file(file) {
     if (file.slice(-3) == '.js') {
         jQuery.get(file);
     } else if (file.slice(-4) == '.css') {
-        jQuery('head').append(jQuery('<link rel="stylesheet" type="text/css" href="' + file + '">'));
+        jQuery('head').prepend(jQuery('<link rel="stylesheet" type="text/css" href="' + file + '">'));
     }
 }
 jQuery(document).ready(function() {  
-    %(setup_js)s; var _interval = null;
-    function _init() {%(core_js)s; if (_interval!=null) {clearInterval(_interval)}}
+    %(setup_js)s;  function _core() {%(core_js)s;}
     if (%(check_js)s) {
         var files = %(files_code)s;
-        for (var i=0; i<files.length; ++i) {
-            load_%(name)s_file(files[i]);
-        }
-        _interval = setInterval(function(){if (!(%(check_js)s)){_init();}}, 100)
-    } else{
-        _init();
-    }
+        for (var i=0; i<files.length; ++i) { load_%(name)s_file(files[i]); }
+        var _interval = setInterval(function(){if (!(%(check_js)s)){
+            _core();
+            if (_interval!=null) {clearInterval(_interval)}}}, 100)
+    } else{ _core(); }
 });
 """ % dict(name='plugin_anytime_widget', setup_js=setup_js, check_js=check_js, core_js=core_js, 
            files_code='[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files]))
     else:
+        for f in files:
+            if f not in current.response.files:
+                current.response.files.insert(0, f)
         return """
 jQuery(document).ready(function() {%(setup_js)s;%(core_js)s;})
 """ % dict(setup_js=setup_js, core_js=core_js)
@@ -68,7 +66,6 @@ labelDismiss: "%(ok)s" }""" % dict(
     )
 
 def anytime_widget(field, value, **attributes): 
-    _set_files(FILES)
     _id = '%s_%s' % (field._tablename, field.name)
     attr = dict(
             _type = 'text', value = (value!=None and str(value)) or '',
@@ -92,7 +89,6 @@ el.AnyTime_picker(
 
     
 def anydate_widget(field, value, **attributes): 
-    _set_files(FILES)
     _id = '%s_%s' % (field._tablename, field.name)
     attr = dict(
             _type = 'text', value = (value!=None and str(value)) or '',
@@ -114,7 +110,6 @@ el.AnyTime_picker(
     return SPAN(SCRIPT(init_js), INPUT(**attr), **attributes)
     
 def anydatetime_widget(field, value, **attributes): 
-    _set_files(FILES)
     _id = '%s_%s' % (field._tablename, field.name)
     attr = dict(
             _type = 'text', value = (value!=None and str(value)) or '',
