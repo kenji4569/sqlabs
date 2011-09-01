@@ -5,6 +5,47 @@ from gluon import *
 from gluon.sqlhtml import widget_class, FormWidget, StringWidget
 import datetime
 
+FILES = (URL('static','plugin_anytime_widget/anytime.css'),
+         URL('static','plugin_anytime_widget/anytime.js'))
+
+def _set_files(files):
+    for f in files:
+        if f not in current.response.files:
+            current.response.files.append(f)
+            
+def _get_init_js(setup_js, core_js, check_js, files):
+    if current.request.ajax:
+        return """
+var %(name)s_files = [];
+function load_%(name)s_file(file) {
+    if (%(name)s_files.indexOf(file) != -1) {return;}
+    %(name)s_files.push(file);
+    if (file.slice(-3) == '.js') {
+        jQuery.get(file);
+    } else if (file.slice(-4) == '.css') {
+        jQuery('head').append(jQuery('<link rel="stylesheet" type="text/css" href="' + file + '">'));
+    }
+}
+jQuery(document).ready(function() {  
+    %(setup_js)s; var _interval = null;
+    function _init() {%(core_js)s; if (_interval!=null) {clearInterval(_interval)}}
+    if (%(check_js)s) {
+        var files = %(files_code)s;
+        for (var i=0; i<files.length; ++i) {
+            load_%(name)s_file(files[i]);
+        }
+        _interval = setInterval(function(){if (!(%(check_js)s)){_init();}}, 100)
+    } else{
+        _init();
+    }
+});
+""" % dict(name='plugin_anytime_widget', setup_js=setup_js, check_js=check_js, core_js=core_js, 
+           files_code='[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files]))
+    else:
+        return """
+jQuery(document).ready(function() {%(setup_js)s;%(core_js)s;})
+""" % dict(setup_js=setup_js, core_js=core_js)
+             
 def _get_date_option():
     return """{
 labelYear: "%(year)s", labelMonth: "%(month)s", labelDay: "%(day)s", 
@@ -26,68 +67,72 @@ labelDismiss: "%(ok)s" }""" % dict(
         sat=current.T('Sat'), ok=current.T('OK'), 
     )
 
-def _set_files():
-    for _url in (URL('static','plugin_anytime_widget/anytime.css'),
-                 URL('static','plugin_anytime_widget/anytime.js')):
-        if _url not in current.response.files:
-            current.response.files.append(_url)
-         
-
 def anytime_widget(field, value, **attributes): 
-    _set_files()
+    _set_files(FILES)
     _id = '%s_%s' % (field._tablename, field.name)
     attr = dict(
             _type = 'text', value = (value!=None and str(value)) or '',
             _id = _id, _name = field.name, requires = field.requires,
             _class = 'any%s' % widget_class.match(str(field.type)).group(),
             )
-    script = SCRIPT("""
-jQuery(document).ready(function() {  
-jQuery("#%(id)s").AnyTime_picker( 
-jQuery.extend({format: "%%H:%%i:%%S", labelTitle: "%(title)s", 
-              labelHour: "%(hour)s", labelMinute: "%(minute)s", labelSecond: "%(second)s"}, 
-              %(date_option)s))});
-""" % dict(id=_id, title=current.T('Choose time'), 
+            
+    setup_js = 'var el = jQuery("#%(id)s");' % dict(id=_id)
+    core_js = """
+el.AnyTime_picker(
+    jQuery.extend({format: "%%H:%%i:%%S", labelTitle: "%(title)s", 
+        labelHour: "%(hour)s", labelMinute: "%(minute)s", labelSecond: "%(second)s"}, 
+        %(date_option)s));"""% dict(title=current.T('Choose time'), 
            hour=current.T('Hour'), minute=current.T('Minute'), second=current.T('Second'),
-           date_option=_get_date_option()))
+           date_option=_get_date_option())
+    check_js = 'el.AnyTime_picker==undefined'
     
-    return SPAN(script, INPUT(**attr), **attributes)
+    init_js = _get_init_js(setup_js=setup_js, core_js=core_js, check_js=check_js, files=FILES)
+    
+    return SPAN(SCRIPT(init_js), INPUT(**attr), **attributes)
 
     
 def anydate_widget(field, value, **attributes): 
-    _set_files()
+    _set_files(FILES)
     _id = '%s_%s' % (field._tablename, field.name)
     attr = dict(
             _type = 'text', value = (value!=None and str(value)) or '',
             _id = _id, _name = field.name, requires = field.requires,
             _class = 'any%s' % widget_class.match(str(field.type)).group(),
             )
-    script = SCRIPT("""
-jQuery(document).ready(function() {  
-jQuery("#%(id)s").AnyTime_picker( 
-jQuery.extend({format: "%%Y-%%m-%%d", labelTitle: "%(title)s"}, 
-              %(date_option)s))});
+            
+    setup_js = 'var el = jQuery("#%(id)s");' % dict(id=_id)
+    core_js = """
+el.AnyTime_picker( 
+    jQuery.extend({format: "%%Y-%%m-%%d", labelTitle: "%(title)s"}, 
+                   %(date_option)s));
 """ % dict(id=_id, title=current.T('Choose date'), 
-           date_option=_get_date_option()))
+           date_option=_get_date_option())
+    check_js = 'el.AnyTime_picker==undefined'
     
-    return SPAN(script, INPUT(**attr), **attributes)
+    init_js = _get_init_js(setup_js=setup_js, core_js=core_js, check_js=check_js, files=FILES)
+       
+    return SPAN(SCRIPT(init_js), INPUT(**attr), **attributes)
     
 def anydatetime_widget(field, value, **attributes): 
-    _set_files()
+    _set_files(FILES)
     _id = '%s_%s' % (field._tablename, field.name)
     attr = dict(
             _type = 'text', value = (value!=None and str(value)) or '',
             _id = _id, _name = field.name, requires = field.requires,
             _class = 'any%s' % widget_class.match(str(field.type)).group(),
             )
-    script = SCRIPT("""
-jQuery(document).ready(function() {  
-jQuery("#%(id)s").AnyTime_picker( 
-jQuery.extend({format: "%%Y-%%m-%%d %%H:%%i:00", labelTitle: "%(title)s", 
-              labelHour: "%(hour)s", labelMinute: "%(minute)s"}, 
-              %(date_option)s))});
+            
+    setup_js = 'var el = jQuery("#%(id)s");' % dict(id=_id)
+    core_js = """
+el.AnyTime_picker( 
+    jQuery.extend({format: "%%Y-%%m-%%d %%H:%%i:00", labelTitle: "%(title)s", 
+                   labelHour: "%(hour)s", labelMinute: "%(minute)s"}, 
+                   %(date_option)s));
 """ % dict(id=_id, title=current.T('Choose date time'), 
            hour=current.T('Hour'), minute=current.T('Minute'),
-           date_option=_get_date_option()))
+           date_option=_get_date_option())
+    check_js = 'el.AnyTime_picker==undefined'
     
-    return SPAN(script, INPUT(**attr), **attributes)
+    init_js = _get_init_js(setup_js=setup_js, core_js=core_js, check_js=check_js, files=FILES)
+       
+    return SPAN(SCRIPT(init_js), INPUT(**attr), **attributes)
