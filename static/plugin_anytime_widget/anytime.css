@@ -107,13 +107,17 @@
   font-family:Arial,Helvetica,sans-serif;
   font-size: 15px;
   font-weight:normal;
-  height: 16px;
+  height: 21px;
   margin:0;
-  padding-bottom: 5px;
   padding-top: 5px;
+  line-height: 16px;
   text-align:center;
   -moz-border-radius:2px;
   -webkit-border-radius:2px;
+}
+
+.AnyTime-hdr .AnyTime-x-btn{
+  height: 15px;
 }
 
 /*

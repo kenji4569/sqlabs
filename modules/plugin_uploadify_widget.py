@@ -20,11 +20,11 @@ function web2py_plugin_init(name, callback, files) {
     function _set_plugins(plugins) { jQuery.data(document.body, 'web2py_plugins', plugins); }
     if (plugins == undefined) { plugins = {}; }
     if (name in plugins) {
-        if (plugins[name].loaded == true) {jQuery(document).ready(callback); return; }
+        if (plugins[name].loaded == true) {jQuery(callback); return; }
         else {plugins[name].callbacks.push(callback); _set_plugins(plugins); return; }
     }
     if (files == undefined) {
-        plugins[name] = {loaded: true}; _set_plugins(plugins); jQuery(document).ready(callback); return;
+        plugins[name] = {loaded: true}; _set_plugins(plugins); jQuery(callback); return;
     }
     plugins[name] = {loaded: false, callbacks:[callback]}; _set_plugins(plugins);
     var loadings = 0;
@@ -39,7 +39,7 @@ function web2py_plugin_init(name, callback, files) {
             else {jQuery('<link rel="stylesheet" type="text/css" href="' + this + '" />').prependTo('head');}
         }
     });
-    jQuery(document).ready(function() { 
+    jQuery(function() { 
         var interval = setInterval(function() {
             if (loadings == 0) { 
                 plugins[name].loaded = true; _set_plugins(plugins);
