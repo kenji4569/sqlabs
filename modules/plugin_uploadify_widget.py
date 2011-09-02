@@ -120,7 +120,6 @@ def uploadify_widget(field, value, download_url=None, **attributes):
         raise HTTP(200, newfilename)
         
     script = SCRIPT("""jQuery(document).one('%(plugin)s', function() {
-console.log('hoge');
 var uploadify_uploading = [];
 var uploadify_uploaded = [];
 var el = jQuery('#%(id)s');
