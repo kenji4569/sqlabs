@@ -8,38 +8,51 @@ import datetime
 FILES = (URL('static','plugin_anytime_widget/anytime.css'),
          URL('static','plugin_anytime_widget/anytime.js'))
 
-def _get_init_js(name, setup_js, core_js, check_js, files):
-    if current.request.ajax:
-        return """
-if(!Array.indexOf) {
-  Array.prototype.indexOf = function(o){for(var i in this) {if(this[i] == o) {return i;}} return -1;}
-}
-var %(name)s_files = [];
-function load_%(name)s_file(file) {
-    if (%(name)s_files.indexOf(file) != -1) {return;}
-    %(name)s_files.push(file);
-    if (file.slice(-3) == '.js') { jQuery.get(file); }
-    else if (file.slice(-4) == '.css') {
-        if (document.createStyleSheet){document.createStyleSheet(file);}
-        else {jQuery('<link rel="stylesheet" type="text/css" href="' + file + '" />').prependTo('head');}
+def _plugin_init(name, callback, files):
+    js = """
+function web2py_plugin_init(name, callback, files) {
+    var plugins = jQuery.data(document.body, 'web2py_plugins');
+    function _set_plugins(plugins) { jQuery.data(document.body, 'web2py_plugins', plugins); }
+    if (plugins == undefined) { plugins = {}; }
+    if (name in plugins) {
+        if (plugins[name].loaded == true) {jQuery(document).ready(callback); return; }
+        else {plugins[name].callbacks.push(callback); _set_plugins(plugins); return; }
     }
-}
-jQuery(document).ready(function() {  
-    %(setup_js)s;  function _core() {%(core_js)s;}
-    if (!(%(check_js)s)) {
-        var files = %(files_code)s;
-        for (var i=0; i<files.length; ++i) { load_%(name)s_file(files[i]); }
-        var _interval = setInterval(function(){if (%(check_js)s){
-            _core(); if (_interval!=null) {clearInterval(_interval)}}}, 100)
-    } else{ _core(); }
-});""" % dict(name=name, setup_js=setup_js, check_js=check_js, core_js=core_js, 
-              files_code='[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files]))
+    if (files == undefined) {
+        plugins[name] = {loaded: true}; _set_plugins(plugins); jQuery(document).ready(callback); return;
+    }
+    plugins[name] = {loaded: false, callbacks:[callback]}; _set_plugins(plugins);
+    var loadings = 0;
+    jQuery.each(files, function() {
+        if (this.slice(-3) == '.js') { 
+            ++loadings;
+            jQuery.ajax({type: 'GET', url: this, 
+                         success: function(data) { eval(data); --loadings; },
+                         error: function() { --loadings; } });
+        } else if (this.slice(-4) == '.css') {
+            if (document.createStyleSheet){ document.createStyleSheet(this); } // for IE
+            else {jQuery('<link rel="stylesheet" type="text/css" href="' + this + '" />').prependTo('head');}
+        }
+    });
+    jQuery(document).ready(function() { 
+        var interval = setInterval(function() {
+            if (loadings == 0) { 
+                plugins[name].loaded = true; _set_plugins(plugins);
+                jQuery.each(plugins[name].callbacks, function() { this(); });
+                if (interval != null) { clearInterval(interval) } 
+            }
+        }, 100);
+    });
+};"""
+    if current.request.ajax:
+        js += "web2py_plugin_init('%s', %s, %s);" % (name, callback, 
+                        '[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files]))
     else:
-        for f in files:
+        for f in reversed(files):
             if f not in current.response.files:
                 current.response.files.insert(0, f)
-        return """jQuery(document).ready(function() {%(setup_js)s;%(core_js)s;})""" % dict(
-                                                        setup_js=setup_js, core_js=core_js)
+        js += "web2py_plugin_init('%s', %s);" % (name, callback)
+    return js
              
 def _get_date_option():
     return """{
@@ -70,20 +83,18 @@ def anytime_widget(field, value, **attributes):
             _class = 'any%s' % widget_class.match(str(field.type)).group(),
             )
             
-    setup_js = 'var el = jQuery("#%(id)s");' % dict(id=_id)
-    core_js = """
-el.AnyTime_picker(
+    callback = """function() {
+jQuery("#%(id)s").AnyTime_picker(
     jQuery.extend({format: "%%H:%%i:%%S", labelTitle: "%(title)s", 
         labelHour: "%(hour)s", labelMinute: "%(minute)s", labelSecond: "%(second)s"}, 
-        %(date_option)s));"""% dict(title=current.T('Choose time'), 
+        %(date_option)s));
+}""" % dict(id=_id, title=current.T('Choose time'), 
            hour=current.T('Hour'), minute=current.T('Minute'), second=current.T('Second'),
            date_option=_get_date_option())
-    check_js = 'el.AnyTime_picker!=undefined'
     
-    init_js = _get_init_js('plugin_anytime_widget', setup_js=setup_js, 
-                           core_js=core_js, check_js=check_js, files=FILES)
+    script = SCRIPT(_plugin_init('plugin_anytime_widget', callback=callback, files=FILES))
     
-    return SPAN(SCRIPT(init_js), INPUT(**attr), **attributes)
+    return SPAN(script, INPUT(**attr), **attributes)
 
     
 def anydate_widget(field, value, **attributes): 
@@ -94,19 +105,16 @@ def anydate_widget(field, value, **attributes):
             _class = 'any%s' % widget_class.match(str(field.type)).group(),
             )
             
-    setup_js = 'var el = jQuery("#%(id)s");' % dict(id=_id)
-    core_js = """
-el.AnyTime_picker( 
+    callback = """function() {
+jQuery("#%(id)s").AnyTime_picker( 
     jQuery.extend({format: "%%Y-%%m-%%d", labelTitle: "%(title)s"}, 
                    %(date_option)s));
-""" % dict(id=_id, title=current.T('Choose date'), 
+}""" % dict(id=_id, title=current.T('Choose date'), 
            date_option=_get_date_option())
-    check_js = 'el.AnyTime_picker!=undefined'
     
-    init_js = _get_init_js('plugin_anytime_widget', setup_js=setup_js, 
-                           core_js=core_js, check_js=check_js, files=FILES)
+    script = SCRIPT(_plugin_init('plugin_anytime_widget', callback=callback, files=FILES))
        
-    return SPAN(SCRIPT(init_js), INPUT(**attr), **attributes)
+    return SPAN(script, INPUT(**attr), **attributes)
     
 def anydatetime_widget(field, value, **attributes): 
     _id = '%s_%s' % (field._tablename, field.name)
@@ -116,18 +124,15 @@ def anydatetime_widget(field, value, **attributes):
             _class = 'any%s' % widget_class.match(str(field.type)).group(),
             )
             
-    setup_js = 'var el = jQuery("#%(id)s");' % dict(id=_id)
-    core_js = """
-el.AnyTime_picker( 
+    callback = """function() {
+jQuery("#%(id)s").AnyTime_picker( 
     jQuery.extend({format: "%%Y-%%m-%%d %%H:%%i:00", labelTitle: "%(title)s", 
                    labelHour: "%(hour)s", labelMinute: "%(minute)s"}, 
                    %(date_option)s));
-""" % dict(id=_id, title=current.T('Choose date time'), 
+}""" % dict(id=_id, title=current.T('Choose date time'), 
            hour=current.T('Hour'), minute=current.T('Minute'),
            date_option=_get_date_option())
-    check_js = 'el.AnyTime_picker!=undefined'
     
-    init_js = _get_init_js('plugin_anytime_widget', setup_js=setup_js, 
-                           core_js=core_js, check_js=check_js, files=FILES)
+    script = SCRIPT(_plugin_init('plugin_anytime_widget', callback=callback, files=FILES))
        
-    return SPAN(SCRIPT(init_js), INPUT(**attr), **attributes)
+    return SPAN(script, INPUT(**attr), **attributes)

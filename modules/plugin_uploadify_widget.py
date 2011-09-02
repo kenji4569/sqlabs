@@ -12,40 +12,53 @@ FILES = ( URL('static', 'plugin_uploadify_widget/uploadify.css'),
           URL('static', 'plugin_uploadify_widget/jquery.uploadify.v2.1.4.min.js'),
           URL('static', 'plugin_uploadify_widget/uploadify.css'),
          )
-     
-def _get_init_js(name, setup_js, core_js, check_js, files):
-    if current.request.ajax:
-        return """
-if(!Array.indexOf) {
-  Array.prototype.indexOf = function(o){for(var i in this) {if(this[i] == o) {return i;}} return -1;}
-}
-var %(name)s_files = [];
-function load_%(name)s_file(file) {
-    if (%(name)s_files.indexOf(file) != -1) {return;}
-    %(name)s_files.push(file);
-    if (file.slice(-3) == '.js') { jQuery.get(file); }
-    else if (file.slice(-4) == '.css') {
-        if (document.createStyleSheet){document.createStyleSheet(file);}
-        else {jQuery('<link rel="stylesheet" type="text/css" href="' + file + '" />').prependTo('head');}
+
+def _plugin_init(name, callback, files):
+    js = """
+function web2py_plugin_init(name, callback, files) {
+    var plugins = jQuery.data(document.body, 'web2py_plugins');
+    function _set_plugins(plugins) { jQuery.data(document.body, 'web2py_plugins', plugins); }
+    if (plugins == undefined) { plugins = {}; }
+    if (name in plugins) {
+        if (plugins[name].loaded == true) {jQuery(document).ready(callback); return; }
+        else {plugins[name].callbacks.push(callback); _set_plugins(plugins); return; }
     }
-}
-jQuery(document).ready(function() {  
-    %(setup_js)s;  function _core() {%(core_js)s;}
-    if (!(%(check_js)s)) {
-        var files = %(files_code)s;
-        for (var i=0; i<files.length; ++i) { load_%(name)s_file(files[i]); }
-        var _interval = setInterval(function(){if (%(check_js)s){
-            _core(); if (_interval!=null) {clearInterval(_interval)}}}, 100)
-    } else{ _core(); }
-});""" % dict(name=name, setup_js=setup_js, check_js=check_js, core_js=core_js, 
-              files_code='[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files]))
+    if (files == undefined) {
+        plugins[name] = {loaded: true}; _set_plugins(plugins); jQuery(document).ready(callback); return;
+    }
+    plugins[name] = {loaded: false, callbacks:[callback]}; _set_plugins(plugins);
+    var loadings = 0;
+    jQuery.each(files, function() {
+        if (this.slice(-3) == '.js') { 
+            ++loadings;
+            jQuery.ajax({type: 'GET', url: this, 
+                         success: function(data) { eval(data); --loadings; },
+                         error: function() { --loadings; } });
+        } else if (this.slice(-4) == '.css') {
+            if (document.createStyleSheet){ document.createStyleSheet(this); } // for IE
+            else {jQuery('<link rel="stylesheet" type="text/css" href="' + this + '" />').prependTo('head');}
+        }
+    });
+    jQuery(document).ready(function() { 
+        var interval = setInterval(function() {
+            if (loadings == 0) { 
+                plugins[name].loaded = true; _set_plugins(plugins);
+                jQuery.each(plugins[name].callbacks, function() { this(); });
+                if (interval != null) { clearInterval(interval) } 
+            }
+        }, 100);
+    });
+};"""
+    if current.request.ajax:
+        js += "web2py_plugin_init('%s', %s, %s);" % (name, callback, 
+                        '[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files]))
     else:
-        for f in files:
+        for f in reversed(files):
             if f not in current.response.files:
                 current.response.files.insert(0, f)
-        return """jQuery(document).ready(function() {%(setup_js)s;%(core_js)s;})""" % dict(
-                                                        setup_js=setup_js, core_js=core_js)
-
+        js += "web2py_plugin_init('%s', %s);" % (name, callback)
+    return js
+             
 class IS_UPLOADIFY_IMAGE(IS_IMAGE):
     def _call(self, value): 
         return IS_IMAGE.__call__(self, value)
@@ -79,14 +92,7 @@ class IS_UPLOADIFY_LENGTH(IS_LENGTH):
             return (value, translate(self.error_message))
         return (value, None)
 
-def _set_files():
-    for _url in FILES:
-        if _url not in current.response.files:
-            current.response.files.append(_url)
-       
-            
 def uploadify_widget(field, value, download_url=None, **attributes): 
-    _set_files()
     
     _id = '%s_%s' % (field._tablename, field.name)
     input_el = INPUT(_id = _id, _name = field.name,
@@ -131,14 +137,14 @@ def uploadify_widget(field, value, download_url=None, **attributes):
         newfilename = field.store(f.file, f.filename)
         raise HTTP(200, newfilename)
         
-    setup_js = """
+    callback = """function() {
 var uploadify_uploading = [];
 var uploadify_uploaded = [];
 var el = jQuery('#%(id)s');
 var file_el = jQuery('#%(file_id)s');
 var form_el = jQuery(el.get(0).form);
 
-$.fn.bindFirst = function(name, fn) {
+jQuery.fn.bindFirst = function(name, fn) {
     this.bind(name, fn);
     var handlers = this.data('events')[name.split('.')[0]];
     var handler = handlers.pop();
@@ -167,6 +173,30 @@ function cancel() {
         delete uploadify_uploading[idx];
         uploadify_uploaded.push(undefined);
     }
+}
+file_el.uploadify({
+    'buttonText': '%(button_text)s',
+    'uploader'  : '%(uploader)s',
+    'script'    : '%(script)s',
+    'cancelImg' : '%(cancel_img)s',
+    'auto'      : false,
+    'onSelect'    : function(event, ID, fileObj) {
+        uploadify_uploading.push(file_el.attr('id'));
+    },
+    'onCancel'  : function(event, ID, fileObj, data) { cancel() },
+    'onError'   : function (event, ID, fileObj, errorObj) { cancel() },
+    'onComplete': function(event, ID, fileObj, response, data) {
+        el.val(response);
+        uploadify_uploaded.push(file_el.attr('id'));
+        if (uploadify_uploading.length == uploadify_uploaded.length) {
+            setTimeout(function(){form_el.submit();}, 200);
+        }
+    },
+    'fileExt'   : '%(fileext)s',
+    'fileDesc'  : '%(fileext)s',
+    'sizeLimit' : %(size_limit)i,
+    'scriptData': {'name': el.attr('name')}
+});
 }""" % dict(id=_id, file_id=_file_id, 
               button_text=BUTTON_TEXT,
               uploader=URL('static', 'plugin_uploadify_widget/uploadify.swf'),
@@ -177,46 +207,9 @@ function cancel() {
               not_empty_message=not_empty_message or '',
               ajax='true' if current.request.ajax else 'false',
          )
-
-    core_js = """
-file_el.uploadify({
-'buttonText': '%(button_text)s',
-'uploader'  : '%(uploader)s',
-'script'    : '%(script)s',
-'cancelImg' : '%(cancel_img)s',
-'auto'      : false,
-'onSelect'    : function(event, ID, fileObj) {
-    uploadify_uploading.push(file_el.attr('id'));
-},
-'onCancel'    : function(event, ID, fileObj, data) { cancel() },
-'onError'     : function (event, ID, fileObj, errorObj) { cancel() },
-'onComplete': function(event, ID, fileObj, response, data) {
-    el.val(response);
-    uploadify_uploaded.push(file_el.attr('id'));
-    if (uploadify_uploading.length == uploadify_uploaded.length) {
-        setTimeout(function(){form_el.submit();}, 200);
-    }
-},
-'fileExt'   : '%(fileext)s',
-'fileDesc'    : '%(fileext)s',
-'sizeLimit' : %(size_limit)i,
-'scriptData': {'name': el.attr('name')}
-});""" % dict(id=_id, file_id=_file_id, 
-              button_text=BUTTON_TEXT,
-              uploader=URL('static', 'plugin_uploadify_widget/uploadify.swf'),
-              script=URL(args=current.request.args, vars=current.request.vars),
-              cancel_img=URL('static', 'plugin_uploadify_widget/cancel.png'),
-              fileext=fileext,
-              size_limit=size_limit,
-              not_empty_message=not_empty_message or '',
-              ajax='true' if current.request.ajax else 'false',
-         )
          
-    check_js = """file_el.uploadify!=undefined"""
+    script = SCRIPT(_plugin_init('plugin_uploadify_widget', callback=callback, files=FILES))
     
-    init_js = _get_init_js('plugin_uploadify_widget', setup_js=setup_js, core_js=core_js, 
-                           check_js=check_js, files=FILES)
-          
     if '_formkey' in current.request.vars:
         filename = current.request.vars[field.name]
         if filename:
@@ -246,4 +239,4 @@ file_el.uploadify({
                       A(UploadWidget.GENERIC_DESCRIPTION, _href = url),
                       ']', br, image)
             
-    return DIV(SCRIPT(init_js), inp, **attributes)
+    return DIV(script, inp, **attributes)
