@@ -13,51 +13,33 @@ FILES = ( URL('static', 'plugin_uploadify_widget/uploadify.css'),
           URL('static', 'plugin_uploadify_widget/uploadify.css'),
          )
 
-def _plugin_init(name, callback, files):
-    js = """
-function web2py_plugin_init(name, callback, files) {
-    var plugins = jQuery.data(document.body, 'web2py_plugins');
-    function _set_plugins(plugins) { jQuery.data(document.body, 'web2py_plugins', plugins); }
-    if (plugins == undefined) { plugins = {}; }
-    if (name in plugins) {
-        if (plugins[name].loaded == true) {jQuery(callback); return; }
-        else {plugins[name].callbacks.push(callback); _set_plugins(plugins); return; }
-    }
-    if (files == undefined) {
-        plugins[name] = {loaded: true}; _set_plugins(plugins); jQuery(callback); return;
-    }
-    plugins[name] = {loaded: false, callbacks:[callback]}; _set_plugins(plugins);
-    var loadings = 0;
-    jQuery.each(files, function() {
-        if (this.slice(-3) == '.js') { 
-            ++loadings;
-            jQuery.ajax({type: 'GET', url: this, 
-                         success: function(data) { eval(data); --loadings; },
-                         error: function() { --loadings; } });
-        } else if (this.slice(-4) == '.css') {
-            if (document.createStyleSheet){ document.createStyleSheet(this); } // for IE
-            else {jQuery('<link rel="stylesheet" type="text/css" href="' + this + '" />').prependTo('head');}
-        }
-    });
-    jQuery(function() { 
-        var interval = setInterval(function() {
-            if (loadings == 0) { 
-                plugins[name].loaded = true; _set_plugins(plugins);
-                jQuery.each(plugins[name].callbacks, function() { this(); });
-                if (interval != null) { clearInterval(interval) } 
-            }
-        }, 100);
-    });
+def _init(plugin, files):
+    common = """function web2py_plugin_init(plugin, files) {
+var $ = jQuery, n = 0, plugins = $.data(document.body, 'web2py_plugins');
+function _set_plugins(plugins) {$.data(document.body, 'web2py_plugins', plugins);}
+if (plugins == undefined) {plugins = {};} 
+else if (plugin in plugins) {if (plugins[plugin] == true) {$(document).trigger(plugin);} return;}
+plugins[plugin] = false; _set_plugins(plugins);
+if (files == undefined) {
+    $(function(){plugins[plugin] = true; _set_plugins(plugins); $(document).trigger(plugin)}); return;
+}
+$.each(files, function() {
+    if (this.slice(-3) == '.js') {
+        ++n; $.ajax({type: 'GET', url: this, success: function(d) {eval(d); --n;}, error: function() {--n;}});
+    } else if (this.slice(-4) == '.css') {
+        if (document.createStyleSheet){document.createStyleSheet(this);} // for IE
+        else {$('<link rel="stylesheet" type="text/css" href="' + this + '" />').prependTo('head');}
+    }});
+$(function() {var t = setInterval(function() {
+    if (n == 0) {$(document).trigger(plugin); plugins[plugin] = true; _set_plugins(plugins); clearInterval(t);}
+    }, 100);});
 };"""
     if current.request.ajax:
-        js += "web2py_plugin_init('%s', %s, %s);" % (name, callback, 
-                        '[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files]))
+        return common + "web2py_plugin_init('%s', %s);" % (plugin, 
+            '[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files]))
     else:
-        for f in reversed(files):
-            if f not in current.response.files:
-                current.response.files.insert(0, f)
-        js += "web2py_plugin_init('%s', %s);" % (name, callback)
-    return js
+        current.response.files[:0] = [f for f in files if f not in current.response.files]
+        return common + "web2py_plugin_init('%s');" % (plugin)
              
 class IS_UPLOADIFY_IMAGE(IS_IMAGE):
     def _call(self, value): 
@@ -137,13 +119,13 @@ def uploadify_widget(field, value, download_url=None, **attributes):
         newfilename = field.store(f.file, f.filename)
         raise HTTP(200, newfilename)
         
-    callback = """function() {
+    script = SCRIPT("""jQuery(document).one('%(plugin)s', function() {
+console.log('hoge');
 var uploadify_uploading = [];
 var uploadify_uploaded = [];
 var el = jQuery('#%(id)s');
 var file_el = jQuery('#%(file_id)s');
 var form_el = jQuery(el.get(0).form);
-
 jQuery.fn.bindFirst = function(name, fn) {
     this.bind(name, fn);
     var handlers = this.data('events')[name.split('.')[0]];
@@ -197,7 +179,7 @@ file_el.uploadify({
     'sizeLimit' : %(size_limit)i,
     'scriptData': {'name': el.attr('name')}
 });
-}""" % dict(id=_id, file_id=_file_id, 
+});""" % dict(plugin='plugin_uploadify_widget', id=_id, file_id=_file_id, 
               button_text=BUTTON_TEXT,
               uploader=URL('static', 'plugin_uploadify_widget/uploadify.swf'),
               script=URL(args=current.request.args, vars=current.request.vars),
@@ -206,10 +188,9 @@ file_el.uploadify({
               size_limit=size_limit,
               not_empty_message=not_empty_message or '',
               ajax='true' if current.request.ajax else 'false',
-         )
+         ) +
+         _init('plugin_uploadify_widget', files=FILES))
          
-    script = SCRIPT(_plugin_init('plugin_uploadify_widget', callback=callback, files=FILES))
-    
     if '_formkey' in current.request.vars:
         filename = current.request.vars[field.name]
         if filename:

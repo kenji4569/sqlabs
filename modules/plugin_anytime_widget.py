@@ -8,51 +8,34 @@ import datetime
 FILES = (URL('static','plugin_anytime_widget/anytime.css'),
          URL('static','plugin_anytime_widget/anytime.js'))
 
-def _plugin_init(name, callback, files):
-    js = """
-function web2py_plugin_init(name, callback, files) {
-    var plugins = jQuery.data(document.body, 'web2py_plugins');
-    function _set_plugins(plugins) { jQuery.data(document.body, 'web2py_plugins', plugins); }
-    if (plugins == undefined) { plugins = {}; }
-    if (name in plugins) {
-        if (plugins[name].loaded == true) {jQuery(callback); return; }
-        else {plugins[name].callbacks.push(callback); _set_plugins(plugins); return; }
-    }
-    if (files == undefined) {
-        plugins[name] = {loaded: true}; _set_plugins(plugins); jQuery(callback); return;
-    }
-    plugins[name] = {loaded: false, callbacks:[callback]}; _set_plugins(plugins);
-    var loadings = 0;
-    jQuery.each(files, function() {
-        if (this.slice(-3) == '.js') { 
-            ++loadings;
-            jQuery.ajax({type: 'GET', url: this, 
-                         success: function(data) { eval(data); --loadings; },
-                         error: function() { --loadings; } });
-        } else if (this.slice(-4) == '.css') {
-            if (document.createStyleSheet){ document.createStyleSheet(this); } // for IE
-            else {jQuery('<link rel="stylesheet" type="text/css" href="' + this + '" />').prependTo('head');}
-        }
-    });
-    jQuery(function() { 
-        var interval = setInterval(function() {
-            if (loadings == 0) { 
-                plugins[name].loaded = true; _set_plugins(plugins);
-                jQuery.each(plugins[name].callbacks, function() { this(); });
-                if (interval != null) { clearInterval(interval) } 
-            }
-        }, 100);
-    });
+def _init(plugin, files):
+    common = """function web2py_plugin_init(plugin, files) {
+var $ = jQuery, n = 0, plugins = $.data(document.body, 'web2py_plugins');
+function _set_plugins(plugins) {$.data(document.body, 'web2py_plugins', plugins);}
+if (plugins == undefined) {plugins = {};} 
+else if (plugin in plugins) {if (plugins[plugin] == true) {$(document).trigger(plugin);} return;}
+plugins[plugin] = false; _set_plugins(plugins);
+if (files == undefined) {
+    $(function(){plugins[plugin] = true; _set_plugins(plugins); $(document).trigger(plugin)}); return;
+}
+$.each(files, function() {
+    if (this.slice(-3) == '.js') {
+        ++n; $.ajax({type: 'GET', url: this, success: function(d) {eval(d); --n;}, error: function() {--n;}});
+    } else if (this.slice(-4) == '.css') {
+        if (document.createStyleSheet){document.createStyleSheet(this);} // for IE
+        else {$('<link rel="stylesheet" type="text/css" href="' + this + '" />').prependTo('head');}
+    }});
+$(function() {var t = setInterval(function() {
+    if (n == 0) {$(document).trigger(plugin); plugins[plugin] = true; _set_plugins(plugins); clearInterval(t);}
+    }, 100);});
 };"""
     if current.request.ajax:
-        js += "web2py_plugin_init('%s', %s, %s);" % (name, callback, 
-                        '[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files]))
+        return common + "web2py_plugin_init('%s', %s);" % (plugin, 
+            '[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files]))
     else:
-        for f in reversed(files):
-            if f not in current.response.files:
-                current.response.files.insert(0, f)
-        js += "web2py_plugin_init('%s', %s);" % (name, callback)
-    return js
+        current.response.files[:0] = [f for f in files if f not in current.response.files]
+        return common + "web2py_plugin_init('%s');" % (plugin)
+
              
 def _get_date_option():
     return """{
@@ -83,16 +66,15 @@ def anytime_widget(field, value, **attributes):
             _class = 'any%s' % widget_class.match(str(field.type)).group(),
             )
             
-    callback = """function() {
+    script = SCRIPT("""jQuery(document).one('%(plugin)s', function() {
 jQuery("#%(id)s").AnyTime_picker(
     jQuery.extend({format: "%%H:%%i:%%S", labelTitle: "%(title)s", 
         labelHour: "%(hour)s", labelMinute: "%(minute)s", labelSecond: "%(second)s"}, 
         %(date_option)s));
-}""" % dict(id=_id, title=current.T('Choose time'), 
+});""" % dict(plugin='plugin_anytime_widget', id=_id, title=current.T('Choose time'), 
            hour=current.T('Hour'), minute=current.T('Minute'), second=current.T('Second'),
-           date_option=_get_date_option())
-    
-    script = SCRIPT(_plugin_init('plugin_anytime_widget', callback=callback, files=FILES))
+           date_option=_get_date_option()) +
+           _init('plugin_anytime_widget', files=FILES))
     
     return SPAN(script, INPUT(**attr), **attributes)
 
@@ -104,15 +86,14 @@ def anydate_widget(field, value, **attributes):
             _id = _id, _name = field.name, requires = field.requires,
             _class = 'any%s' % widget_class.match(str(field.type)).group(),
             )
-            
-    callback = """function() {
+           
+    script = SCRIPT("""jQuery(document).one('%(plugin)s', function() {
 jQuery("#%(id)s").AnyTime_picker( 
     jQuery.extend({format: "%%Y-%%m-%%d", labelTitle: "%(title)s"}, 
                    %(date_option)s));
-}""" % dict(id=_id, title=current.T('Choose date'), 
-           date_option=_get_date_option())
-    
-    script = SCRIPT(_plugin_init('plugin_anytime_widget', callback=callback, files=FILES))
+});""" % dict(plugin='plugin_anytime_widget', id=_id, title=current.T('Choose date'), 
+           date_option=_get_date_option()) +
+           _init('plugin_anytime_widget', files=FILES))
        
     return SPAN(script, INPUT(**attr), **attributes)
     
@@ -124,15 +105,14 @@ def anydatetime_widget(field, value, **attributes):
             _class = 'any%s' % widget_class.match(str(field.type)).group(),
             )
             
-    callback = """function() {
+    script = SCRIPT("""jQuery(document).one('%(plugin)s', function() {
 jQuery("#%(id)s").AnyTime_picker( 
     jQuery.extend({format: "%%Y-%%m-%%d %%H:%%i:00", labelTitle: "%(title)s", 
                    labelHour: "%(hour)s", labelMinute: "%(minute)s"}, 
                    %(date_option)s));
-}""" % dict(id=_id, title=current.T('Choose date time'), 
+});""" % dict(plugin='plugin_anytime_widget', id=_id, title=current.T('Choose date time'), 
            hour=current.T('Hour'), minute=current.T('Minute'),
-           date_option=_get_date_option())
+           date_option=_get_date_option()) + 
+           _init('plugin_anytime_widget', files=FILES))
     
-    script = SCRIPT(_plugin_init('plugin_anytime_widget', callback=callback, files=FILES))
-       
     return SPAN(script, INPUT(**attr), **attributes)
