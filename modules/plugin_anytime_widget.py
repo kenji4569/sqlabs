@@ -5,19 +5,17 @@ from gluon import *
 from gluon.sqlhtml import widget_class, FormWidget, StringWidget
 import datetime
 
+NAME = 'plugin_anytime_widget'
 FILES = (URL('static','plugin_anytime_widget/anytime.css'),
          URL('static','plugin_anytime_widget/anytime.js'))
 
-def _init(plugin, files):
-    common = """function web2py_plugin_init(plugin, files) {
+def _init(name, files):
+    common = """function web2py_plugin_init(name, files) {
 var $ = jQuery, n = 0, plugins = $.data(document.body, 'web2py_plugins');
-function _set_plugins(plugins) {$.data(document.body, 'web2py_plugins', plugins);}
-if (plugins == undefined) {plugins = {};} 
-else if (plugin in plugins) {if (plugins[plugin] == true) {$(document).trigger(plugin);} return;}
-plugins[plugin] = false; _set_plugins(plugins);
-if (files == undefined) {
-    $(function(){plugins[plugin] = true; _set_plugins(plugins); $(document).trigger(plugin)}); return;
-}
+function _set_plugin(value) {plugins[name] = value; $.data(document.body, 'web2py_plugins', plugins);}
+function _trigger() {$(document).trigger(name);}
+if (plugins == undefined) {plugins = {};} else if (name in plugins) {if (plugins[name] == true) {_trigger()} return;}
+_set_plugin(false); if (files == undefined) {$(function(){_set_plugin(true); _trigger();}); return;}
 $.each(files, function() {
     if (this.slice(-3) == '.js') {
         ++n; $.ajax({type: 'GET', url: this, success: function(d) {eval(d); --n;}, error: function() {--n;}});
@@ -25,18 +23,15 @@ $.each(files, function() {
         if (document.createStyleSheet){document.createStyleSheet(this);} // for IE
         else {$('<link rel="stylesheet" type="text/css" href="' + this + '" />').prependTo('head');}
     }});
-$(function() {var t = setInterval(function() {
-    if (n == 0) {$(document).trigger(plugin); plugins[plugin] = true; _set_plugins(plugins); clearInterval(t);}
-    }, 100);});
+$(function() {var t = setInterval(function() {if (n == 0) {_trigger(); _set_plugin(true); clearInterval(t);}}, 100);});
 };"""
     if current.request.ajax:
-        return common + "web2py_plugin_init('%s', %s);" % (plugin, 
-            '[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files]))
+        return SCRIPT(common + "web2py_plugin_init('%s', %s);" % (name, 
+            '[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files])))
     else:
         current.response.files[:0] = [f for f in files if f not in current.response.files]
-        return common + "web2py_plugin_init('%s');" % (plugin)
+        return SCRIPT(common + "web2py_plugin_init('%s');" % (name))
 
-             
 def _get_date_option():
     return """{
 labelYear: "%(year)s", labelMonth: "%(month)s", labelDay: "%(day)s", 
@@ -71,12 +66,11 @@ jQuery("#%(id)s").AnyTime_noPicker().AnyTime_picker(
     jQuery.extend({format: "%%H:%%i:%%S", labelTitle: "%(title)s", 
         labelHour: "%(hour)s", labelMinute: "%(minute)s", labelSecond: "%(second)s"}, 
         %(date_option)s));
-});""" % dict(plugin='plugin_anytime_widget', id=_id, title=current.T('Choose time'), 
+});""" % dict(plugin=NAME, id=_id, title=current.T('Choose time'), 
            hour=current.T('Hour'), minute=current.T('Minute'), second=current.T('Second'),
-           date_option=_get_date_option()) +
-           _init('plugin_anytime_widget', files=FILES))
+           date_option=_get_date_option()))
     
-    return SPAN(script, INPUT(**attr), **attributes)
+    return SPAN(INPUT(**attr), script, _init(NAME, FILES), **attributes)
 
     
 def anydate_widget(field, value, **attributes): 
@@ -91,11 +85,10 @@ def anydate_widget(field, value, **attributes):
 jQuery("#%(id)s").AnyTime_noPicker().AnyTime_picker( 
     jQuery.extend({format: "%%Y-%%m-%%d", labelTitle: "%(title)s"}, 
                    %(date_option)s));
-});""" % dict(plugin='plugin_anytime_widget', id=_id, title=current.T('Choose date'), 
-           date_option=_get_date_option()) +
-           _init('plugin_anytime_widget', files=FILES))
+});""" % dict(plugin=NAME, id=_id, title=current.T('Choose date'), 
+           date_option=_get_date_option()))
        
-    return SPAN(script, INPUT(**attr), **attributes)
+    return SPAN(INPUT(**attr), script, _init(NAME, FILES), **attributes)
     
 def anydatetime_widget(field, value, **attributes): 
     _id = '%s_%s' % (field._tablename, field.name)
@@ -112,7 +105,6 @@ jQuery("#%(id)s").AnyTime_noPicker().AnyTime_picker(
                    %(date_option)s));
 });""" % dict(plugin='plugin_anytime_widget', id=_id, title=current.T('Choose date time'), 
            hour=current.T('Hour'), minute=current.T('Minute'),
-           date_option=_get_date_option()) + 
-           _init('plugin_anytime_widget', files=FILES))
+           date_option=_get_date_option()))
     
-    return SPAN(script, INPUT(**attr), **attributes)
+    return SPAN(INPUT(**attr), script, _init(NAME, FILES), **attributes)

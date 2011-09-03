@@ -6,23 +6,21 @@ from gluon.validators import translate
 from gluon.sqlhtml import UploadWidget
 from gluon.storage import Storage
 
-BUTTON_TEXT = 'SELECT FILES'
+NAME = 'plugin_uploadify_widget'
 FILES = ( URL('static', 'plugin_uploadify_widget/uploadify.css'),
           URL('static', 'plugin_uploadify_widget/swfobject.js'),
           URL('static', 'plugin_uploadify_widget/jquery.uploadify.v2.1.4.min.js'),
           URL('static', 'plugin_uploadify_widget/uploadify.css'),
          )
+BUTTON_TEXT = 'SELECT FILES'
 
-def _init(plugin, files):
-    common = """function web2py_plugin_init(plugin, files) {
+def _init(name, files):
+    common = """function web2py_plugin_init(name, files) {
 var $ = jQuery, n = 0, plugins = $.data(document.body, 'web2py_plugins');
-function _set_plugins(plugins) {$.data(document.body, 'web2py_plugins', plugins);}
-if (plugins == undefined) {plugins = {};} 
-else if (plugin in plugins) {if (plugins[plugin] == true) {$(document).trigger(plugin);} return;}
-plugins[plugin] = false; _set_plugins(plugins);
-if (files == undefined) {
-    $(function(){plugins[plugin] = true; _set_plugins(plugins); $(document).trigger(plugin)}); return;
-}
+function _set_plugin(value) {plugins[name] = value; $.data(document.body, 'web2py_plugins', plugins);}
+function _trigger() {$(document).trigger(name);}
+if (plugins == undefined) {plugins = {};} else if (name in plugins) {if (plugins[name] == true) {_trigger()} return;}
+_set_plugin(false); if (files == undefined) {$(function(){_set_plugin(true); _trigger();}); return;}
 $.each(files, function() {
     if (this.slice(-3) == '.js') {
         ++n; $.ajax({type: 'GET', url: this, success: function(d) {eval(d); --n;}, error: function() {--n;}});
@@ -30,16 +28,14 @@ $.each(files, function() {
         if (document.createStyleSheet){document.createStyleSheet(this);} // for IE
         else {$('<link rel="stylesheet" type="text/css" href="' + this + '" />').prependTo('head');}
     }});
-$(function() {var t = setInterval(function() {
-    if (n == 0) {$(document).trigger(plugin); plugins[plugin] = true; _set_plugins(plugins); clearInterval(t);}
-    }, 100);});
+$(function() {var t = setInterval(function() {if (n == 0) {_trigger(); _set_plugin(true); clearInterval(t);}}, 100);});
 };"""
     if current.request.ajax:
-        return common + "web2py_plugin_init('%s', %s);" % (plugin, 
-            '[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files]))
+        return SCRIPT(common + "web2py_plugin_init('%s', %s);" % (name, 
+            '[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files])))
     else:
         current.response.files[:0] = [f for f in files if f not in current.response.files]
-        return common + "web2py_plugin_init('%s');" % (plugin)
+        return SCRIPT(common + "web2py_plugin_init('%s');" % (name))
              
 class IS_UPLOADIFY_IMAGE(IS_IMAGE):
     def _call(self, value): 
@@ -178,7 +174,7 @@ file_el.uploadify({
     'sizeLimit' : %(size_limit)i,
     'scriptData': {'name': el.attr('name')}
 });
-});""" % dict(plugin='plugin_uploadify_widget', id=_id, file_id=_file_id, 
+});""" % dict(plugin=NAME, id=_id, file_id=_file_id, 
               button_text=BUTTON_TEXT,
               uploader=URL('static', 'plugin_uploadify_widget/uploadify.swf'),
               script=URL(args=current.request.args, vars=current.request.vars),
@@ -187,8 +183,7 @@ file_el.uploadify({
               size_limit=size_limit,
               not_empty_message=not_empty_message or '',
               ajax='true' if current.request.ajax else 'false',
-         ) +
-         _init('plugin_uploadify_widget', files=FILES))
+         ))
          
     if '_formkey' in current.request.vars:
         filename = current.request.vars[field.name]
@@ -219,4 +214,4 @@ file_el.uploadify({
                       A(UploadWidget.GENERIC_DESCRIPTION, _href = url),
                       ']', br, image)
             
-    return DIV(script, inp, **attributes)
+    return DIV(inp, script, _init(NAME, FILES), **attributes)
