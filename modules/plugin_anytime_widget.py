@@ -67,7 +67,7 @@ def anytime_widget(field, value, **attributes):
             )
             
     script = SCRIPT("""jQuery(document).one('%(plugin)s', function() {
-jQuery("#%(id)s").AnyTime_picker(
+jQuery("#%(id)s").AnyTime_noPicker().AnyTime_picker(
     jQuery.extend({format: "%%H:%%i:%%S", labelTitle: "%(title)s", 
         labelHour: "%(hour)s", labelMinute: "%(minute)s", labelSecond: "%(second)s"}, 
         %(date_option)s));
@@ -88,7 +88,7 @@ def anydate_widget(field, value, **attributes):
             )
            
     script = SCRIPT("""jQuery(document).one('%(plugin)s', function() {
-jQuery("#%(id)s").AnyTime_picker( 
+jQuery("#%(id)s").AnyTime_noPicker().AnyTime_picker( 
     jQuery.extend({format: "%%Y-%%m-%%d", labelTitle: "%(title)s"}, 
                    %(date_option)s));
 });""" % dict(plugin='plugin_anytime_widget', id=_id, title=current.T('Choose date'), 
@@ -106,7 +106,7 @@ def anydatetime_widget(field, value, **attributes):
             )
             
     script = SCRIPT("""jQuery(document).one('%(plugin)s', function() {
-jQuery("#%(id)s").AnyTime_picker( 
+jQuery("#%(id)s").AnyTime_noPicker().AnyTime_picker( 
     jQuery.extend({format: "%%Y-%%m-%%d %%H:%%i:00", labelTitle: "%(title)s", 
                    labelHour: "%(hour)s", labelMinute: "%(minute)s"}, 
                    %(date_option)s));

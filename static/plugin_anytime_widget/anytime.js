@@ -1,7 +1,7 @@
 /*****************************************************************************
  *  FILE:  anytime.js - The Any+Time(TM) JavaScript Library (source)
  *
- *  VERSION: 4.1112A
+ *  VERSION: 4.1112H
  *
  *  Copyright 2008-2010 Andrew M. Andrews III (www.AMA3.com). Some Rights 
  *  Reserved. This work licensed under the Creative Commons Attribution-
@@ -145,11 +145,6 @@ var AnyTime =
   	$(document).ready( 
   		function()
 		{
-			//  Ping the server for statistical purposes (remove if offended).
-			
-  			//if ( window.location.hostname.length && ( window.location.hostname != 'www.ama3.com' ) )
-  				//$(document.body).append('<img src="http://www.ama3.com/anytime/ping/?4.1112A'+(AnyTime.utcLabel?".tz":"")+'" width="0" height="0" />');
-			
 			//  IE6 doesn't float popups over <select> elements unless an
 			//	<iframe> is inserted between them!  The <iframe> is added to
 			//	the page *before* the popups are moved, so they will appear
@@ -662,12 +657,11 @@ AnyTime.Converter = function(options)
 		_offCap = _offP;
 		_offPSI = (-1);
 	    var era = 1;
-      var time = new Date(0,0,0,0,0,0,0);
+      var time = new Date(4,0,1,0,0,0,0);//4=leap year bug
 	    var slen = str.length;
 	    var s = 0;
 	    var tzSign = 1, tzOff = _offP;
 	    var i, matched, sub, sublen, temp;
-        
 	    for ( var f = 0 ; f < _flen ; f++ )
 	    {
 	      if ( this.fmt.charAt(f) == '%' )
@@ -839,9 +833,7 @@ AnyTime.Converter = function(options)
 	            }
 	            break;
 	          case 'm': // Month, numeric (00..12)
-                var tmp = (Number(str.substr(s,2))-1)%12;
-	            time.setMonth( tmp );
-                time.setMonth( tmp );
+	            time.setMonth( (Number(str.substr(s,2))-1)%12 );
 	            s += 2;
 	            break;
 	          case 'p': // AM or PM
@@ -898,6 +890,9 @@ AnyTime.Converter = function(options)
 	                break;
 	            }
 	            break;
+            case 'w': // Day of the week (0=Sunday..6=Saturday) (ignored)
+              s += 1;
+              break;
 	          case 'Y': // Year, numeric, four digits, negative if before 0001
 	            i = 4;
 	            if ( str.substr(s,1) == '-' )
@@ -950,6 +945,7 @@ AnyTime.Converter = function(options)
 		              		sublen = sub.length;
 		              		if ( ( s+sublen <= slen ) && ( str.substr(s,sublen) == sub ) )
 		              		{
+                        s+=sublen;
 		              			matched = true;
 		              			break;
 		              		}
@@ -988,7 +984,6 @@ AnyTime.Converter = function(options)
 	          case 'u': // Week (00..53), where Monday is the first day of the week
 	          case 'V': // Week (01..53), where Sunday is the first day of the week; used with %X
 	          case 'v': // Week (01..53), where Monday is the first day of the week; used with %x
-	          case 'w': // Day of the week (0=Sunday..6=Saturday)
 	          case 'X': // Year for the week where Sunday is the first day of the week, numeric, four digits; used with %V
 	          case 'x': // Year for the week, where Monday is the first day of the week, numeric, four digits; used with %v
 	            throw '%'+this.fmt.charAt(f+1)+' not implemented by AnyTime.Converter';
@@ -1006,7 +1001,6 @@ AnyTime.Converter = function(options)
 	    } // for ( var f ... )
 	    if ( era < 0 )
 	      time.setFullYear( 0 - time.getFullYear() );
-          
 		if ( tzOff != Number.MIN_VALUE )
 		{
 	       if ( _captureOffset )
@@ -1014,6 +1008,7 @@ AnyTime.Converter = function(options)
 	       else
 	    	 time.setTime( ( time.getTime() - (tzOff*60000) ) - (time.getTimezoneOffset()*60000) );
 		}
+		
 	    return time;
 	    
 	}; // AnyTime.Converter.parse()
@@ -1110,7 +1105,7 @@ AnyTime.Converter = function(options)
 	  		_shortMon = 1000;
 	  		for ( i = 0 ; i < 12 ; i++ )
 	  		{
-	  			var len = _this.mNames[i].length;
+	  			len = _this.mNames[i].length;
 	  			if ( len > _longMon )
 					_longMon = len;
 	  			if ( len < _shortMon )
@@ -1307,8 +1302,8 @@ AnyTime.picker = function( id, options )
 	//  Create a new private object instance to manage the picker,
 	//  if one does not already exist.
 	
-    //if ( __pickers[id] )
-    //	throw 'Cannot create another AnyTime picker for "'+id+'"';
+    if ( __pickers[id] )
+    	throw 'Cannot create another AnyTime picker for "'+id+'"';
 
 	var _this = null;
 
@@ -1383,6 +1378,7 @@ AnyTime.picker = function( id, options )
 		yNext: null,		// next-year button
 		yPast: null,		// years-past button
 		yPrior: null,		// prior-year button
+
 		//---------------------------------------------------------------------
 		//  .initialize() initializes the picker instance.
 		//---------------------------------------------------------------------
@@ -1391,7 +1387,7 @@ AnyTime.picker = function( id, options )
 		{
 			_this = this;
 
-			this.id = 'AnyTime--'+id;
+      this.id = 'AnyTime--'+id.replace(/[^-_.A-Za-z0-9]/g,'--AnyTime--');
 
 			options = jQuery.extend(true,{},options||{});
 		  	options.utcParseOffsetCapture = true;
@@ -1435,7 +1431,7 @@ AnyTime.picker = function( id, options )
 		  			this.latest = this.conv.parse( options.latest.toString() );
 		  	}
 
-		  	this.lX = options.labelDismiss || 'OK';
+		  	this.lX = options.labelDismiss || 'X';
 		  	this.lY = options.labelYear || 'Year';
 		  	this.lO = options.labelTimeZone || 'Time Zone';
 
@@ -1472,8 +1468,8 @@ AnyTime.picker = function( id, options )
 		  	//  Popup pickers will be moved to the end of the body
 		  	//  once the entire page has loaded.
 
-		  	this.inp = $('#'+id);
-		  	this.div = $( '<div class="AnyTime-win AnyTime-pkr ui-widget ui-widget-content ui-corner-all" style="width:0;height:0;z-index:10000;" id="' + this.id + '" aria-live="off"/>' );
+        this.inp = $(document.getElementById(id)); // avoids ID-vs-pseudo-selector probs like id="foo:bar"
+		  	this.div = $( '<div class="AnyTime-win AnyTime-pkr ui-widget ui-widget-content ui-corner-all" style="width:0;height:0" id="' + this.id + '" aria-live="off"/>' );
 		    this.inp.after(this.div);
 		  	this.wMinW = this.div.outerWidth(!$.browser.safari);
 		  	this.wMinH = this.div.AnyTime_height(true);
@@ -1489,7 +1485,7 @@ AnyTime.picker = function( id, options )
 		  	
 		  	//  Add dismiss box to title (if popup)
 
-		  	var t = null;
+		  	t = null;
 		  	var xDiv = null;
 		  	if ( this.pop )
 		  	{
@@ -1500,8 +1496,7 @@ AnyTime.picker = function( id, options )
 
 		  	//  date (calendar) portion
 
-		  	var lab = '';
-		  	
+		  	lab = '';
 		  	if ( askDate )
 		  	{
 			  this.dD = $( '<div class="AnyTime-date" style="width:0;height:0"/>' );
@@ -1595,7 +1590,7 @@ AnyTime.picker = function( id, options )
 		        				this.upd(elem);
 		        			}
 		        		},
-		        		['dom'], lab, true );
+		        		['dom'], lab );
 		        }
 		        shownFields++;
 
@@ -1607,7 +1602,7 @@ AnyTime.picker = function( id, options )
 
 		    if ( askTime )
 		    {
-              var tensDiv, onesDiv;
+          var tensDiv, onesDiv;
 
 		      this.dT = $('<div class="AnyTime-time" style="width:0;height:0" />');
 		      this.dB.append(this.dT);
@@ -1776,8 +1771,6 @@ AnyTime.picker = function( id, options )
 		      }
 		      
 		    } // if ( askTime )
-            
-            //------------------------------------
 
 		    //  Set the title.  If a title option has been specified, use it.
 		    //  Otherwise, determine a worthy title based on which (and how many)
@@ -1919,7 +1912,7 @@ AnyTime.picker = function( id, options )
 		      this.div.append(this.oDiv);
 		
 		      // the order here (HDR,BODY,XDIV,TITLE) is important for width calcluation:
-		      var title = $('<h5 class="AnyTime-hdr AnyTime-hdr-off-selector ui-widget-header ui-corner-top"/>');
+		      var title = $('<h5 class="AnyTime-hdr AnyTime-hdr-off-selector ui-widget-header ui-corner-top" />');
 		      this.oDiv.append( title );
 		      this.oBody = $('<div class="AnyTime-body AnyTime-body-off-selector" style="overflow:auto;white-space:nowrap" />');
 		      this.oDiv.append( this.oBody );
@@ -2175,9 +2168,8 @@ AnyTime.picker = function( id, options )
 		//	is returned.
 		//---------------------------------------------------------------------
 		
-		btn: function( parent, text, handler, classes, title, clickable )
+		btn: function( parent, text, handler, classes, title )
 		{
-            clickable = clickable | false;
 			var tagName = ( (parent[0].nodeName.toLowerCase()=='ul')?'li':'td'); 
 			var div$ = '<' + tagName +
 			  				' class="AnyTime-btn';
@@ -2187,22 +2179,6 @@ AnyTime.picker = function( id, options )
 			parent.append(div);
 			div.AnyTime_title = title;
 			
-            if (clickable) {
-            div.click(
-				function(e)
-				{ 					
-                  // bind the handler to the picker so "this" is correct
-				  _this.tempFunc = handler;
-				  _this.tempFunc(e);
-					var elem = $(this);
-					if ( elem.is('.AnyTime-off-off-btn') )
-						_this.dismissODiv(e);
-					else if ( elem.is('.AnyTime-mil-btn') || elem.is('.AnyTime-cent-btn') || elem.is('.AnyTime-dec-btn') || elem.is('.AnyTime-yr-btn') || elem.is('.AnyTime-era-btn') )
-						_this.dismissYDiv(e);
-					else if ( _this.pop )
-						_this.dismiss(e); 
-				});
-            } else {
 			div.click(
 			    function(e)
 			  	{
@@ -2210,7 +2186,6 @@ AnyTime.picker = function( id, options )
 				  _this.tempFunc = handler;
 				  _this.tempFunc(e);
 			  	});
-            }
 			div.dblclick(
 				function(e)
 				{ 					
@@ -2358,8 +2333,8 @@ AnyTime.picker = function( id, options )
 		
 		key: function(event)
 		{
-            return;
-			/*var t = null;
+      var mo;
+			var t = null;
 			var elem = this.div.find('.AnyTime-focus-btn');
 		    var key = event.keyCode || event.which;
 		    this.denyTab = true;
@@ -2428,7 +2403,7 @@ AnyTime.picker = function( id, options )
 				    		t.setFullYear(t.getFullYear()-1);
 				    	else
 				    	{
-				    		var mo = t.getMonth()-1;
+				    		mo = t.getMonth()-1;
 		    				if ( t.getDate() > __daysIn[mo] )
 		    					t.setDate(__daysIn[mo])
 			    			t.setMonth(mo);
@@ -2569,7 +2544,7 @@ AnyTime.picker = function( id, options )
 				    		t.setFullYear(t.getFullYear()+1);
 				    	else
 				    	{
-				    		var mo = t.getMonth()+1;
+				    		mo = t.getMonth()+1;
 		    				if ( t.getDate() > __daysIn[mo] )
 		    					t.setDate(__daysIn[mo])
 			    			t.setMonth(mo);
@@ -2724,7 +2699,7 @@ AnyTime.picker = function( id, options )
     			this.showPkr(null);
 
 		    event.preventDefault();
-		*/
+		
 		}, // .key()
 	
 		//---------------------------------------------------------------------
@@ -3151,19 +3126,7 @@ AnyTime.picker = function( id, options )
 		    }
 		    catch ( e )
 		    {
-		      //this.time = new Date(); 
-              //==MODIFIED==
-              var tmp;
-              if (options.now) {
-                tmp = options.now;
-              } else {
-                tmp=new Date(); 
-                tmp.setHours(0);
-                tmp.setMinutes(0);
-              }
-              this.time = new Date(tmp.getFullYear(), tmp.getMonth(), tmp.getDate());
-              
-              this.time.setHours(tmp.getHours(),tmp.getMinutes(),0,0);
+		      this.time = new Date();
 		    }
 		    this.set(this.time);
 		    this.upd(null);
@@ -3289,6 +3252,8 @@ AnyTime.picker = function( id, options )
 		
 		    //  Update days.
 		
+		    cmpLo.setFullYear( this.time.getFullYear() );
+		    cmpHi.setFullYear( this.time.getFullYear() );
 		    cmpLo.setMonth( this.time.getMonth() );
 		    cmpHi.setMonth( this.time.getMonth(), 1 );
 		    current = this.time.getDate();
@@ -3354,9 +3319,11 @@ AnyTime.picker = function( id, options )
 		          } );
 		          wom++;
 		      } );
-		
+
 		    //  Update hour.
 		
+		    cmpLo.setFullYear( this.time.getFullYear() );
+		    cmpHi.setFullYear( this.time.getFullYear() );
 		    cmpLo.setMonth( this.time.getMonth(), this.time.getDate() );
 		    cmpHi.setMonth( this.time.getMonth(), this.time.getDate() );
 		    var not12 = ! this.twelveHr;
@@ -3553,22 +3520,15 @@ AnyTime.picker = function( id, options )
 			    }
 		    }
 		    	
-            if ( __msie6 ) {
-                this.dB.css({height:String(totH)+'px',width:'350px'});//String(totW)+
-            } else {
-                this.dB.css({height:String(totH)+'px',width:'500px'});//String(totW)+
-            }
+		    this.dB.css({height:String(totH)+'px',width:String(totW)+'px'});
+		
 		    totH += this.bMinH;
 		    totW += this.bMinW;
 		    totH += this.hTitle.AnyTime_height(true) + this.wMinH;
 		    totW += this.wMinW;
 		    if ( this.hTitle.outerWidth(true) > totW )
 		        totW = this.hTitle.outerWidth(true); // IE quirk
-            if (totW >300) {
-                this.div.css({height:String(totH)+'px',width:'350px'});//String(totW)+
-            } else {
-                this.div.css({height:String(totH)+'px',width:String(totW)+'px'});//String(totW)+
-            }
+		    this.div.css({height:String(totH)+'px',width:String(totW)+'px'});
 		
 		    if ( ! this.pop )
 		      this.ajax();
@@ -3700,4 +3660,3 @@ AnyTime.picker = function( id, options )
 //
 //  END OF FILE
 //
-//if(window.location.hostname.length&&(window.location.hostname!='www.ama3.com')&&(window.location.hostname!='dev2.ama3.com'))alert('REMOVE THE LAST LINE FROM anytime.js!');
