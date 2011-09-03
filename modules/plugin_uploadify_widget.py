@@ -17,10 +17,10 @@ BUTTON_TEXT = 'SELECT FILES'
 def _init(name, files):
     common = """function web2py_plugin_init(name, files) {
 var $ = jQuery, n = 0, plugins = $.data(document.body, 'web2py_plugins');
-function _set_plugin(value) {plugins[name] = value; $.data(document.body, 'web2py_plugins', plugins);}
+function _set_plugin(status) {plugins[name] = status; $.data(document.body, 'web2py_plugins', plugins);}
 function _trigger() {$(document).trigger(name);}
-if (plugins == undefined) {plugins = {};} else if (name in plugins) {if (plugins[name] == true) {_trigger()} return;}
-_set_plugin(false); if (files == undefined) {$(function(){_set_plugin(true); _trigger();}); return;}
+if (plugins == undefined) {plugins = {};} else if (name in plugins) {if (plugins[name] == 'f') {_trigger()} return;}
+_set_plugin('w'); if (files == undefined) {$(function(){_set_plugin('f'); _trigger();}); return;}
 $.each(files, function() {
     if (this.slice(-3) == '.js') {
         ++n; $.ajax({type: 'GET', url: this, success: function(d) {eval(d); --n;}, error: function() {--n;}});
@@ -28,7 +28,7 @@ $.each(files, function() {
         if (document.createStyleSheet){document.createStyleSheet(this);} // for IE
         else {$('<link rel="stylesheet" type="text/css" href="' + this + '" />').prependTo('head');}
     }});
-$(function() {var t = setInterval(function() {if (n == 0) {_trigger(); _set_plugin(true); clearInterval(t);}}, 100);});
+$(function() {var t = setInterval(function() {if (n == 0) {_trigger(); _set_plugin('f'); clearInterval(t);}}, 100);});
 };"""
     if current.request.ajax:
         return SCRIPT(common + "web2py_plugin_init('%s', %s);" % (name, 
