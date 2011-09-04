@@ -5,32 +5,24 @@ from gluon import *
 from gluon.sqlhtml import widget_class, FormWidget, StringWidget
 import datetime
 
-NAME = 'plugin_anytime_widget'
 FILES = (URL('static','plugin_anytime_widget/anytime.css'),
          URL('static','plugin_anytime_widget/anytime.js'))
 
-def _init(name, files):
-    common = """function web2py_plugin_init(name, files) {
-var $ = jQuery, n = 0, plugins = $.data(document.body, 'web2py_plugins');
-function _set_plugin(status) {plugins[name] = status; $.data(document.body, 'web2py_plugins', plugins);}
-function _trigger() {$(document).trigger(name);}
-if (plugins == undefined) {plugins = {};} else if (name in plugins) {if (plugins[name] == 'f') {_trigger()} return;}
-_set_plugin('w'); if (files == undefined) {$(function(){_set_plugin('f'); _trigger();}); return;}
-$.each(files, function() {
-    if (this.slice(-3) == '.js') {
-        ++n; $.ajax({type: 'GET', url: this, success: function(d) {eval(d); --n;}, error: function() {--n;}});
-    } else if (this.slice(-4) == '.css') {
-        if (document.createStyleSheet){document.createStyleSheet(this);} // for IE
-        else {$('<link rel="stylesheet" type="text/css" href="' + this + '" />').prependTo('head');}
-    }});
-$(function() {var t = setInterval(function() {if (n == 0) {_trigger(); _set_plugin('f'); clearInterval(t);}}, 100);});
-};"""
+def _set_files(files):
     if current.request.ajax:
-        return SCRIPT(common + "web2py_plugin_init('%s', %s);" % (name, 
-            '[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files])))
+        current.response.js = (current.response.js or '') + """;(function ($) {
+var srcs = $('script').map(function(){return $(this).attr('src');}),
+    hrefs = $('link').map(function(){return $(this).attr('href');});
+$.each(%s, function() {
+    if ((this.slice(-3) == '.js') && ($.inArray(this.toString(), srcs) == -1)) {
+        var el = document.createElement('script'); el.type = 'text/javascript'; el.src = this;
+        document.body.appendChild(el);
+    } else if ((this.slice(-4) == '.css') && ($.inArray(this.toString(), hrefs) == -1)) {
+        $('<link rel="stylesheet" type="text/css" href="' + this + '" />').prependTo('head');
+        if (/* for IE */ document.createStyleSheet){document.createStyleSheet(this);} 
+}});})(jQuery);""" % ('[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files]))
     else:
         current.response.files[:0] = [f for f in files if f not in current.response.files]
-        return SCRIPT(common + "web2py_plugin_init('%s');" % (name))
 
 def _get_date_option():
     return """{
@@ -54,6 +46,8 @@ labelDismiss: "%(ok)s" }""" % dict(
     )
 
 def anytime_widget(field, value, **attributes): 
+    _set_files(FILES)
+    
     _id = '%s_%s' % (field._tablename, field.name)
     attr = dict(
             _type = 'text', value = (value!=None and str(value)) or '',
@@ -61,19 +55,25 @@ def anytime_widget(field, value, **attributes):
             _class = 'any%s' % widget_class.match(str(field.type)).group(),
             )
             
-    script = SCRIPT("""jQuery(document).one('%(plugin)s', function() {
-jQuery("#%(id)s").AnyTime_noPicker().AnyTime_picker(
-    jQuery.extend({format: "%%H:%%i:%%S", labelTitle: "%(title)s", 
-        labelHour: "%(hour)s", labelMinute: "%(minute)s", labelSecond: "%(second)s"}, 
-        %(date_option)s));
-});""" % dict(plugin=NAME, id=_id, title=current.T('Choose time'), 
+    script = SCRIPT("""
+jQuery(function() { var t = 10; (function run() {if ((function() {
+    var el = jQuery("#%(id)s");
+    if (el.AnyTime_picker == undefined) { return true; }
+    el.AnyTime_noPicker().AnyTime_picker(
+        jQuery.extend({format: "%%H:%%i:%%S", labelTitle: "%(title)s", 
+            labelHour: "%(hour)s", labelMinute: "%(minute)s", labelSecond: "%(second)s"}, 
+            %(date_option)s));
+})()) {setTimeout(run, t); t = 2*t;}})();});
+""" % dict(id=_id, title=current.T('Choose time'), 
            hour=current.T('Hour'), minute=current.T('Minute'), second=current.T('Second'),
            date_option=_get_date_option()))
     
-    return SPAN(INPUT(**attr), script, _init(NAME, FILES), **attributes)
+    return SPAN(script, INPUT(**attr), **attributes)
 
     
 def anydate_widget(field, value, **attributes): 
+    _set_files(FILES)
+    
     _id = '%s_%s' % (field._tablename, field.name)
     attr = dict(
             _type = 'text', value = (value!=None and str(value)) or '',
@@ -81,16 +81,22 @@ def anydate_widget(field, value, **attributes):
             _class = 'any%s' % widget_class.match(str(field.type)).group(),
             )
            
-    script = SCRIPT("""jQuery(document).one('%(plugin)s', function() {
-jQuery("#%(id)s").AnyTime_noPicker().AnyTime_picker( 
+    script = SCRIPT("""
+jQuery(function() { var t = 10; (function run() {if ((function() {
+    var el = jQuery("#%(id)s");
+    if (el.AnyTime_picker == undefined) { return true; }
+    el.AnyTime_noPicker().AnyTime_picker( 
     jQuery.extend({format: "%%Y-%%m-%%d", labelTitle: "%(title)s"}, 
                    %(date_option)s));
-});""" % dict(plugin=NAME, id=_id, title=current.T('Choose date'), 
+})()) {setTimeout(run, t); t = 2*t;}})();});
+""" % dict(id=_id, title=current.T('Choose date'), 
            date_option=_get_date_option()))
        
-    return SPAN(INPUT(**attr), script, _init(NAME, FILES), **attributes)
+    return SPAN(script, INPUT(**attr), **attributes)
     
 def anydatetime_widget(field, value, **attributes): 
+    _set_files(FILES)
+    
     _id = '%s_%s' % (field._tablename, field.name)
     attr = dict(
             _type = 'text', value = (value!=None and str(value)) or '',
@@ -98,13 +104,17 @@ def anydatetime_widget(field, value, **attributes):
             _class = 'any%s' % widget_class.match(str(field.type)).group(),
             )
             
-    script = SCRIPT("""jQuery(document).one('%(plugin)s', function() {
-jQuery("#%(id)s").AnyTime_noPicker().AnyTime_picker( 
-    jQuery.extend({format: "%%Y-%%m-%%d %%H:%%i:00", labelTitle: "%(title)s", 
-                   labelHour: "%(hour)s", labelMinute: "%(minute)s"}, 
-                   %(date_option)s));
-});""" % dict(plugin='plugin_anytime_widget', id=_id, title=current.T('Choose date time'), 
+    script = SCRIPT("""
+jQuery(function() { var t = 10; (function run() {if ((function() {
+    var el = jQuery("#%(id)s");
+    if (el.AnyTime_picker == undefined) { return true; }
+    el.AnyTime_noPicker().AnyTime_picker( 
+        jQuery.extend({format: "%%Y-%%m-%%d %%H:%%i:00", labelTitle: "%(title)s", 
+                       labelHour: "%(hour)s", labelMinute: "%(minute)s"}, 
+                       %(date_option)s));
+})()) {setTimeout(run, t); t = 2*t;}})();});
+"""  % dict(id=_id, title=current.T('Choose date time'), 
            hour=current.T('Hour'), minute=current.T('Minute'),
            date_option=_get_date_option()))
     
-    return SPAN(INPUT(**attr), script, _init(NAME, FILES), **attributes)
+    return SPAN(script, INPUT(**attr), **attributes)
