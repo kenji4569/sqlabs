@@ -70,10 +70,11 @@ def image_upload_or_choose():
         info = 'submitted %s' % form.vars
     
     records = disk_db(image_table.id>0).select(orderby=~image_table.id, limitby=(0,3))
-    _get_src = lambda r: URL(request.controller, 'download', r.image)
+    _get_src = lambda r: URL(request.controller, 'download', args=r.image)
     records = DIV([IMG(_src=_get_src(r), 
                        _onclick="""
-jQuery.data(document.body, 'elrte_callback')('%s');jQuery('.dialog').hide();""" % _get_src(r),
+jQuery.data(document.body, 'elrte_callback')('%s');jQuery('.dialog').hide(); return false;
+""" % _get_src(r),
                        _style='max-width:50px;max-height:50px;margin:5px;cursor:pointer;') 
                     for r in records])
     return BEAUTIFY(dict(form=form, info=info, records=records))
@@ -101,8 +102,8 @@ def file_upload_or_choose():
     
     records = disk_db(file_table.id>0).select(orderby=~file_table.id, limitby=(0,3))
     records = DIV([DIV(A(_get_icon(r.file), r.name, _href='#', _onclick="""
-jQuery.data(document.body, 'elrte_callback')('%s');jQuery('.dialog').hide();
-    """ % A(_get_icon(r.file), r.name, _href=URL('download', r.file)).xml()), 
+jQuery.data(document.body, 'elrte_callback')('%s');jQuery('.dialog').hide(); return false;
+""" % A(_get_icon(r.file), r.name, _href=URL(request.controller, 'download', args=r.file)).xml()), 
                        _style='margin-bottom:5px;') for r in records])
     
     return BEAUTIFY(dict(form=form, info=info, records=records))
