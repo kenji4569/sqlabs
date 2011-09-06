@@ -3,6 +3,7 @@ from plugin_elrte_widget import ElrteWidget, Dialog
 from plugin_uploadify_widget import (
     uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_LENGTH
 )
+import uuid
 
 # use disk_db for image storing
 disk_db = db
@@ -20,6 +21,7 @@ image_table.image.requires = [IS_UPLOADIFY_LENGTH(10240, 1), IS_UPLOADIFY_IMAGE(
 
 # define a file table using disk db
 file_table = disk_db.define_table('plugin_elrte_widget_file', 
+    Field('name', default=str(uuid.uuid4())),
     Field('file', 'upload', autodelete=True, comment='<- upload a file(max file size=100k)'),
     )
 file_table.file.widget = uploadify_widget
@@ -38,9 +40,9 @@ def index():
     except:
         lang = 'en'
 
-    image_chooser = Dialog(title='Select', 
+    image_chooser = Dialog(title=T('Select an image'), close=T('close'),
                            content=LOAD('plugin_elrte_widget', 'image_upload_or_choose', ajax=True))
-    file_chooser = Dialog(title='Select', 
+    file_chooser = Dialog(title=T('Select a file'), close=T('close'),
                           content=LOAD('plugin_elrte_widget', 'file_upload_or_choose', ajax=True))
     fm_open = """function(callback, kind){
 if (kind == 'elfinder') {%s();} else {%s();}
@@ -70,7 +72,8 @@ def image_upload_or_choose():
     records = disk_db(image_table.id>0).select(orderby=~image_table.id, limitby=(0,3))
     _get_src = lambda r: URL(request.controller, 'download', r.image)
     records = DIV([IMG(_src=_get_src(r), 
-                       _onclick="jQuery.data(document.body, 'elrte_callback')('%s');jQuery('.dialog').hide();" % _get_src(r),
+                       _onclick="""
+jQuery.data(document.body, 'elrte_callback')('%s');jQuery('.dialog').hide();""" % _get_src(r),
                        _style='max-width:50px;max-height:50px;margin:5px;cursor:pointer;') 
                     for r in records])
     return BEAUTIFY(dict(form=form, info=info, records=records))
@@ -81,12 +84,27 @@ def file_upload_or_choose():
     if form.accepts(request.vars, session):
         info = 'submitted %s' % form.vars
     
+    def _get_icon(v):
+        ext = v.split('.')[-1]
+        if ext in ('pdf',): filename = 'icon_pdf.gif'
+        elif ext in ('doc', 'docx', 'rst'): filename = 'icon_doc.gif'
+        elif ext in ('xls', 'xlsx'): filename = 'icon_xls.gif'
+        elif ext in ('ppt', 'pptx', 'pps'): filename = 'icon_pps.gif'
+        elif ext in ('jpg', 'gif', 'png', 'bmp', 'svg', 'eps'): filename = 'icon_pic.gif'
+        elif ext in ('swf', 'fla'): filename = 'icon_flash.gif'
+        elif ext in ('mp3', 'wav', 'ogg', 'wma', 'm4a'): filename = 'icon_music.gif'
+        elif ext in ('mov', 'wmv', 'mp4', 'api', 'mpg', 'flv'): filename = 'icon_film.gif'
+        elif ext in ('zip', 'rar', 'gzip', 'bzip', 'ace', 'gz'): filename = 'icon_archive.gif'
+        else: filename = 'icon_txt.gif'
+        return IMG(_src=URL('static', 'plugin_elrte_widget/custom/icons/%s' % filename), 
+                   _style='cursor:pointer;margin-right:5px;')
+    
     records = disk_db(file_table.id>0).select(orderby=~file_table.id, limitby=(0,3))
-    _get_src = lambda r: URL(request.controller, 'download', r.file)
-    records = DIV([IMG(_src=_get_src(r), 
-                       _onclick="jQuery.data(document.body, 'elrte_callback')('%s');jQuery('.dialog').hide();" % _get_src(r),
-                       _style='max-width:50px;max-height:50px;margin:5px;cursor:pointer;') 
-                    for r in records])
+    records = DIV([DIV(A(_get_icon(r.file), r.name, _href='#', _onclick="""
+jQuery.data(document.body, 'elrte_callback')('%s');jQuery('.dialog').hide();
+    """ % A(_get_icon(r.file), r.name, _href=URL('download', r.file)).xml()), 
+                       _style='margin-bottom:5px;') for r in records])
+    
     return BEAUTIFY(dict(form=form, info=info, records=records))
     
 def download():

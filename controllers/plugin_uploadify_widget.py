@@ -3,11 +3,10 @@ from plugin_uploadify_widget import (
     uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_FILENAME, IS_UPLOADIFY_LENGTH
 )
 from plugin_notemptymarker import mark_not_empty, unmark_not_empty
-import random
+import uuid
 
 table = db.define_table('plugin_uploadify_widget', 
-    Field('name', default=''.join([random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890') 
-                                        for i in range(10)])),
+    Field('name', default=str(uuid.uuid4())),
     Field('image', 'upload', autodelete=True, comment='<- upload an image file(max file size=10k)'),
     Field('text', 'upload', autodelete=True, comment='<- upload a txt file (max file size=1k)'),
     )

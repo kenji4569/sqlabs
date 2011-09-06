@@ -46,14 +46,10 @@ opts.panels.default_5 = ['link', 'unlink', 'image', 'elfinder','insertorderedlis
 opts.toolbars = {'default': ['default_1', 'default_2', 'default_3', 'default_4', 'default_5', 'tables']};
 
 if(typeof String.prototype.trim !== 'function') {
-  String.prototype.trim = function() {
-    return this.replace(/^\s+|\s+$/g, ''); 
-  }
+  String.prototype.trim = function() {return this.replace(/^\s+|\s+$/g, '');}
 }
 var el = $('#%(id)s');
-if(!$.support.opacity){
-   if (el.text() == '') { el.text('<p>&nbsp;</p>')} 
-}
+if(!$.support.opacity){if (el.text() == '') { el.text('<p>&nbsp;</p>')}}
 el.elrte({cssClass: 'el-rte', lang: '%(lang)s', toolbar: '%(toolbar)s', fmOpen : %(fm_open)s }); 
 });})(jQuery);""" % dict(id=_id, lang=self.lang or '', toolbar=self.toolbar, fm_open=self.fm_open))
         
@@ -68,7 +64,7 @@ class Dialog(DIV):
         self.attributes['_class'] = 'dialog'
         import uuid
         self.attributes['_id'] = self.attributes.get('_id') or str(uuid.uuid4())
-        self.attributes['_style'] = self.attributes.get('_style', 'display:none;z-index:1001;position:absolute;top:0%;left:0%;width:100%;height:100%;')
+        self.attributes['_style'] = self.attributes.get('_style', 'display:none;z-index:1001;position:fixed;top:0%;left:0%;width:100%;height:100%;')
         
     def get_show_js(self):
         import gluon.contrib.simplejson as json
@@ -76,8 +72,6 @@ class Dialog(DIV):
 var el = jQuery("#%(id)s");
 if (el.length == 0) {el = jQuery(%(xml)s); jQuery(document.body).append(el);}
 el.css('zIndex', (parseInt(el.css('zIndex')) || 1000) + 10);
-var top  = jQuery(document).scrollTop();
-el.css('top', top);
 el.show();})"""  % dict(id=self.attributes['_id'], 
                        xml=json.dumps(self.xml().replace('<!--', '').replace('//-->', '')))
         
@@ -91,7 +85,7 @@ el.show();})"""  % dict(id=self.attributes['_id'],
                      _style='float:right',),
                 HR(),
                 DIV(self.content, _id='c%s' % self.attributes['_id']),
-                _style=('position:absolute;top:%(top)s%%;left:%(left)s%%;width:%(width)s%%;height:%(height)s%%;padding:16px;border:2px solid black;background-color:white;opacity:1.0;z-index:1002;overflow:auto;' %
+                _style=('position:absolute;top:%(top)s%%;left:%(left)s%%;width:%(width)s%%;height:%(height)s%%;padding:16px;border:2px solid black;background-color:white;opacity:1.0;z-index:1100;overflow:auto;' %
                     dict(left=(100-self.width)/2,top=(100-self.height)/2,width=self.width,height=self.height)),
                 _class='dialog-front',
             ),
