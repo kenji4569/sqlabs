@@ -21,7 +21,7 @@ image_table.image.requires = [IS_UPLOADIFY_LENGTH(10240, 1), IS_UPLOADIFY_IMAGE(
 
 # define a file table using disk db
 file_table = disk_db.define_table('plugin_elrte_widget_file', 
-    Field('name', default=str(uuid.uuid4())),
+    Field('name'),
     Field('file', 'upload', autodelete=True, comment='<- upload a file(max file size=100k)'),
     )
 file_table.file.widget = uploadify_widget
