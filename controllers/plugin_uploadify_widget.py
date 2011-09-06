@@ -16,7 +16,7 @@ table = db.define_table('plugin_uploadify_widget',
 # Inject the uploadify widget
 # The "requires" needs custom validators.
 table.image.widget = uploadify_widget
-table.image.requires = [IS_UPLOADIFY_IMAGE(), IS_UPLOADIFY_LENGTH(10240)]
+table.image.requires = [IS_UPLOADIFY_LENGTH(10240, 1), IS_UPLOADIFY_IMAGE()]
 # Inject the another uploadify widget with different requires
 table.text.widget = uploadify_widget
 table.text.requires = IS_EMPTY_OR([IS_UPLOADIFY_FILENAME(extension='txt'), 

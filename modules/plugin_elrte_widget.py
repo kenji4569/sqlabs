@@ -70,7 +70,7 @@ class Dialog(DIV):
         self.attributes['_id'] = self.attributes.get('_id') or str(uuid.uuid4())
         self.attributes['_style'] = self.attributes.get('_style', 'display:none;z-index:1001;position:absolute;top:0%;left:0%;width:100%;height:100%;')
         
-    def show_js_handler(self):
+    def get_show_js(self):
         import gluon.contrib.simplejson as json
         return """(function(){
 var el = jQuery("#%(id)s");

@@ -55,11 +55,16 @@ class IS_UPLOADIFY_FILENAME(IS_UPLOAD_FILENAME):
         return (value, None)
         
 class IS_UPLOADIFY_LENGTH(IS_LENGTH):
+    def __init__(self, maxsize=255, minsize=0,
+                 error_message='enter a file from %(min)g to %(max)g KB'):
+        IS_LENGTH.__init__(self, maxsize, minsize, error_message)
+        
     def _call(self, value): 
         return IS_LENGTH.__call__(self, value)
     def __call__(self, value): 
         if not value:
-            return (value, translate(self.error_message))
+            return (value, translate(self.error_message) % dict(
+                                min=self.minsize / 1024, max=self.maxsize / 1024))
         return (value, None)
 
 def uploadify_widget(field, value, download_url=None, **attributes): 
@@ -76,18 +81,12 @@ def uploadify_widget(field, value, download_url=None, **attributes):
         
     fileext = '*.*'
     size_limit = 1000000000000
-    not_empty_message = None
     
     requires = field.requires
-    if isinstance(requires, IS_EMPTY_OR):
-        requires = requires.other
-        not_empty_message = ''
         
     if type(requires) not in (list, tuple):
         requires = [requires]
     for i, r in enumerate(requires):
-        if i == 0 and not_empty_message is None and not value:
-            not_empty_message = r.error_message
         
         if isinstance(r, IS_UPLOADIFY_IMAGE):
             fileext = ';'.join(['*.%s' % ext if ext!='jpeg' else '*.jpeg;*.jpg' for ext in r.extensions])
@@ -125,11 +124,6 @@ jQuery.fn.bindFirst = function(name, fn) {
     handlers.splice(0, 0, handler);
 };
 form_el.bindFirst('submit', function (e) {
-    var not_empty_message = "%(not_empty_message)s";
-    if (not_empty_message!="" && uploadify_uploading.indexOf(file_el.attr('id'))==-1) {
-        el.parent().prepend(jQuery("<div class='error'>"+not_empty_message+"</div>"));
-        return false;
-    }
     if (uploadify_uploading.length != 0){
         if (uploadify_uploading.length == uploadify_uploaded.length) {
             return !%(ajax)s;
@@ -179,7 +173,6 @@ file_el.uploadify({
            cancel_img=URL('static', 'plugin_uploadify_widget/cancel.png'),
            fileext=fileext,
            size_limit=size_limit,
-           not_empty_message=not_empty_message or '',
            ajax='true' if current.request.ajax else 'false',
          ))
          
