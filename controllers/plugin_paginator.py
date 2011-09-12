@@ -11,8 +11,10 @@ def index():
     query = db.product.id > 0
     
 ################################ The core ######################################
-    paginate_selector = PaginateSelector()
-    paginator = Paginator(paginate=paginate_selector.paginate, renderstyle=True) 
+    paginate_selector = PaginateSelector(anchor='main')
+    paginator = Paginator(paginate=paginate_selector.paginate, 
+                          extra_vars={'v':1}, anchor='main',
+                          renderstyle=True) 
     paginator.records = db(query).count()
     paginate_info = PaginateInfo(paginator.page, paginator.paginate, paginator.records)
     

@@ -7,11 +7,12 @@ from gluon import *
 class Paginator(DIV): 
 
     def __init__(self, paginate=10, records=100, 
-                 renderstyle=False, page_var='page', **attributes):
+                 renderstyle=False, page_var='page', 
+                 anchor="", extra_vars={}, **attributes):
         DIV.__init__(self, **attributes)
         self.attributes['_class'] = 'paginator'
-        self.paginate, self.records, self.page_var = (
-            paginate, records, page_var
+        self.paginate, self.records, self.page_var, self.anchor, self.extra_vars = (
+            paginate, records, page_var, anchor, extra_vars
         )
         self.page = int(current.request.get_vars.get(self.page_var) or 1)
         
@@ -23,7 +24,8 @@ class Paginator(DIV):
     def _url(self, page):
         vars = current.request.get_vars.copy()
         vars[self.page_var] = page
-        return URL(args=current.request.args, vars=vars)
+        vars.update(self.extra_vars)
+        return URL(args=current.request.args, vars=vars, anchor=self.anchor)
 
     def limitby(self): 
         return (self.paginate*(self.page-1), self.paginate*self.page)
@@ -42,7 +44,8 @@ class Paginator(DIV):
                     return EM(page)
                 else:
                     return A(page, _title=page, 
-                              _href=self._url(page))
+                              _href=self._url(page),
+                              )
                               
             if self.page != 1:
                 self.append(
@@ -77,11 +80,11 @@ class Paginator(DIV):
 class PaginateSelector(SPAN):
     
     def __init__(self, paginates=(10, 25, 50, 100),
-                 paginate_var='paginate', page_var='page', **attributes):
+                 paginate_var='paginate', page_var='page', anchor=None, **attributes):
         SPAN.__init__(self, **attributes)
         self.attributes['_class'] = 'paginate_selector'
-        self.paginates, self.paginate_var, self.page_var  = (
-            paginates, paginate_var, page_var
+        self.paginates, self.paginate_var, self.page_var, self.anchor  = (
+            paginates, paginate_var, page_var, anchor
         )
         self.paginate = int(current.request.get_vars.get(self.paginate_var, paginates[0]))
         
@@ -89,7 +92,7 @@ class PaginateSelector(SPAN):
         vars = current.request.get_vars.copy()
         vars[self.page_var] = 1
         vars[self.paginate_var] = paginate
-        return URL(args=current.request.args, vars=vars)
+        return URL(args=current.request.args, vars=vars, anchor=self.anchor)
   
     def xml(self): 
         def _get_paginate_link(_paginate):
