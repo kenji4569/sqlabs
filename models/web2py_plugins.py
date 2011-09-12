@@ -95,7 +95,7 @@ and enables more flexible customization.
 """) % A('SQLTABLE', _href='http://web2py.com/book/default/chapter/06#Serializing-Rows-in-Views').xml())
     ),
     plugin_paginator=dict(
-        label='Pagenator',
+        label='Paginator',
         short_description=T('A standard paginator'),
         long_description=XML(T("""
 A standard paginator which can be used with SQLTABLE. The basic design is inspired by %s.

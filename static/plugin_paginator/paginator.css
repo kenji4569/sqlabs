@@ -55,9 +55,9 @@ div.paginator {
     padding: 2px 5px;
     border: none;}
     
-span.pagenate_selector, span.pagenate_info {
+span.paginate_selector, span.paginate_info {
   font-size: 0.85em; color: #B3BCC1;
 }
-span.pagenate_info b {
+span.paginate_info b {
   color: #5C6469;
 }
