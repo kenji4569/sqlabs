@@ -59,7 +59,7 @@ jQuery('input[name=%(selected)s]').prop('checked', jQuery('input[name=%(checkall
 
     def _get_submit_js(self):
         return """
-if(confirm(%(confirm_message)s)){
+if(%(confirm)s){
     var val = [];
     jQuery("input[name=%(selected)s]").each(function(){
         var el = jQuery(this);
@@ -67,6 +67,6 @@ if(confirm(%(confirm_message)s)){
     });
     jQuery("input[name=%(tablecheckbox)s]").val(val);
     return true;
-;}; return false;""" % dict(confirm_message=self.confirm_message,
+;}; return false;""" % dict(confirm='confirm(%s)' % self.confirm_message if self.confirm_message else 'true',
                             selected=self._selected,
                             tablecheckbox=self.tablecheckbox_var)
