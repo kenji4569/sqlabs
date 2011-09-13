@@ -1,25 +1,36 @@
 # -*- coding: utf-8 -*-
-from plugin_mptt import MPTT
+#import unittest
+from plugin_mptt import MPTTModel
 
 db = DAL('sqlite:memory:')
 
 def index():
-    mptt = MPTT(db)
+    mptt = MPTTModel(db)
     mptt.define_tables()
     db.tree.insert(title='Food', left=1, right=2)
     return dict()
+
+#class ReparentingTestCase(unittest.TestCase):
+    
+#    def test_new_root_from_subtree(self):
+        
+
     
 def test():
-    mptt = MPTT(db)
+    mptt = MPTTModel(db)
     mptt.define_tables()
     db.tree.insert(title='Food', left=1, right=2)
     
-    mptt.add_node('Fruit', 'Food')
-    mptt.add_node('Meat', 'Food')
-    mptt.add_node('Red', 'Food')
-    mptt.add_node('Rabbit', 'Meat')
-    mptt.add_node('Pig', 'Meat')
+    mptt.insert_node('Fruit', 'Food')
+    mptt.insert_node('Meat', 'Food')
+    mptt.insert_node('Red', 'Food')
+    mptt.insert_node('Rabbit', 'Meat')
+    mptt.insert_node('Pig', 'Meat')
+    #mptt.delete_node('Pig')
     print db().select(db.tree.ALL)
+    
+    print mptt.get_ancestors(3, db.tree.title)
+    print mptt.get_root()
         
     #print self.get_ancestors('Pig', db.tree.title)
     #print self.get_descendants('Fruit', db.tree.title)
@@ -36,3 +47,4 @@ def test():
 
     output = db().select(db.tree.ALL)
     return dict(output=output)
+
