@@ -124,6 +124,15 @@ and submits selected record ids.
 This plugin a form object which makes table rows permutable using %s, and submits permuted row indices.
 """) % A('jquery.tablednd.js', _href='http://www.isocra.com/2008/02/table-drag-and-drop-jquery-plugin/').xml())
     ),
+    
+    plugin_friendship=dict(
+        label='Friendship CRUD',
+        show_image=False,
+        short_description='',
+        long_description='',
+        status='under-construction',
+    ),
+    
     plugin_mptt=dict(
         label='Modified Preorder Tree Traversal',
         show_image=False,
