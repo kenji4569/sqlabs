@@ -120,6 +120,7 @@
 'close': '閉じる',
 'delete': '削除',
 'enter a file from %(min)g to %(max)g KB': '%(min)g ～ %(max)g KBのファイルを入力してください',
+'enter a number between %(min)g and %(max)g': 'enter a number between %(min)g and %(max)g',
 'enter a valid URL': '正しいURLを入力してください',
 'enter a valid email address': '正しいメールアドレスを入力してください',
 'enter a value': '値を入力してください',

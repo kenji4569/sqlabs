@@ -10,80 +10,108 @@ class Friendship(object):
         self.db = db
         
         settings = self.settings = Storage()
-        settings.table_friendship_name = 'friendship'
-        settings.table_friend_request_name = 'friend_request'
-        settings.table_friend_denial_name = 'friend_denial'
-        settings.table_friendship = None
-        settings.table_friend_request = None
-        settings.table_friend_denial = None
         
-        settings.onapprove = None
+        settings.extra_fields = {}
         
-    def define_tables(self, table_user, migrate=True, fake_migrate=False):
+        settings.onaccept = None
+        
+        settings.table_friend_name = 'friend'
+        settings.table_friend = None
+        
+        settings.status_requesting = 'r'
+        settings.status_accepted = 'a'
+        settings.status_denied = 'd'
+        
+    def define_tables(self, table_user_name, migrate=True, fake_migrate=False):
         db, settings = self.db, self.settings
         
-        for name in ('friendship', 'friend_request', 'friend_denial'):
-            if not settings['table_%s_name' % name] in db.tables:
-                settings['table_%s' % name] = db.define_table(
-                    settings['table_%s_name' % name],
-                    Field('user', table_user),
-                    Field('friend', table_user),
-                    migrate=migrate, fake_migrate=fake_migrate)
-                
+        if not settings.table_friend_name in db.tables:
+            settings.table_friend = db.define_table(
+                settings.table_friend_name,
+                Field('user', 'reference %s' % table_user_name),
+                Field('friend', 'reference %s' % table_user_name),
+                Field('status', length=1, default=settings.status_requesting,
+                      requires=[settings.status_requesting, settings.status_accepted, settings.status_denied]),
+                Field('mutual', 'integer', default=0),
+                migrate=migrate, fake_migrate=fake_migrate,
+                *settings.extra_fields.get(settings.table_friend_name, []))
+ 
     def request_friend(self, user_id, friend_id):
-        db, settings = self.db, self.settings
+        db, settings, table = self.db, self.settings, self.settings.table_friend
         if user_id == friend_id:
             raise ValueError
-        for name in ('friendship', 'friend_request', 'friend_denial'):
-            table = settings['table_%s' % name]
-            if db(table.user==user_id)(table.friend==friend_id).count():
-                raise ValueError
         
-        settings.table_friend_request.insert(user=user_id, friend=friend_id)
+        if db(table.user==user_id)(table.friend==friend_id).count():
+            raise ValueError
         
-    def count_friend_requets(self, user_id):
-        db, settings = self.db, self.settings
-        return db(settings.table_friend_request.friend==user_id).count()
+        table.insert(user=user_id, friend=friend_id)
+        
+    def friend_requets(self, user_id):
+        db, settings, table = self.db, self.settings, self.settings.table_friend
+        
+        return db(table.friend==user_id)(table.status==settings.status_requesting)
     
-    def get_friend_requets(self, user_id, limitby=(0, 5)):
-        db, settings = self.db, self.settings
-        return [r.user for r in 
-                db(settings.table_friend_request.friend==user_id
-                   ).select(settings.table_friend_request.user, limitby=limitby)]
-            
-    def approve_friend(self, user_id, friend_id):
-        db, settings = self.db, self.settings
+    def accept_friend(self, user_id, friend_id):
+        db, settings, table = self.db, self.settings, self.settings.table_friend
         
-        if not db(settings.table_friend_request.friend==user_id)(
-                  settings.table_friend_request.user==friend_id).count():
+        if not db(table.friend==user_id)(table.user==friend_id)(
+                  table.status==settings.status_requesting).count():
             raise ValueError
             
-        db(settings.table_friend_request.friend==user_id)(
-           settings.table_friend_request.user==friend_id).delete()
-        db(settings.table_friend_request.user==user_id)(
-           settings.table_friend_request.friend==friend_id).delete()
+        mutual_friends = (set([r.friend for r in self.friends(user_id).select(table.friend)]) &
+                          set([r.friend for r in self.friends(friend_id).select(table.friend)]))
+        for _user_id in (user_id, friend_id):
+            db(table.user==_user_id)(table.status==settings.status_accepted)(
+               table.friend.belongs(mutual_friends)).update(mutual=table.mutual+1)
+            db(table.friend==_user_id)(table.status==settings.status_accepted)(
+               table.user.belongs(mutual_friends)).update(mutual=table.mutual+1)
+            
+        updator = dict(status=settings.status_accepted, 
+                       mutual=len(mutual_friends))
+            
+        db(table.friend==user_id)(table.user==friend_id).update(**updator)
+        
+        if db(table.user==user_id)(table.friend==friend_id).count():
+            db(table.user==user_id)(table.friend==friend_id).update(**updator)
+        else:
+            table.insert(user=user_id, friend=friend_id, **updator)
            
-        settings.table_friendship.insert(user=user_id, friend=friend_id)
-        settings.table_friendship.insert(friend=user_id, user=friend_id)
+        if settings.onaccept:
+            settings.onaccept(user_id, friend_id)
         
-        if settings.onapprove:
-            settings.onapprove(user_id, friend_id)
+    def friends(self, user_id):
+        db, settings, table = self.db, self.settings, self.settings.table_friend
+        return db(table.user==user_id)(table.status==settings.status_accepted)
         
-    def get_friends(self, user_id, limitby=(0, 20)):
-        db, settings = self.db, self.settings
-        return [r.friend for r in 
-                db(settings.table_friendship.user==user_id
-                   ).select(settings.table_friendship.friend, limitby=limitby)]
+    def friend(self, user_id, friend_id):
+        db, settings, table = self.db, self.settings, self.settings.table_friend
+        return self.friends(user_id)(table.friend==friend_id)
     
     def deny_friend(self, user_id, friend_id):
-        db, settings = self.db, self.settings
+        db, settings, table = self.db, self.settings, self.settings.table_friend
         
-        if not db(settings.table_friend_request.friend==user_id)(
-                  settings.table_friend_request.user==friend_id).count():
+        if not db(table.friend==user_id)(table.user==friend_id)(
+                  table.status==settings.status_requesting).count():
             raise ValueError
             
-        db(settings.table_friend_request.friend==user_id)(
-           settings.table_friend_request.user==friend_id).delete()
-           
-        settings.table_friend_denial.insert(friend=user_id, user=friend_id)
+        db(table.friend==user_id)(table.user==friend_id).update(
+            status=settings.status_denied)
+            
+    def remove_friend(self, user_id, friend_id):
+        db, settings, table = self.db, self.settings, self.settings.table_friend
+        
+        if not db(table.user==user_id)(table.friend==friend_id)(
+                  table.status==settings.status_accepted).count():
+            raise ValueError
+            
+        mutual_friends = (set([r.friend for r in self.friends(user_id).select(table.friend)]) &
+                          set([r.friend for r in self.friends(friend_id).select(table.friend)]))
+        for _user_id in (user_id, friend_id):
+            db(table.user==_user_id)(table.status==settings.status_accepted)(
+               table.friend.belongs(mutual_friends)).update(mutual=table.mutual-1)
+            db(table.friend==_user_id)(table.status==settings.status_accepted)(
+               table.user.belongs(mutual_friends)).update(mutual=table.mutual-1)
+               
+        db(table.user==user_id)(table.friend==friend_id).delete()
+        db(table.friend==user_id)(table.user==friend_id).delete()
         
