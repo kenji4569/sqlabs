@@ -21,6 +21,7 @@ The code parts are organized in %s, and easily available.""") % ('Web2py', T("a 
                         'plugin_color_widget',
                         'plugin_uploadify_widget',
                         'plugin_elrte_widget',
+                        'plugin_tight_input_widget',
                     ))),
                 ('Form Customize',
                     map(lambda k: (k, info_plugin_metas[k]), (

@@ -67,6 +67,16 @@ The uploadify turns a file input tag into a flash-based file uploader,
 which displays a progress bar and enables ajax upload. 
 """) % A('uploadify.js', _href='http://www.uploadify.com/').xml())
     ),
+    
+    plugin_tight_input_widget=dict(
+        label='Tight Input Widget',
+        short_description=T('A size-adjusted input widget'),
+        long_description=T("""
+An input widget whose size is automatically adjusted to its maximum length of the value.
+The widget works with integer, double, decimal, and string fields.
+"""),
+    ),
+    
     plugin_solidform=dict(
         label='Solid Form',
         short_description=T('A custom SQLFORM for denser layout'),
@@ -124,6 +134,7 @@ and submits selected record ids.
 This plugin a form object which makes table rows permutable using %s, and submits permuted row indices.
 """) % A('jquery.tablednd.js', _href='http://www.isocra.com/2008/02/table-drag-and-drop-jquery-plugin/').xml())
     ),
+    
     
     plugin_friendship=dict(
         label='Friendship CRUD',
