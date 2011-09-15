@@ -74,7 +74,7 @@ which displays a progress bar and enables ajax upload.
         long_description=T("""
 An input widget whose size is automatically adjusted to maximum length of its field value
  defined by validators such as IS_LENGTH and IS_INT_IN_RANGE.
-The widget works with integer, double, decimal, and string fields.
+The widget works with string, integer, double, and, decimal fields.
 """),
     ),
     

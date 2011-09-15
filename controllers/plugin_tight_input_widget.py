@@ -3,6 +3,8 @@ from plugin_tight_input_widget import tight_input_widget
 
 db = DAL('sqlite:memory:')
 db.define_table('product', 
+    Field('string_default', default='ABCDEFGHIJKLMN'), 
+    Field('string_7', length=7, default='ABCDEFG'), 
     Field('int_default', 'integer', default=1234567890),
     Field('int_5', 'integer', default=12345,
           requires=IS_INT_IN_RANGE(0, 99999)),
@@ -15,8 +17,6 @@ db.define_table('product',
     Field('decimal_8_3', 'decimal(8,3)', default=12345678.901),
     Field('decimal_5_3', 'decimal(8,3)', default=12345.678,
           requires=IS_DECIMAL_IN_RANGE(0, 99999)),
-    Field('string_default', default='ABCDEFGHIJKLMN'), 
-    Field('string_7', length=7, default='ABCDEFG'), 
 )
 
 ################################ The core ######################################
