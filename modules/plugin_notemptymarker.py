@@ -26,9 +26,8 @@ def mark_not_empty(table, marker=SPAN('*', _style='color:#d00;')):
                     if _is_not_empty(r):
                         is_not_empty = True
                         break
-            else:
-                if _is_not_empty(field.requires):
-                    is_not_empty = True
+            elif _is_not_empty(field.requires):
+                is_not_empty = True
                     
         if is_not_empty:  
             field._label = field.label
