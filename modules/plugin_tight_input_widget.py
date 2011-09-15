@@ -8,7 +8,11 @@ def _get_length(require):
         return require.maxsize
     elif isinstance(require, (IS_INT_IN_RANGE, IS_FLOAT_IN_RANGE, IS_DECIMAL_IN_RANGE)):
         import math
-        return int(math.log10(max(require.maximum, abs(require.minimum)))) + 1
+        if isinstance(require, IS_INT_IN_RANGE):
+            maximum = require.maximum - 1
+        else:
+            maximum = require.maximum
+        return int(math.log10(max(maximum, abs(require.minimum)))) + 1
 
 def tight_input_widget(field, value, **attributes):
     _length = None
