@@ -72,7 +72,8 @@ which displays a progress bar and enables ajax upload.
         label='Tight Input Widget',
         short_description=T('A size-adjusted input widget'),
         long_description=T("""
-An input widget whose size is automatically adjusted to its maximum length of the value.
+An input widget whose size is automatically adjusted to maximum length of its field value
+ defined by validators such as IS_LENGTH and IS_INT_IN_RANGE.
 The widget works with integer, double, decimal, and string fields.
 """),
     ),
