@@ -19,7 +19,7 @@ friendship.settings.table_friend_name = 'plugin_friendship_friend'
 friendship.settings.extra_fields = {
     'plugin_friendship_friend': 
         [Field('affinity', 'double', default=1), 
-         Field('created_at', 'datetime', default=request.now)],
+         Field('created_on', 'datetime', default=request.now)],
 }
 
 auth.define_tables()
@@ -36,7 +36,7 @@ for i in range(1, num_users+1):
         user_ids[i] = user.id
 
 import datetime
-deleted = db(db['plugin_friendship_friend'].created_at<
+deleted = db(db['plugin_friendship_friend'].created_on<
             request.now-datetime.timedelta(minutes=10)).delete()
 if deleted:
     friendship.refresh_all_mutuals()
