@@ -36,7 +36,7 @@ class Friendship(object):
                 *settings.extra_fields.get(settings.table_friend_name, []))
  
     def add_friend(self, user_id, friend_id):
-        db, settings, table = self.db, self.settings, self.settings.table_friend
+        db, table = self.db, self.settings.table_friend
         if user_id == friend_id:
             raise ValueError
         
@@ -83,7 +83,7 @@ class Friendship(object):
         return db(table.user==user_id)(table.status==settings.status_confirmed)
         
     def friend(self, user_id, friend_id):
-        db, settings, table = self.db, self.settings, self.settings.table_friend
+        db, table = self.db, self.settings.table_friend
         return self.friends(user_id)(table.friend==friend_id)
     
     def ignore_friend(self, user_id, friend_id):
@@ -114,8 +114,8 @@ class Friendship(object):
         db(table.friend==user_id)(table.user==friend_id).delete()
         
     def refresh_all_mutuals(self):
-        # ! Be careful when using it. It will require much time.
-        db, settings, table = self.db, self.settings, self.settings.table_friend
+        # ! Be careful when using the method, as it will require much time.
+        db, table = self.db, self.settings.table_friend
         records = db(table.id>0).select()
         for record in records:
             user_id = record.user

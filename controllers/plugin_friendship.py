@@ -30,10 +30,7 @@ user_ids = {}
 for i in range(1, num_users+1):   
     email = 'user%s@test.com' % i
     user = db(auth.settings.table_user.email==email).select().first()
-    if not user:
-        user_ids[i] = auth.settings.table_user.insert(email=email)
-    else:
-        user_ids[i] = user.id
+    user_ids[i] = user and user.id or auth.settings.table_user.insert(email=email)
 
 import datetime
 deleted = db(db['plugin_friendship_friend'].created_on<
@@ -58,7 +55,6 @@ def index():
             user_chooser.append('user%s' % user_no)
         else:
             user_chooser.append(A('user%s' % i, _href=URL('index', args=i)))
-        user_chooser.append(SPAN(' '))
         
     table_user = auth.settings.table_user
     table_friend = friendship.settings.table_friend
@@ -93,7 +89,7 @@ def index():
            A('Confirm', _href=URL('index', args=user_no, vars={'confirm_friend': record.id})), ' ',
            A('Not now', _href=URL('index', args=user_no, vars={'ignore_friend': record.id}))))
     
-    return dict(choose_user=DIV(*user_chooser),
+    return dict(choose_user=user_chooser,
                 friends=friends,
                 friend_requests=friend_requests,
                 tests=A('unit test', _href=URL('test')),

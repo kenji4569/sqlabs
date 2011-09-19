@@ -144,8 +144,8 @@ This plugin a form object which makes table rows permutable using %s, and submit
         long_description='',
         status='under-construction',
     ),
-    plugin_comment_list=dict(
-        label='Comment List',
+    plugin_comment_box=dict(
+        label='Comment Box',
         show_image=False,
         short_description='',
         long_description='',
