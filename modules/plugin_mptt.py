@@ -12,7 +12,7 @@ class MPTTModel(object):
         self.db = db        
         
         settings = self.settings = Storage()
-        settings.table_tree_name = 'tree'
+        settings.table_tree_name = 'node'
         settings.table_tree = None
         
     def define_tables(self, migrate = True, fake_migrate = False):
@@ -20,30 +20,30 @@ class MPTTModel(object):
         
         settings.table_tree = db.define_table(
                                               settings.table_tree_name, 
-                                              Field('title'), 
+                                              Field('title'),
                                               Field('parent_id', 'integer'),
+                                              Field('tree_id', 'integer'),
+                                              Field('level', 'integer'), 
                                               Field('left', 'integer'), 
                                               Field('right', 'integer'),
-                                              Field('level', 'integer'),
-                                              Field('tree_id', 'integer'),
-                                              Field('value', 'integer'), 
+                                              #Field('value', 'integer'), 
                                               migrate = migrate, 
                                               fake_migrate = fake_migrate)
         
-    def get_raw_field_value(self, node_id, *fields):
-        db, table_tree = self.db, self.settings.table_tree
-        node = db(table_tree.id == node_id).select().first()
-        if not node:
-            raise ValueError
-        return db(table_tree.id == node.id).select(*fields)
+#    def get_raw_field_value(self, node_id, *fields):
+#        db, table_tree = self.db, self.settings.table_tree
+#        node = db(table_tree.id == node_id).select().first()
+#        if not node:
+#            raise ValueError
+#        return db(table_tree.id == node.id).select(*fields)
         
-    def set_raw_field_value(self, node_id, value, *fields):
-        db, table_tree = self.db, self.settings.table_tree
-        node = db(table_tree.id == node_id).select().first()
-        if not node:
-            raise ValueError
-        node.value = value
-        return
+#    def set_raw_field_value(self, node_id, value, *fields):
+#        db, table_tree = self.db, self.settings.table_tree
+#        node = db(table_tree.id == node_id).select().first()
+#        if not node:
+#            raise ValueError
+#        node.value = value
+#        return
 
     def get_ancestors(self, node_id, *fields):
         db, table_tree = self.db, self.settings.table_tree
@@ -149,16 +149,22 @@ class MPTTModel(object):
         else:
             return False
         
-    def add_node(self, node_id, parent_node_id, node_level):
+    def add_node(self, node_id, parent_node_id, tree_id, node_level):
         db, table_tree = self.db, self.settings.table_tree
         parent = db(table_tree.id == parent_node_id).select().first()
         if not parent:
             raise ValueError
+        self._update_tree(node_id, parent_node_id, tree_id, node_level, parent)
+        return
+        
+    def _update_tree(self, node_id, parent_node_id, tree_id, node_level, parent):
+        db, table_tree = self.db, self.settings.table_tree
         db(table_tree.id == node_id).update(parent_id = parent_node_id)
         db(table_tree.id == node_id).update(level = node_level)
         db(table_tree.right >= parent.right).update(right=table_tree.right + 2)
         db(table_tree.left >= parent.right).update(left=table_tree.left + 2)
-        table_tree.insert(id=node_id, left=parent.right, right=parent.right + 1)
+        table_tree.insert(id=node_id, parent_id=parent_node_id, tree_id=tree_id, 
+                          level=node_level, left=parent.right, right=parent.right + 1)
     
     def delete_node(self, node_id):
         db, table_tree = self.db, self.settings.table_tree
@@ -169,6 +175,118 @@ class MPTTModel(object):
         db(table_tree.left >= node.right).update(left=table_tree.left - 2)
         db(table_tree.id == node_id).delete()
         
-        
+############################ tree_manager #########################################
 
+    def _get_next_tree_id(self):
+        db, table_tree = self.db, self.settings.table_tree
+        max_tid = db().select(table_tree.ALL,orderby=~table_tree.tree_id).first()
+        return max_tid.id + 1
+        
+    def old_insert_node(self, node_id, parent_node_id, tree_id, node_level):
+        db, table_tree = self.db, self.settings.table_tree
+        parent = db(table_tree.id == parent_node_id).select().first()
+        if not parent:
+            next_tid = self._get_next_tree_id()
+            if next_tid:
+                table_tree.insert(id=node_id,parent_id=None,tree_id=next_tid,
+                                  level=0,left=1,right=2)
+            # If there are no trees made. 
+            else:
+                table_tree.insert(id=node_id,parent_id=None,tree_id=1,
+                                  level=0,left=1,right=2)
+            return
+        elif self.is_root_node(parent.id):
+            self._update_tree(node_id, parent_node_id, tree_id, node_level, parent)
             
+        else:
+            
+    def insert_node(self, node_id, target_id, position):
+        db, table_tree = self.db, self.settings.table_tree
+        node = db(table_tree.id == node_id).select().first()
+        target = db(table_tree.id == target_id).select().first()
+        
+        if not target:
+            next_tid = self._get_next_tree_id()
+            if next_tid:
+                table_tree.insert(id=node_id,parent_id=None,tree_id=next_tid,
+                                  level=0,left=1,right=2)
+            else:
+                table_tree.insert(id=node_id,parent_id=None,tree_id=1,
+                                  level=0,left=1,right=2)
+            return
+        elif self.is_root_node(target.id):
+            self._update_tree(node_id, parent_node_id, tree_id, node_level, parent)
+        else:
+            left = node.left
+            right = node.right
+            level = node.level
+            current_tree_id = node.tree_id
+            new_tree_id = self._get_next_tree_id()
+            
+            tree_width = right - left + 1
+        
+            for beta_node in db(table_tree.left >= node.left)(table_tree.left <= node.right)(table_tree.tree_id == current_tree_id).select():
+    
+            
+    def _move_child_node(self, node_id, target_id, position):
+        db, table_tree = self.db, self.settings.table_tree
+        node = db(table_tree.id == node_id).select().first()
+        target = db(table_tree.id == target_id).select().first()
+        node_tree_id = node.id
+        target_tree_id = target.id
+        
+        if node_tree_id == target_tree_id:
+            self._move_child_within_tree(node_id, target_id, position)
+        else:
+            self._move_child_to_new_tree(node_id, target_id, position)
+            
+    def _move_child_to_new_tree(self, node_id, target_id, position):
+        db, table_tree = self.db, self.settings.table_tree
+        node = db(table_tree.id == node_id).select().first()
+        #target = db(table_tree.id == target_id).select().first()
+        
+        left = node.left
+        right = node.right
+        level = node.level
+        current_tree_id = node.tree_id
+        new_tree_id = self._get_next_tree_id()
+                
+        tree_width = right - left + 1
+        
+        for beta_node in db(table_tree.left >= node.left)(table_tree.left <= node.right)(table_tree.tree_id == current_tree_id).select():
+            beta_node.level = beta_node.level - node.level
+            beta_node.left = beta_node.left - (node.left - 1)
+            beta_node.right = beta_node.right - (node.left - 1)
+            beta_node.tree_id = new_tree_id
+            
+        for alpha_node in db(table_tree.left > node.left)(table_tree.tree_id == current_tree_id).select():
+            alpha_node.left = alpha_node.left - tree_width
+        
+        for alpha_node in db(table_tree.right > node.right)(table_tree.tree_id == current_tree_id).select():
+            alpha_node.right = alpha_node.right - tree_width
+
+    def _make_child_root_node(self, node_id, new_tree_id=None):
+        db, table_tree = self.db, self.settings.table_tree
+        node = db(table_tree.id == node_id).select().first()
+        if not node:
+            raise ValueError
+                
+        left = node.left
+        right = node.right
+        level = node.level
+        current_tree_id = node.tree_id
+        new_tree_id = self._get_next_tree_id()
+                
+        tree_width = right - left + 1
+        
+        for beta_node in db(table_tree.left >= node.left)(table_tree.left <= node.right)(table_tree.tree_id == current_tree_id).select():
+            beta_node.level = beta_node.level - node.level
+            beta_node.left = beta_node.left - (node.left - 1)
+            beta_node.right = beta_node.right - (node.left - 1)
+            beta_node.tree_id = new_tree_id
+            
+        for alpha_node in db(table_tree.left > node.left)(table_tree.tree_id == current_tree_id).select():
+            alpha_node.left = alpha_node.left - tree_width
+        
+        for alpha_node in db(table_tree.right > node.right)(table_tree.tree_id == current_tree_id).select():
+            alpha_node.right = alpha_node.right - tree_width
