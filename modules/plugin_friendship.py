@@ -36,91 +36,91 @@ class Friendship(object):
                 *settings.extra_fields.get(settings.table_friend_name, []))
  
     def add_friend(self, user_id, friend_id):
-        db, table = self.db, self.settings.table_friend
+        db, table_friend = self.db, self.settings.table_friend
         if user_id == friend_id:
             raise ValueError
         
-        if db(table.user==user_id)(table.friend==friend_id).count():
+        if db(table_friend.user==user_id)(table_friend.friend==friend_id).count():
             raise ValueError
         
-        table.insert(user=user_id, friend=friend_id)
+        table_friend.insert(user=user_id, friend=friend_id)
         
     def friend_requets(self, user_id):
-        db, settings, table = self.db, self.settings, self.settings.table_friend
+        db, settings, table_friend = self.db, self.settings, self.settings.table_friend
         
-        return db(table.friend==user_id)(table.status==settings.status_requesting)
+        return db(table_friend.friend==user_id)(table_friend.status==settings.status_requesting)
     
     def confirm_friend(self, user_id, friend_id):
-        db, settings, table = self.db, self.settings, self.settings.table_friend
+        db, settings, table_friend = self.db, self.settings, self.settings.table_friend
         
-        if not db(table.friend==user_id)(table.user==friend_id)(
-                  table.status==settings.status_requesting).count():
+        if not db(table_friend.friend==user_id)(table_friend.user==friend_id)(
+                  table_friend.status==settings.status_requesting).count():
             raise ValueError
             
-        mutual_friends = (set([r.friend for r in self.friends(user_id).select(table.friend)]) &
-                          set([r.friend for r in self.friends(friend_id).select(table.friend)]))
+        mutual_friends = (set([r.friend for r in self.friends(user_id).select(table_friend.friend)]) &
+                          set([r.friend for r in self.friends(friend_id).select(table_friend.friend)]))
         for _user_id in (user_id, friend_id):
-            db(table.user==_user_id)(table.status==settings.status_confirmed)(
-               table.friend.belongs(mutual_friends)).update(mutual=table.mutual+1)
-            db(table.friend==_user_id)(table.status==settings.status_confirmed)(
-               table.user.belongs(mutual_friends)).update(mutual=table.mutual+1)
+            db(table_friend.user==_user_id)(table_friend.status==settings.status_confirmed)(
+               table_friend.friend.belongs(mutual_friends)).update(mutual=table_friend.mutual+1)
+            db(table_friend.friend==_user_id)(table_friend.status==settings.status_confirmed)(
+               table_friend.user.belongs(mutual_friends)).update(mutual=table_friend.mutual+1)
             
         updator = dict(status=settings.status_confirmed, 
                        mutual=len(mutual_friends))
             
-        db(table.friend==user_id)(table.user==friend_id).update(**updator)
+        db(table_friend.friend==user_id)(table_friend.user==friend_id).update(**updator)
         
-        if db(table.user==user_id)(table.friend==friend_id).count():
-            db(table.user==user_id)(table.friend==friend_id).update(**updator)
+        if db(table_friend.user==user_id)(table_friend.friend==friend_id).count():
+            db(table_friend.user==user_id)(table_friend.friend==friend_id).update(**updator)
         else:
-            table.insert(user=user_id, friend=friend_id, **updator)
+            table_friend.insert(user=user_id, friend=friend_id, **updator)
            
         if settings.onconfirm:
             settings.onconfirm(user_id, friend_id)
         
     def friends(self, user_id):
-        db, settings, table = self.db, self.settings, self.settings.table_friend
-        return db(table.user==user_id)(table.status==settings.status_confirmed)
+        db, settings, table_friend = self.db, self.settings, self.settings.table_friend
+        return db(table_friend.user==user_id)(table_friend.status==settings.status_confirmed)
         
     def friend(self, user_id, friend_id):
-        db, table = self.db, self.settings.table_friend
-        return self.friends(user_id)(table.friend==friend_id)
+        db, table_friend = self.db, self.settings.table_friend
+        return self.friends(user_id)(table_friend.friend==friend_id)
     
     def ignore_friend(self, user_id, friend_id):
-        db, settings, table = self.db, self.settings, self.settings.table_friend
+        db, settings, table_friend = self.db, self.settings, self.settings.table_friend
         
-        if not db(table.friend==user_id)(table.user==friend_id)(
-                  table.status==settings.status_requesting).count():
+        if not db(table_friend.friend==user_id)(table_friend.user==friend_id)(
+                  table_friend.status==settings.status_requesting).count():
             raise ValueError
             
-        db(table.friend==user_id)(table.user==friend_id).delete()
+        db(table_friend.friend==user_id)(table_friend.user==friend_id).delete()
             
     def remove_friend(self, user_id, friend_id):
-        db, settings, table = self.db, self.settings, self.settings.table_friend
+        db, settings, table_friend = self.db, self.settings, self.settings.table_friend
         
-        if not db(table.user==user_id)(table.friend==friend_id)(
-                  table.status==settings.status_confirmed).count():
+        if not db(table_friend.user==user_id)(table_friend.friend==friend_id)(
+                  table_friend.status==settings.status_confirmed).count():
             raise ValueError
             
-        mutual_friends = (set([r.friend for r in self.friends(user_id).select(table.friend)]) &
-                          set([r.friend for r in self.friends(friend_id).select(table.friend)]))
+        mutual_friends = (set([r.friend for r in self.friends(user_id).select(table_friend.friend)]) &
+                          set([r.friend for r in self.friends(friend_id).select(table_friend.friend)]))
         for _user_id in (user_id, friend_id):
-            db(table.user==_user_id)(table.status==settings.status_confirmed)(
-               table.friend.belongs(mutual_friends)).update(mutual=table.mutual-1)
-            db(table.friend==_user_id)(table.status==settings.status_confirmed)(
-               table.user.belongs(mutual_friends)).update(mutual=table.mutual-1)
+            db(table_friend.user==_user_id)(table_friend.status==settings.status_confirmed)(
+               table_friend.friend.belongs(mutual_friends)).update(mutual=table_friend.mutual-1)
+            db(table_friend.friend==_user_id)(table_friend.status==settings.status_confirmed)(
+               table_friend.user.belongs(mutual_friends)).update(mutual=table_friend.mutual-1)
                
-        db(table.user==user_id)(table.friend==friend_id).delete()
-        db(table.friend==user_id)(table.user==friend_id).delete()
+        db(table_friend.user==user_id)(table_friend.friend==friend_id).delete()
+        db(table_friend.friend==user_id)(table_friend.user==friend_id).delete()
         
     def refresh_all_mutuals(self):
         # ! Be careful when using the method, as it will require much time.
-        db, table = self.db, self.settings.table_friend
-        records = db(table.id>0).select()
+        db, table_friend = self.db, self.settings.table_friend
+        records = db(table_friend.id>0).select()
         for record in records:
             user_id = record.user
             friend_id = record.friend
-            mutual_friends = (set([r.friend for r in self.friends(user_id).select(table.friend)]) &
-                          set([r.friend for r in self.friends(friend_id).select(table.friend)]))
-            db(table.user==user_id)(table.friend==friend_id).update(mutual=len(mutual_friends))
+            mutual_friends = (set([r.friend for r in self.friends(user_id).select(table_friend.friend)]) &
+                          set([r.friend for r in self.friends(friend_id).select(table_friend.friend)]))
+            db(table_friend.user==user_id)(table_friend.friend==friend_id).update(mutual=len(mutual_friends))
         

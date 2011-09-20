@@ -34,7 +34,7 @@ for i in range(1, num_users+1):
 
 import datetime
 deleted = db(db['plugin_friendship_friend'].created_on<
-            request.now-datetime.timedelta(minutes=10)).delete()
+            request.now-datetime.timedelta(minutes=30)).delete()
 if deleted:
     friendship.refresh_all_mutuals()
 
@@ -45,17 +45,18 @@ def index():
     for action in ('add_friend', 'confirm_friend', 'ignore_friend', 'remove_friend'):
         if action in request.vars:
             getattr(friendship, action)(user_id, request.vars[action])
-            session.flash = 'done: %s' % action
+            session.flash = action
             redirect(URL('index', args=user_no))
             break
     
     user_chooser = []
     for i in range(1, num_users+1):
         if i == user_no:
-            user_chooser.append('user%s' % user_no)
+            user_chooser.append(SPAN('user%s' % user_no))
         else:
             user_chooser.append(A('user%s' % i, _href=URL('index', args=i)))
-        
+    user_chooser = DIV(XML(' '.join([r.xml() for r in user_chooser])), _style='font-weight:bold')
+    
     table_user = auth.settings.table_user
     table_friend = friendship.settings.table_friend
     
@@ -68,16 +69,15 @@ def index():
     for record in records:
         status = record[table_friend].status
         if status is None:
-            option = A('Add friend', 
+            option = A(T('Add friend'), 
                        _href=URL('index', args=user_no, vars={'add_friend': record[table_user].id}))
         elif status == friendship.settings.status_requesting:
-            option = 'requesting'
-        elif status == friendship.settings.status_denied:
-            option = 'denied'
+            option = SPAN(T('requesting'), _style='color:blue;')
         else:
-            option = SPAN('mutual friends -> %s' % record[table_friend].mutual, ' ',
-                          A('Remove friend',
-                            _href=URL('index', args=user_no, vars={'remove_friend': record[table_user].id})))
+            option = SPAN(T('%s mutual friends') % record[table_friend].mutual, ' ',
+                          A(T('Remove friend'),
+                            _href=URL('index', args=user_no, vars={'remove_friend': record[table_user].id})),
+                          _style='color:green;')
         friends.append(DIV(record.auth_user.email[:5], ': ', option))
     
     friend_requests = []
@@ -86,10 +86,11 @@ def index():
                         left=table_user.on(table_user.id==table_friend.user))
     for record in records:
         friend_requests.append(DIV(record.email[:5], ': ',
-           A('Confirm', _href=URL('index', args=user_no, vars={'confirm_friend': record.id})), ' ',
-           A('Not now', _href=URL('index', args=user_no, vars={'ignore_friend': record.id}))))
+           A(T('Confirm'), _href=URL('index', args=user_no, vars={'confirm_friend': record.id})), ' ',
+           A(T('Not now'), _href=URL('index', args=user_no, vars={'ignore_friend': record.id})),
+           _style='color:red;font-size:1.2em;'))
     
-    return dict(choose_user=user_chooser,
+    return dict(current_user=user_chooser,
                 friends=friends,
                 friend_requests=friend_requests,
                 tests=A('unit test', _href=URL('test')),
