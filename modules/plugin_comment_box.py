@@ -16,6 +16,7 @@ class CommentBox(object):
         settings.select_fields = []
         settings.select_attributes = {}
         settings.content = lambda row: row
+        settings.input = TEXTAREA('', _rows=1, _class='plugin_comment_box_submit')
         
         settings.table_comment_name = 'comment'
         settings.table_comment = None
@@ -60,15 +61,18 @@ class CommentBox(object):
         records = self.comments(target_id).select(
             *settings.select_fields, **settings.select_attributes
         )
-        comment_els = []
+        elements = []
         for record in records:
-            comment_els.append(LI(settings.content(record)))
-        text_el = TEXTAREA('', _rows=1, _class='plugin_comment_box_comment')
+            content = settings.content(record)
+            if record[settings.table_comment].user == user_id:
+                content = DIV(LABEL('x', _style='float:right;'), DIV(content, _style='margin-right:20px;'))
+            elements.append(LI(content))
+        elements.append(settings.input)
         
-        return DIV(UL(*comment_els), text_el, _id=_id)
+        return DIV(UL(*elements), _id=_id, _class='plugin_comment_box')
     
     def process(self):
-        import uuid
+        settings = self.settings
         
         form = FORM(INPUT(_type='hidden', _name='form_id'),
                     INPUT(_type='hidden', _name='target_id'),
@@ -81,20 +85,22 @@ class CommentBox(object):
 jQuery('#%(form_id)s').find('input[name=_formkey]').val('%(formkey)s');
 """ % dict(form_id=form.vars.form_id, formkey=form.formkey)
             raise HTTP(200, self.element(user_id, target_id))
-        
+            
+        import uuid
         _form_id = str(uuid.uuid4())
         form.attributes['_id'] = _form_id
         
         script = SCRIPT("""
 (function($) {
 $(function(){
-    $('.plugin_comment_box_comment').live('keypress', function(e){
-        if (e.keyCode==13){
+    $('.plugin_comment_box_submit').live('keypress', function(e){   
+        if (e.keyCode==13 && !e.shiftKey){
             $('.flash').hide().html('');
-            var form = $('#%(form_id)s'),
-                text = $(this),
-                el_id = text.parent().attr('id');
+            var el = $(this).closest('.plugin_comment_box'),
+                form = $('#%(form_id)s'),
+                text = el.find('textarea'),
                 body = text.val(),
+                el_id = el.attr('id'),
                 ids = el_id.split('__'),
                 user_id = ids[1],
                 target_id = ids[2];
