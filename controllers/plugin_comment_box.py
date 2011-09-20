@@ -16,13 +16,24 @@ if request.function == 'test':
     
 auth = Auth(db)
 auth.define_tables()
-table_target = db.define_table('plugin_comment_box_target', Field('created_on', 'datetime', default=request.now))
+table_user = auth.settings.table_user
+table_target = db.define_table('plugin_comment_box_target', 
+                    Field('created_on', 'datetime', default=request.now))
+
 comment_box = CommentBox(db)
 comment_box.settings.table_comment_name = 'plugin_comment_box_comment'
 comment_box.define_tables(str(table_target), auth.settings.table_user_name)
-
-table_user = auth.settings.table_user
 table_comment = comment_box.settings.table_comment  
+
+comment_box.settings.select_fields = [table_user.ALL, table_comment.ALL]
+comment_box.settings.select_attributes = dict(
+    left=table_user.on(table_user.id==table_comment.user))
+comment_box.settings.content = lambda r: DIV(
+    A(r[table_user].email[:5], _href='#'), 
+    XML('<br/>'.join([SPAN(c).xml() for c in r[table_comment].body.split('\n')])),
+    DIV(TAG['ABBR'](r[table_comment].created_on), _class='comment_actions'),
+) 
+
 
 num_users = 3
 user_ids = {}
@@ -33,9 +44,9 @@ for i in range(1, num_users+1):
 
 import datetime
 db(table_target.created_on<
-    request.now-datetime.timedelta(minutes=10)).delete()
+    request.now-datetime.timedelta(minutes=30)).delete()
 db(comment_box.settings.table_comment.created_on<
-    request.now-datetime.timedelta(minutes=10)).delete()
+    request.now-datetime.timedelta(minutes=30)).delete()
     
 for i in range(3-db(table_target.id>0).count()):
     table_target.insert()
@@ -44,23 +55,15 @@ def index():
     user_no = int(request.args(0) or 1)
     user_id = user_ids[user_no]
     
-    comment_box.settings.select_fields = [table_user.ALL, table_comment.ALL]
-    comment_box.settings.select_attributes = dict(
-        left=table_user.on(table_user.id==table_comment.user))
-    comment_box.settings.content = lambda r: DIV(
-        A(r[table_user].email[:5], _href='#'), 
-        XML('<br/>'.join([SPAN(c).xml() for c in r[table_comment].body.split('\n')])),
-        DIV(TAG['ABBR'](r[table_comment].created_on), _class='comment_actions'),
-    ) 
-    
     comment_box_form = comment_box.process()
     
     user_chooser = []
     for i in range(1, num_users+1):
         if i == user_no:
-            user_chooser.append('user%s' % user_no)
+            user_chooser.append(SPAN('user%s' % user_no))
         else:
             user_chooser.append(A('user%s' % i, _href=URL('index', args=i)))
+    user_chooser = DIV(XML(' '.join([r.xml() for r in user_chooser])), _style='font-weight:bold')
     
     targets = db(table_target.id>0).select()
     _targets = {}
@@ -71,15 +74,16 @@ def index():
 .plugin_comment_box {word-break:break-all;width:300px;line-height: 1.1em;}
 .plugin_comment_box ul {list-style-type: none; margin: 0; padding: 0;}
 .plugin_comment_box li {display: list-item; text-align: -webkit-match-parent;
-background-color: #EDEFF4;border-bottom: 1px solid #E5EAF1;margin-top: 2px;padding: 5px 5px 4px;}
-.plugin_comment_box a {font-weight: bold;color: #3B5998;text-decoration: none; margin-right:5px;}
-.comment_actions {padding-top: 2px;color: gray;font-size: 11px;}
-.plugin_comment_box textarea {margin: -5px 0px -5px 0px;}
+background-color: #EDEFF4; border-bottom: 1px solid #E5EAF1; margin-top: 2px; padding: 5px 5px 4px;}
+.plugin_comment_box a {color: #3B5998; text-decoration: none;}
+.plugin_comment_box_comment a {font-weight: bold; color: #3B5998;text-decoration: none; margin-right:5px;}
+.comment_actions {padding-top: 2px; color: gray; font-size: 11px;}
+.plugin_comment_box textarea {margin: 0px 0px -3px 2px; resize: none; border: 1px solid #BDC7D8; overflow: hidden;}
     """)
-    return dict(choose_user=user_chooser,
+    return dict(current_user=DIV(user_chooser, DIV(comment_box_form, style)),
                 targets=_targets,
-                hiddens=DIV(comment_box_form, style),
-                tests=A('unit test', _href=URL('test')),)
+                tests=A('unit test', _href=URL('test')),
+                )
                 
     
 class TestCommentBox(unittest.TestCase):

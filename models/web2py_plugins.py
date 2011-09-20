@@ -138,14 +138,14 @@ This plugin a form object which makes table rows permutable using %s, and submit
     
     
     plugin_friendship=dict(
-        label='Friendship CRUD',
+        label='Friendship Manager',
         show_image=False,
         short_description='',
         long_description='',
         status='under-construction',
     ),
     plugin_comment_box=dict(
-        label='Comment Box',
+        label='Comment Box Manager',
         show_image=False,
         short_description='',
         long_description='',
