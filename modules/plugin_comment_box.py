@@ -12,7 +12,7 @@ class CommentBox(object):
         settings = self.settings = Storage()
         
         settings.oncomment = None
-        ##EDEFF4
+
         settings.select_fields = []
         settings.select_attributes = {}
         settings.headers = []
