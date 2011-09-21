@@ -12,14 +12,17 @@ class CommentBox(object):
         settings = self.settings = Storage()
         
         settings.oncomment = None
-        
+        ##EDEFF4
         settings.select_fields = []
         settings.select_attributes = {}
-        settings.header = None
+        settings.headers = []
         settings.content = lambda row: row
-        settings.footer = TEXTAREA('', _placeholder=current.T('Write a comment..'),
-                                  _rows=1, _class='plugin_comment_box_submit')
-        settings.tooltip = LABEL('X', _class='plugin_comment_box_delete')
+        settings.view_all_content = lambda total: A(
+                                        current.T('View all %s comments') % total, _href='#', 
+                                        _class='plugin_comment_box_view_all')
+        settings.footers = [TEXTAREA('', _placeholder=current.T('Write a comment..'),
+                                  _rows=1, _class='plugin_comment_box_add')]
+        settings.tooltip = LABEL('X', _class='plugin_comment_box_remove')
         settings.limit = 2
         
         settings.table_comment_name = 'comment'
@@ -74,15 +77,11 @@ class CommentBox(object):
         )
         elements = []
         
-        if settings.header:
-            elements.append(LI(settings.header))
+        elements[:0] = settings.headers
             
         if not view_all and len(records) > settings.limit:
             total = self.comments(target_id).count()
-            elements.append(LI(
-                A('View all %s comments' % total, _href='#', 
-                  _class='plugin_comment_box_view_all')
-            ))
+            elements.append(LI(settings.view_all_content(total)))
             records = records[:settings.limit]
         
         for record in reversed(records):
@@ -102,8 +101,7 @@ class CommentBox(object):
                                _class='plugin_comment_box_comment', 
                                _id='plugin_comment_box_comment__%s' % _comment_id))
         
-        if settings.footer:
-            elements.append(LI(settings.footer))
+        elements.extend(settings.footers)
         
         return DIV(UL(*elements), _id=_id, _class='plugin_comment_box')
     
@@ -119,10 +117,10 @@ class CommentBox(object):
         if form.accepts(current.request.vars, current.session):
             user_id, target_id = form.vars.user_id, form.vars.target_id
             view_all = True if form.vars.view_all == 'true' else False
-            if form.vars.action == 'add_comment':
+            if form.vars.action == 'add':
                 current.response.flash = self.messages.record_created
                 self.add_comment(user_id, target_id, form.vars.body)
-            elif form.vars.action == 'remove_comment':
+            elif form.vars.action == 'remove':
                 current.response.flash = self.messages.record_deleted
                 self.remove_comment(user_id, form.vars.comment_id)
             elif form.vars.action == 'view_all':
@@ -142,67 +140,66 @@ jQuery('#%(form_id)s').find('input[name=_formkey]').val('%(formkey)s');
         script = SCRIPT("""
 (function($) {$(function(){
 var form = $('#%(form_id)s');
-
-$('.plugin_comment_box_submit').live('keypress', function(e){   
-    if (e.keyCode==13 && !e.shiftKey){
-        var el = $(this).closest('.plugin_comment_box'),
-            el_id = el.attr('id'),
-            el_id_parts = el_id.split('__'),
-            user_id = el_id_parts[1],
-            target_id = el_id_parts[2],
-            body = el.find('textarea').val();  
-        form.children('input[name=action]').attr('value', 'add_comment');
-        form.children('input[name=form_id]').attr('value', '%(form_id)s');
-        form.children('input[name=user_id]').attr('value', user_id);
-        form.children('input[name=view_all]').attr('value', !el.find('.plugin_comment_box_view_all').length);
-        form.children('input[name=target_id]').attr('value', target_id);
-        form.children('input[name=body]').attr('value', body);
-        $('.flash').hide().html('');
-        web2py_ajax_page('post', '', form.serialize(), el_id);
-        return false;
+function set_inputs(items) {
+    for (k in items) {form.children('input[name='+k+']').attr('value', items[k]);}
+}
+function post_form(el_id) {
+    $('.flash').hide().html(''); web2py_ajax_page('post', '', form.serialize(), el_id);
+}
+function is_view_all(el) {
+    return !el.find('.plugin_comment_box_view_all').length
+}
+function add(self) {
+    var el = $(self).closest('.plugin_comment_box'),
+        el_id = el.attr('id'),
+        el_id_parts = el_id.split('__'),
+        user_id = el_id_parts[1],
+        target_id = el_id_parts[2],
+        body = el.find('textarea').val();  
+    set_inputs({form_id:'%(form_id)s', user_id:user_id, target_id: target_id, 
+                action:'add', body: body, view_all:is_view_all(el)});
+    post_form(el_id);
+}
+$('.plugin_comment_box_add').live('keypress', function(e){
+    if (this.tagName=='TEXTAREA' && e.keyCode==13 && !e.shiftKey){
+        add(this); return false;
+    }
+}).live('click', function(e){
+    if (this.tagName=='INPUT') {
+        add(this); return false;
     }
 });
-$('.plugin_comment_box_delete').live('click', function(e){
+$('.plugin_comment_box_remove').live('click', function(e){
     var el = $(this).closest('.plugin_comment_box'),
         el_id = el.attr('id'),
         el_id_parts = el_id.split('__'),
         user_id = el_id_parts[1],
         target_id = el_id_parts[2],
         comment_el = $(this).closest('.plugin_comment_box_comment'),
-        comment_el_id = comment_el.attr('id'),
-        comment_el_id_parts = comment_el_id.split('__'),
-        comment_id = comment_el_id_parts[1];
-    form.children('input[name=action]').attr('value', 'remove_comment');
-    form.children('input[name=form_id]').attr('value', '%(form_id)s');
-    form.children('input[name=user_id]').attr('value', user_id);
-    form.children('input[name=view_all]').attr('value', !el.find('.plugin_comment_box_view_all').length);
-    form.children('input[name=target_id]').attr('value', target_id);
-    form.children('input[name=comment_id]').attr('value', comment_id);
-    $('.flash').hide().html('');
-    web2py_ajax_page('post', '', form.serialize(), el_id);
+        comment_id = comment_el.attr('id').split('__')[1];
+    set_inputs({form_id:'%(form_id)s', user_id:user_id, target_id: target_id, 
+                action:'remove', comment_id: comment_id, view_all:is_view_all(el)});
+    post_form(el_id);
     return false;
 });
 $('.plugin_comment_box_comment').live({
-mouseenter:function(e){
-    $(this).find('.plugin_comment_box_tooltip').css('visibility', 'visible');
-}, mouseleave:function(e){
-    $(this).find('.plugin_comment_box_tooltip').css('visibility', 'hidden');
-}});
+    mouseenter:function(e){
+        $(this).find('.plugin_comment_box_tooltip').css('visibility', 'visible');
+    }, mouseleave:function(e){
+        $(this).find('.plugin_comment_box_tooltip').css('visibility', 'hidden');
+    }
+});
 $('.plugin_comment_box_view_all').live('click', function() {
     var el = $(this).closest('.plugin_comment_box'),
         el_id = el.attr('id'),
         el_id_parts = el_id.split('__'),
         user_id = el_id_parts[1],
         target_id = el_id_parts[2];
-        form.children('input[name=action]').attr('value', 'view_all');
-        form.children('input[name=form_id]').attr('value', '%(form_id)s');
-        form.children('input[name=user_id]').attr('value', user_id);
-        form.children('input[name=target_id]').attr('value', target_id);
-    $('.flash').hide().html('');
-    web2py_ajax_page('post', '', form.serialize(), el_id);
+    set_inputs({form_id:'%(form_id)s', user_id:user_id, target_id: target_id, 
+                action:'view_all'});
+    post_form(el_id);
     return false;
 });
-
 });})(jQuery);""" % dict(form_id=_form_id))
         form.components.append(script)
             

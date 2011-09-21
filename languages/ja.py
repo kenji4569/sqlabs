@@ -120,6 +120,7 @@
 'Tue': '火',
 'Usage': '使用例',
 'User ID': 'User ID',
+'View all %s comments': 'コメント%s件をすべて見る',
 'Website': 'ウェブサイト',
 'Wed': '水',
 'Write a comment..': 'コメントする',

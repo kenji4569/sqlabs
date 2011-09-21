@@ -34,7 +34,6 @@ comment_box.settings.content = lambda r: DIV(
     DIV(TAG['ABBR'](r[table_comment].created_on), _class='comment_actions'),
 ) 
 
-
 num_users = 3
 user_ids = {}
 for i in range(1, num_users+1):   
@@ -68,7 +67,9 @@ def index():
     targets = db(table_target.id>0).select()
     _targets = {}
     for target in targets:
-        _targets[target.id] = comment_box.element(user_id, target.id)
+        _targets[target.id] = DIV(
+            DIV('', _class='comment_bubble'),
+            comment_box.element(user_id, target.id))
         
     style = STYLE("""
 .plugin_comment_box {word-break:break-all;width:300px;line-height: 1.1em;}
@@ -77,9 +78,12 @@ def index():
 background-color: #EDEFF4; border-bottom: 1px solid #E5EAF1; margin-top: 2px; padding: 5px 5px 4px;}
 .plugin_comment_box a {color: #3B5998; text-decoration: none;}
 .plugin_comment_box_comment a {font-weight: bold; color: #3B5998;text-decoration: none; margin-right:5px;}
-.comment_actions {padding-top: 2px; color: gray; font-size: 11px;}
 .plugin_comment_box textarea {margin: 0px 0px -3px 2px; resize: none; border: 1px solid #BDC7D8; overflow: hidden;}
-    """)
+.comment_actions {padding-top: 2px; color: gray; font-size: 11px;}
+.comment_bubble {border: solid 7px transparent; border-bottom-color: #E5EAF1; 
+   border-top: 0; width: 0; height: 0; overflow: hidden; margin-left: 20px; margin-bottom: -2px;}   
+
+   """)
     return dict(current_user=DIV(user_chooser, DIV(comment_box_form, style)),
                 targets=_targets,
                 tests=A('unit test', _href=URL('test')),
@@ -116,5 +120,3 @@ class TestCommentBox(unittest.TestCase):
 def test():
     return dict(back=A('back', _href=URL('index')),
                 output=CODE(run_test(TestCommentBox)))
-
-
