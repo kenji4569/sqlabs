@@ -30,25 +30,25 @@ class Friendship(object):
                 Field('user', 'reference %s' % table_user_name),
                 Field('friend', 'reference %s' % table_user_name),
                 Field('status', length=1, default=settings.status_requesting,
-                      requires=[settings.status_requesting, settings.status_confirmed]),
+                      requires=IS_IN_SET([settings.status_requesting, 
+                                          settings.status_confirmed])),
                 Field('mutual', 'integer', default=0),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_friend_name, []))
  
     def add_friend(self, user_id, friend_id):
-        db, table_friend = self.db, self.settings.table_friend
+        table_friend = self.settings.table_friend
         if user_id == friend_id:
             raise ValueError
         
-        if db(table_friend.user==user_id)(table_friend.friend==friend_id).count():
+        if self.db(table_friend.user==user_id)(table_friend.friend==friend_id).count():
             raise ValueError
         
         table_friend.insert(user=user_id, friend=friend_id)
         
     def friend_requets(self, user_id):
-        db, settings, table_friend = self.db, self.settings, self.settings.table_friend
-        
-        return db(table_friend.friend==user_id)(table_friend.status==settings.status_requesting)
+        table_friend = self.settings.table_friend
+        return self.db(table_friend.friend==user_id)(table_friend.status==self.settings.status_requesting)
     
     def confirm_friend(self, user_id, friend_id):
         db, settings, table_friend = self.db, self.settings, self.settings.table_friend
@@ -79,18 +79,17 @@ class Friendship(object):
             settings.onconfirm(user_id, friend_id)
         
     def friends(self, user_id):
-        db, settings, table_friend = self.db, self.settings, self.settings.table_friend
-        return db(table_friend.user==user_id)(table_friend.status==settings.status_confirmed)
+        table_friend = self.settings.table_friend
+        return self.db(table_friend.user==user_id)(table_friend.status==self.settings.status_confirmed)
         
     def friend(self, user_id, friend_id):
-        db, table_friend = self.db, self.settings.table_friend
-        return self.friends(user_id)(table_friend.friend==friend_id)
+        return self.friends(user_id)(self.settings.table_friend.friend==friend_id)
     
     def ignore_friend(self, user_id, friend_id):
-        db, settings, table_friend = self.db, self.settings, self.settings.table_friend
+        db, table_friend = self.db, self.settings.table_friend
         
         if not db(table_friend.friend==user_id)(table_friend.user==friend_id)(
-                  table_friend.status==settings.status_requesting).count():
+                  table_friend.status==self.settings.status_requesting).count():
             raise ValueError
             
         db(table_friend.friend==user_id)(table_friend.user==friend_id).delete()

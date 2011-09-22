@@ -4,25 +4,23 @@ from gluon.tools import Auth
 import unittest
 from gluon.contrib.populate import populate
 
-def run_test(TestCase):
-    import cStringIO
-    stream = cStringIO.StringIO()
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
-    unittest.TextTestRunner(stream=stream, verbosity=2).run(suite)
-    return stream.getvalue()
-    
 if request.function == 'test':
     db = DAL('sqlite:memory:')
     
+### setup core objects #########################################################
 auth = Auth(db)
+comment_box = CommentBox(db)
+comment_box.settings.table_comment_name = 'plugin_comment_box_comment'
+
+### define tables ##############################################################
+
 auth.define_tables()
 table_user = auth.settings.table_user
+
 table_target = db.define_table('plugin_comment_box_target', 
                     Field('created_on', 'datetime', default=request.now))
 
-comment_box = CommentBox(db)
-comment_box.settings.table_comment_name = 'plugin_comment_box_comment'
-comment_box.define_tables(str(table_target), auth.settings.table_user_name)
+comment_box.define_tables(str(table_target), str(table_user))
 table_comment = comment_box.settings.table_comment  
 
 comment_box.settings.select_fields = [table_user.ALL, table_comment.ALL]
@@ -34,22 +32,25 @@ comment_box.settings.content = lambda r: DIV(
     DIV(TAG['ABBR'](r[table_comment].created_on), _class='comment_actions'),
 ) 
 
+### populate records ###########################################################
 num_users = 3
 user_ids = {}
 for i in range(1, num_users+1):   
     email = 'user%s@test.com' % i
-    user = db(auth.settings.table_user.email==email).select().first()
-    user_ids[i] = user and user.id or auth.settings.table_user.insert(email=email)
+    user = db(table_user.email==email).select().first()
+    user_ids[i] = user and user.id or table_user.insert(email=email)
 
 import datetime
-db(table_target.created_on<
-    request.now-datetime.timedelta(minutes=30)).delete()
-db(comment_box.settings.table_comment.created_on<
-    request.now-datetime.timedelta(minutes=30)).delete()
+deleted = db(table_target.created_on<request.now-datetime.timedelta(minutes=30)).delete()
+if deleted:
+    for i in range(3-db(table_target.id>0).count()):
+        table_target.insert()
+    session.flash = 'the database has been refreshed'
+    redirect(URL('index'))
     
-for i in range(3-db(table_target.id>0).count()):
-    table_target.insert()
 
+
+### demo functions #############################################################
 def index():
     user_no = int(request.args(0) or 1)
     user_id = user_ids[user_no]
@@ -86,14 +87,14 @@ background-color: #EDEFF4; border-bottom: 1px solid #E5EAF1; margin-top: 2px; pa
    """)
     return dict(current_user=DIV(user_chooser, DIV(comment_box_form, style)),
                 targets=_targets,
-                tests=A('unit test', _href=URL('test')),
+                unit_tests=[A('basic test', _href=URL('test'))],
                 )
                 
-    
+### unit tests #################################################################
 class TestCommentBox(unittest.TestCase):
 
     def setUp(self):
-        comment_box.settings.table_comment.truncate()
+        table_comment.truncate()
         
     def test_crud(self):
         for target_id in range(1, 3):
@@ -116,7 +117,12 @@ class TestCommentBox(unittest.TestCase):
             self.assertRaises(ValueError, comment_box.remove_comment, user_id, comments[1])
             self.assertEqual(comment_box.comments(target_id).count(), 2)
         
-    
 def test():
+    def run_test(TestCase):
+        import cStringIO
+        stream = cStringIO.StringIO()
+        suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
+        unittest.TextTestRunner(stream=stream, verbosity=2).run(suite)
+        return stream.getvalue()
     return dict(back=A('back', _href=URL('index')),
                 output=CODE(run_test(TestCommentBox)))

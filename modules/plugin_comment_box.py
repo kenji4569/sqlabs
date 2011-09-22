@@ -46,12 +46,12 @@ class CommentBox(object):
                 migrate=migrate, fake_migrate=fake_migrate)
                 
     def add_comment(self, user_id, target_id, body):
-        db, settings, table_comment = self.db, self.settings, self.settings.table_comment
-        table_comment.insert(target=target_id,
+        settings = self.settings
+        settings.table_comment.insert(target=target_id,
                      user=user_id,
                      body=body)
         if settings.oncomment:
-            settings.oncomment(target_id, user_id, current.request.now)
+            settings.oncomment(target_id, user_id)
             
     def remove_comment(self, user_id, comment_id):
         db, table_comment = self.db, self.settings.table_comment
@@ -62,8 +62,7 @@ class CommentBox(object):
             raise ValueError
             
     def comments(self, target_id):
-        db, table_comment = self.db, self.settings.table_comment
-        return db(table_comment.target==target_id)
+        return self.db(self.settings.table_comment.target==target_id)
         
     def element(self, user_id, target_id, view_all=False):  
         settings = self.settings

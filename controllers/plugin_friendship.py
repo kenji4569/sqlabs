@@ -3,16 +3,10 @@ from plugin_friendship import Friendship
 from gluon.tools import Auth
 import unittest
 
-def run_test(TestCase):
-    import cStringIO
-    stream = cStringIO.StringIO()
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
-    unittest.TextTestRunner(stream=stream, verbosity=2).run(suite)
-    return stream.getvalue()
-
 if request.function == 'test':
     db = DAL('sqlite:memory:')
     
+### setup core objects #########################################################
 auth = Auth(db)
 friendship = Friendship(db)
 friendship.settings.table_friend_name = 'plugin_friendship_friend'
@@ -22,22 +16,30 @@ friendship.settings.extra_fields = {
          Field('created_on', 'datetime', default=request.now)],
 }
 
+### define tables ##############################################################
 auth.define_tables()
-friendship.define_tables(auth.settings.table_user_name)
+table_user = auth.settings.table_user
 
+friendship.define_tables(str(table_user))
+table_friend = friendship.settings.table_friend
+
+### populate records ###########################################################
 num_users = 4
 user_ids = {}
 for i in range(1, num_users+1):   
     email = 'user%s@test.com' % i
-    user = db(auth.settings.table_user.email==email).select().first()
-    user_ids[i] = user and user.id or auth.settings.table_user.insert(email=email)
+    user = db(table_user.email==email).select().first()
+    user_ids[i] = user and user.id or table_user.insert(email=email)
 
 import datetime
 deleted = db(db['plugin_friendship_friend'].created_on<
             request.now-datetime.timedelta(minutes=30)).delete()
 if deleted:
     friendship.refresh_all_mutuals()
+    session.flash = 'the database has been refreshed'
+    redirect(URL('index'))
 
+### demo functions #############################################################
 def index():
     user_no = int(request.args(0) or 1)
     user_id = user_ids[user_no]
@@ -56,9 +58,6 @@ def index():
         else:
             user_chooser.append(A('user%s' % i, _href=URL('index', args=i)))
     user_chooser = DIV(XML(' '.join([r.xml() for r in user_chooser])), _style='font-weight:bold')
-    
-    table_user = auth.settings.table_user
-    table_friend = friendship.settings.table_friend
     
     friends = []
     records = db(table_user.id.belongs(set(user_ids.values())-set([user_id]))).select(
@@ -93,9 +92,10 @@ def index():
     return dict(current_user=user_chooser,
                 friends=friends,
                 friend_requests=friend_requests,
-                tests=A('unit test', _href=URL('test')),
+                unit_tests=[A('basic test', _href=URL('test'))],
                 )
     
+### unit tests #################################################################
 class TestFriendship(unittest.TestCase):
 
     def setUp(self):
@@ -177,6 +177,12 @@ class TestFriendship(unittest.TestCase):
         self.assertEqual(friend.affinity, 1.0)
         
 def test():
+    def run_test(TestCase):
+        import cStringIO
+        stream = cStringIO.StringIO()
+        suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
+        unittest.TextTestRunner(stream=stream, verbosity=2).run(suite)
+        return stream.getvalue()
     return dict(back=A('back', _href=URL('index')),
                 output=CODE(run_test(TestFriendship)))
     
