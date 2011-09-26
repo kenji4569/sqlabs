@@ -69,8 +69,6 @@ class Messaging(object):
         if not user_thread:
             user_thread_id = settings.table_message_thread.insert(user=user_id, other=other_id)
         else:
-            if user_thread.status == settings.status_unread:
-                user_thread.update_record(status=settings.status_read)
             user_thread_id = user_thread.id
             
         other_thread = self.message_thread(other_id, user_id).select().first()
@@ -92,12 +90,6 @@ class Messaging(object):
         
         if settings.onmessage:
             settings.onmessage(user_id, other_id)
-           
-    def mark_unread(self, user_id, other_id):
-        self.message_thread(user_id, other_id).update(status=self.settings.status_unread)
-        
-    def mark_read(self, user_id, other_id):
-        self.message_thread(user_id, other_id).update(status=self.settings.status_read)
            
     def delete_messages(self, user_id, other_id, message_ids=None):
         if not message_ids:

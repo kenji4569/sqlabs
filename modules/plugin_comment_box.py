@@ -143,10 +143,10 @@ function set_inputs(items) {
     for (k in items) {form.children('input[name='+k+']').attr('value', items[k]);}
 }
 function post_form(el_id) {
-    $('.flash').hide().html(''); web2py_ajax_page('post', '', form.serialize(), el_id);
+    $('.flash').hide().html(''); web2py_ajax_page('post', '%(url)s', form.serialize(), el_id);
 }
 function is_view_all(el) {
-    return !el.find('.plugin_comment_box_view_all').length
+    return !el.find('.plugin_comment_box_view_all').length;
 }
 function add(self) {
     var el = $(self).closest('.plugin_comment_box'),
@@ -199,7 +199,7 @@ $('.plugin_comment_box_view_all').live('click', function() {
     post_form(el_id);
     return false;
 });
-});})(jQuery);""" % dict(form_id=_form_id))
+});})(jQuery);""" % dict(form_id=_form_id, url=URL(args=current.request.args, vars=current.request.get_vars)))
         form.components.append(script)
             
         return form

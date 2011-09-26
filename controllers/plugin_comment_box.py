@@ -48,13 +48,10 @@ if deleted:
     session.flash = 'the database has been refreshed'
     redirect(URL('index'))
     
-
-
 ### demo functions #############################################################
 def index():
     user_no = int(request.args(0) or 1)
     user_id = user_ids[user_no]
-    
     comment_box_form = comment_box.process()
     
     user_chooser = []
