@@ -66,7 +66,7 @@ def index():
             message_threads.append(el)
             
         others = [(i, 'user%s' % i) for i in range(1, num_users+1) if i != user_no]
-        form = SQLFORM.factory(Field('other', requires=IS_IN_SET(others)),
+        form = SQLFORM.factory(Field('other', label='To', requires=IS_IN_SET(others)),
                                Field('body'))
         if form.accepts(request.vars, session):
             messaging.add_message(user_id, user_ids[int(form.vars.other)], form.vars.body)
@@ -90,7 +90,7 @@ def index():
                     left=(table_user.on(table_user.id==table_message.user)))
         messages = []
         for record in reversed(records):
-            messages.append(LI(A(record[table_user].email[:5], _href='#'), ' ', SPAN(record[table_message].body)))
+            messages.append(LI(EM(record[table_user].email[:5], _href='#'), ' ', SPAN(record[table_message].body)))
         messages = UL(*messages)
         
         form = SQLFORM.factory(Field('body'))
@@ -100,7 +100,7 @@ def index():
         
         return dict(back=A('back', _href=URL('index', args=user_no)),
                     current__user=user_chooser,
-                    current_other='user%s' % other_no,
+                    message_to='user%s' % other_no,
                     messages=messages,
                     reply=form,
                     tests=[A('unit test', _href=URL('test'))],
