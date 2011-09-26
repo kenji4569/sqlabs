@@ -49,7 +49,6 @@ def index():
             getattr(friendship, action)(user_id, request.vars[action])
             session.flash = action
             redirect(URL('index', args=user_no))
-            break
     
     user_chooser = []
     for i in range(1, num_users+1):
@@ -80,7 +79,7 @@ def index():
         friends.append(DIV(record.auth_user.email[:5], ': ', option))
     
     friend_requests = []
-    records = friendship.friend_requets(user_id).select(
+    records = friendship.friend_requests(user_id).select(
                         table_user.ALL,
                         left=table_user.on(table_user.id==table_friend.user))
     for record in records:
@@ -103,16 +102,16 @@ class TestFriendship(unittest.TestCase):
 
     def test_add_friend(self):
         friendship.add_friend(user_ids[1], user_ids[2])
-        self.assertEqual(friendship.friend_requets(user_ids[1]).count(), 0)
-        self.assertEqual(friendship.friend_requets(user_ids[2]).count(), 1)
-        self.assertEqual([r.user for r in friendship.friend_requets(user_ids[2]).select()], 
+        self.assertEqual(friendship.friend_requests(user_ids[1]).count(), 0)
+        self.assertEqual(friendship.friend_requests(user_ids[2]).count(), 1)
+        self.assertEqual([r.user for r in friendship.friend_requests(user_ids[2]).select()], 
                          [user_ids[1]])
                          
     def test_confirm_friend(self):
         friendship.add_friend(user_ids[1], user_ids[2])
         friendship.confirm_friend(user_ids[2], user_ids[1])
-        self.assertEqual(friendship.friend_requets(user_ids[1]).count(), 0)
-        self.assertEqual(friendship.friend_requets(user_ids[2]).count(), 0)
+        self.assertEqual(friendship.friend_requests(user_ids[1]).count(), 0)
+        self.assertEqual(friendship.friend_requests(user_ids[2]).count(), 0)
         
         friends = friendship.friends(user_ids[1]).select()
         self.assertEqual([r.friend for r in friends], [user_ids[2]])
@@ -165,8 +164,8 @@ class TestFriendship(unittest.TestCase):
     def test_ignore_friend(self):
         friendship.add_friend(user_ids[1], user_ids[2])
         friendship.ignore_friend(user_ids[2], user_ids[1])
-        self.assertEqual(friendship.friend_requets(user_ids[1]).count(), 0)
-        self.assertEqual(friendship.friend_requets(user_ids[2]).count(), 0)
+        self.assertEqual(friendship.friend_requests(user_ids[1]).count(), 0)
+        self.assertEqual(friendship.friend_requests(user_ids[2]).count(), 0)
         self.assertEqual(friendship.friends(user_ids[1]).count(), 0)
         self.assertEqual(friendship.friends(user_ids[2]).count(), 0)
         

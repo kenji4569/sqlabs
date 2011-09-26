@@ -35,8 +35,8 @@ class Messaging(object):
                 Field('user', 'reference %s' % table_user_name),
                 Field('other', 'reference %s' % table_user_name),
                 Field('status', length=1, default=settings.status_read,
-                      requires=IS_IN_SET([settings.status_unread, 
-                                          settings.status_read])),
+                      requires=IS_IN_SET([(settings.status_unread, 'unread'), 
+                                          (settings.status_read, 'read')])),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_message_thread_name, []))
                 
@@ -69,6 +69,8 @@ class Messaging(object):
         if not user_thread:
             user_thread_id = settings.table_message_thread.insert(user=user_id, other=other_id)
         else:
+            if user_thread.status == settings.status_unread:
+                user_thread.update_record(status=settings.status_read)
             user_thread_id = user_thread.id
             
         other_thread = self.message_thread(other_id, user_id).select().first()

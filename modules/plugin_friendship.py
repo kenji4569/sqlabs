@@ -46,7 +46,7 @@ class Friendship(object):
         
         table_friend.insert(user=user_id, friend=friend_id)
         
-    def friend_requets(self, user_id):
+    def friend_requests(self, user_id):
         table_friend = self.settings.table_friend
         return self.db(table_friend.friend==user_id)(table_friend.status==self.settings.status_requesting)
     
