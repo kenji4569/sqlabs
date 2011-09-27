@@ -149,22 +149,24 @@ class MPTTModel(object):
         else:
             return False
         
-    def add_node(self, node_id, parent_node_id, tree_id, node_level):
+    def add_node(self, node_id, target_id, position='last-child'):
         db, table_tree = self.db, self.settings.table_tree
-        parent = db(table_tree.id == parent_node_id).select().first()
-        if not parent:
+        target = db(table_tree.id == target_id).select().first()
+        if not target:
             raise ValueError
-        self._update_tree(node_id, parent_node_id, tree_id, node_level, parent)
+        self._update_tree(node_id, target_id, position)
         return
         
-    def _update_tree(self, node_id, parent_node_id, tree_id, node_level, parent):
+    def _update_tree(self, node_id, target_id, position):
         db, table_tree = self.db, self.settings.table_tree
-        db(table_tree.id == node_id).update(parent_id = parent_node_id)
-        db(table_tree.id == node_id).update(level = node_level)
-        db(table_tree.right >= parent.right).update(right=table_tree.right + 2)
-        db(table_tree.left >= parent.right).update(left=table_tree.left + 2)
-        table_tree.insert(id=node_id, parent_id=parent_node_id, tree_id=tree_id, 
-                          level=node_level, left=parent.right, right=parent.right + 1)
+        target = db(table_tree.id == target_id).select().first()
+        if position == 'last-child':
+            db(table_tree.right >= target.right)(table_tree.tree_id == target.tree_id).update(right=table_tree.right + 2)
+            db(table_tree.left >= target.right)(table_tree.tree_id == target.tree_id).update(left=table_tree.left + 2)
+            table_tree.insert(id=node_id, parent_id=target_id, tree_id=target.tree_id, 
+                              level=target.level+1, left=target.right, right=target.right + 1)
+        else:
+            raise ValueError
     
     def delete_node(self, node_id):
         db, table_tree = self.db, self.settings.table_tree
@@ -188,8 +190,7 @@ class MPTTModel(object):
         target = db(table_tree.id == target_id).select().first()
         
         if not node:
-            table_tree.insert(id=node_id, parent_id=target.id, tree_id=target.tree_id, 
-                              level=target.level+1, left=target.right, right=target.right+1)
+            self._update_tree(node_id, target_id, position)
             return
         
         left = node.left
@@ -203,58 +204,75 @@ class MPTTModel(object):
             if next_tid:
                 table_tree.insert(id=node_id,parent_id=None,tree_id=next_tid,
                                   level=0,left=1,right=2)
+            # if there is no trees
             else:
                 table_tree.insert(id=node_id,parent_id=None,tree_id=1,
                                   level=0,left=1,right=2)
             return
+
+        # root node の　兄弟を作る
         elif self.is_root_node(target.id) and position in ['left', 'right']:
             if position == 'left':
-                db(table_tree.right >= target.left).update(left=table_tree.left + tree_width + 1)
-                db(table_tree.right >= target.left).update(right=table_tree.right + tree_width + 1)
+                db(table_tree.right >= target.left)(table_tree.tree_id == target.tree_id).update(left=table_tree.left + tree_width + 1)
+                db(table_tree.right >= target.left)(table_tree.tree_id == target.tree_id).update(right=table_tree.right + tree_width + 1)
             else:
-                db(table_tree.right >= target.right).update(left=table_tree.left + tree_width + 1)
-                db(table_tree.right >= target.right).update(right=table_tree.right + tree_width + 1)
-                #続きを書く
+                db(table_tree.right >= target.right)(table_tree.tree_id == target.tree_id).update(left=table_tree.left + tree_width + 1)
+                db(table_tree.right >= target.right)(table_tree.tree_id == target.tree_id).update(right=table_tree.right + tree_width + 1)
+                #続きを書く  新しいルートの作成
+        
         else:
-            #calculate  サブツリー内への影響
-            for beta_node in db(table_tree.left >= node.left)(table_tree.left <= node.right)(table_tree.tree_id == current_tree_id).select():
-                beta_node.update_record(level=beta_node.level + target.level,
-                                        left=beta_node.left + target.right - 1,
-                                        right=beta_node.right + target.right - 1,
-                                        tree_id=target.tree_id)
-            
             if position == 'last-child':
                 #calculate  サブツリー以外への影響 　last-child
                 node.update_recode(parent_id=target.id)
-                db(table_tree.right >= target.right).update(right=table_tree.right + tree_width)
-                db(table_tree.left >= target.right).update(left=table_tree.left + tree_width)
+                db(table_tree.right >= target.right)(table_tree.tree_id == target.tree_id).update(right=table_tree.right + tree_width)
+                db(table_tree.left >= target.right)(table_tree.tree_id == target.tree_id).update(left=table_tree.left + tree_width)
             elif position == 'first-child':
                 #calculate  サブツリー以外への影響 　first-child                           
                 node.update_recode(parent_id=target.id)
-                db(table_tree.right >= target.left).update(right=table_tree.right + tree_width)
-                db(table_tree.left >= target.left).update(left=table_tree.left + tree_width)
+                db(table_tree.right >= target.left)(table_tree.tree_id == target.tree_id).update(right=table_tree.right + tree_width)
+                db(table_tree.left >= target.left)(table_tree.tree_id == target.tree_id).update(left=table_tree.left + tree_width)
             elif position == 'left':
                 #calculate  サブツリー以外への影響 　sibling-left
                 node.update_recode(parent_id=target.parent_id)
-                db(table_tree.right >= target.left).update(right=table_tree.right + tree_width)
-                db(table_tree.left >= target.left).update(left=table_tree.left + tree_width)
+                db(table_tree.right >= target.left)(table_tree.tree_id == target.tree_id).update(right=table_tree.right + tree_width)
+                db(table_tree.left >= target.left)(table_tree.tree_id == target.tree_id).update(left=table_tree.left + tree_width)
             elif position == 'right':
                 #calculate  サブツリー以外への影響 　sibling-right
                 node.update_recode(parent_id=target.parent_id)
-                db(table_tree.right >= target.right).update(right=table_tree.right + tree_width)
-                db(table_tree.left >= target.right).update(left=table_tree.left + tree_width)
+                db(table_tree.right >= target.right)(table_tree.tree_id == target.tree_id).update(right=table_tree.right + tree_width)
+                db(table_tree.left >= target.right)(table_tree.tree_id == target.tree_id).update(left=table_tree.left + tree_width)
             else:
                 raise ValueError
-
+            
+            #calculate  サブツリー内への影響
+            for beta_node in db(table_tree.left >= node.left)(table_tree.left <= node.right)(table_tree.tree_id == current_tree_id).select():
+                beta_node.update_record(level=beta_node.level + target.level + 1,
+                                        left=beta_node.left + target.right - 1,
+                                        right=beta_node.right + target.right - 1,
+                                        tree_id=target.tree_id)
+                
+    
     def _calculate_inter_tree_move_values(self, node_id, target_id, position):
         db, table_tree = self.db, self.settings.table_tree
         node = db(table_tree.id == node_id).select().first()
         target = db(table_tree.id == target_id).select().first()
         
+        left = node.left
+        right = node.right
+        level = node.level
+        target_right = target.right
+        target_left = target.left
+        
+        
+        
     def move_node(self, node_id, target_id, position='last-child'):
         db, table_tree = self.db, self.settings.table_tree
+        node = db(table_tree.id == node_id).select().first()
         target = db(table_tree.id == target_id).select().first()
         
+        if not node:
+            raise ValueError
+                
         if target is None:
             if self.is_child_node(node_id):
                 self._make_child_root_node(node_id)
@@ -318,14 +336,42 @@ class MPTTModel(object):
         tree_width = right - left + 1
         node.update_recode(parent_id=None)
         
+        #サブツリー内部
         for beta_node in db(table_tree.left >= node.left)(table_tree.left <= node.right)(table_tree.tree_id == current_tree_id).select():
             beta_node.update_record(level=beta_node.level - node.level,
                                     left=beta_node.left - (node.left - 1),
                                     right=beta_node.right - (node.left - 1),
                                     tree_id=new_tree_id)
-            
+        
+        #オリジナルツリー内部
         for alpha_node in db(table_tree.left > node.left)(table_tree.tree_id == current_tree_id).select():
             alpha_node.update_record(left=alpha_node.left - tree_width)
                     
         for alpha_node in db(table_tree.right > node.right)(table_tree.tree_id == current_tree_id).select():
             alpha_node.update_record(right=alpha_node.right - tree_width)
+
+    def _make_sibling_of_root_node(self, node_id, target_id, position):
+        db, table_tree = self.db, self.settings.table_tree
+        node = db(table_tree.id == node_id).select().first()
+        target = db(table_tree.id == target_id).select().first()
+        
+    def _move_root_node(self, node_id, target_id, position):
+        db, table_tree = self.db, self.settings.table_tree
+        node = db(table_tree.id == node_id).select().first()
+        target = db(table_tree.id == target_id).select().first()
+        if not node:
+            raise ValueError
+        
+        left = node.left
+        right = node.right
+        level = node.level
+        current_tree_id = node.tree_id
+        new_tree_id = target.tree_id
+        width = right - left + 1
+        
+        if node == target:
+            raise ValueError
+        elif current_tree_id == new_tree_id:
+            raise ValueError
+        
+        
