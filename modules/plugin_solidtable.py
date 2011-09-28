@@ -12,8 +12,8 @@ class SOLIDTABLE(SQLTABLE):
             extracolumns=None, selectid=None, renderstyle=False, **attributes):
         TABLE.__init__(self, **attributes)
         self.attributes['_class'] = 'solidtable'
-        self.sqlrows, self.linkto, self.truncate, self.selectid, self.th_link, self.orderby = (
-            sqlrows, linkto, truncate, selectid, th_link, orderby
+        self.sqlrows, self.linkto, self.upload, self.truncate, self.selectid, self.th_link, self.orderby = (
+            sqlrows, linkto, upload, truncate, selectid, th_link, orderby
         )
         self.components = []
         
@@ -271,8 +271,8 @@ class SOLIDTABLE(SQLTABLE):
             elif field.type == 'blob' and r:
                 r = 'DATA'
             elif field.type == 'upload':
-                if upload and r:
-                    r = A('file', _href='%s/%s' % (upload, r))
+                if self.upload and r:
+                    r = A('file', _href='%s/%s' % (self.upload, r))
                 elif r:
                     r = 'file'
                 else:

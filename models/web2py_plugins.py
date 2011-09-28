@@ -136,27 +136,20 @@ This plugin a form object which makes table rows permutable using %s, and submit
 """) % A('jquery.tablednd.js', _href='http://www.isocra.com/2008/02/table-drag-and-drop-jquery-plugin/').xml())
     ),
     
-    
-    plugin_friendship=dict(
-        label='Friendship Manager',
-        show_image=False,
-        short_description='',
-        long_description='',
-        status='under-construction',
-    ),
     plugin_comment_box=dict(
-        label='Comment Box Manager',
-        show_image=False,
-        short_description='',
-        long_description='',
-        status='under-construction',
+        label='Comment Box',
+        short_description=T('Make facebook-like comment boxes'),
+        long_description=T("""A manager to make ajax-intensive comment boxes for a sort of news feed as in Facebook."""),
+    ),
+    plugin_friendship=dict(
+        label='Friendship',
+        short_description=T('A friendship manager'),
+        long_description=T("""A manager to make friendship relations among users as in Facebook."""),
     ),
     plugin_messaging=dict(
-        label='Messaging Manager',
-        show_image=False,
-        short_description='',
-        long_description='',
-        status='under-construction',
+        label='Messaging',
+        short_description=T('A private messaging manager'),
+        long_description=T("""A manager for private messaging between users as in Facebook."""),
     ),
     
     plugin_mptt=dict(
