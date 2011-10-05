@@ -67,6 +67,11 @@ def index():
                  None,
                  [tax, None],
                 ]
+    elif request_columns == 'columns_3':
+        columns=[[db.product.name, extracolumns[0]], 
+                 [None, 'product.description'], 
+                 [None, tax],
+                ]
 
     table = SOLIDTABLE(rows,  
             columns=columns, extracolumns=extracolumns,
@@ -81,6 +86,7 @@ def index():
                                A('headers=fieldname:capitalize', _href=URL(vars={'headers':'fieldname:capitalize'})), ' ',
                                A('columns=default', _href=URL(vars={'columns':'default'})), ' ',
                                A('columns=columns_2', _href=URL(vars={'columns':'columns_2'})), ' ',
+                               A('columns=columns_3', _href=URL(vars={'columns':'columns_3'})), ' ',
                                ))
 
 
