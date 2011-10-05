@@ -73,7 +73,7 @@ class SOLIDFORM(SQLFORM):
         xfield_dict = dict([(x, y) for x, y in zip(self.flat_fields, xfields[:n])])
         
         row_lines = copy.copy(self.row_lines)
-        for i in range(len(row_lines[0])*self.max_row_lines):
+        for i in range(max(len(line) for line in row_lines)*self.max_row_lines):
             if i >= len(row_lines[0]):
                 break
             tr_inner =[]

@@ -30,6 +30,11 @@ def index():
         fields = [['name', 'category'], 
                   None,
                   ['code', 'keywords']]
+    elif request_fields == 'fields_3':
+        fields = [['name','category'],
+                  [None,'code'],
+                  [None,'keywords']]
+                  
     # Standard usage
     form = SOLIDFORM(db.product, fields=fields)
     # Factory usage
@@ -52,4 +57,5 @@ def index():
     return dict(form=DIV(style, form), form__factory=form_factory, form__readonly=form_readonly,
                 form_args=DIV(A('fields=default', _href=URL(vars={'fields':'default'})), ' ',
                               A('fields=fields_2', _href=URL(vars={'fields':'fields_2'})), ' ',
+                              A('fields=fields_3', _href=URL(vars={'fields':'fields_3'})), ' ',
                                ))
