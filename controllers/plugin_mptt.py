@@ -15,7 +15,6 @@ class TestMPTT(unittest.TestCase):
         #here for the initialization of Database
 
     def test_shuffle(self):
-        mptt.insert(title='Food', left=1, right=2)
         # make sure the shuffled sequence does not lose any elements
         random.shuffle(self.seq)
         self.seq.sort()
@@ -39,7 +38,24 @@ def run_test(TestCase):
     return stream.getvalue()
 
 def index():
-    return dict(output=CODE(run_test(TestMPTT)))
+    db, table_tree = mptt.db, mptt.settings.table_tree
+    mptt.insert_node(node_id=1,target_id=None,position='last-child')
+    mptt.insert_node(node_id=2,target_id=1,position='last-child')
+    mptt.insert_node(node_id=3,target_id=2,position='last-child')
+    mptt.insert_node(node_id=4,target_id=2,position='last-child')
+    mptt.insert_node(node_id=5,target_id=2,position='last-child')
+    mptt.insert_node(node_id=6,target_id=1,position='last-child')
+    mptt.insert_node(node_id=7,target_id=6,position='last-child')
+    mptt.insert_node(node_id=8,target_id=6,position='last-child')
+    mptt.insert_node(node_id=9,target_id=None,position='last-child')
+    mptt.insert_node(node_id=10,target_id=9,position='last-child')
+    mptt.insert_node(node_id=11,target_id=9,position='last-child')
+    
+    show_db_all = db().select(table_tree.ALL)
+    show_db = db(table_tree.id == 1).select()
+    print mptt.get_tree_details(show_db)
+    
+    return dict(output=CODE(run_test(TestMPTT)),show_db=show_db)
 
 def test():
     db, table_tree = mptt.db, mptt.settings.table_tree
