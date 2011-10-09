@@ -148,8 +148,8 @@ This plugin a form object which makes table rows permutable using %s, and submit
     ),
     plugin_messaging=dict(
         label='Messaging',
-        short_description=T('A private messaging manager'),
-        long_description=T("""A manager for private messaging between users as in Facebook."""),
+        short_description=T('A direct messaging manager'),
+        long_description=T("""A manager for direct messaging between users as in Facebook."""),
     ),
     
     plugin_mptt=dict(
@@ -213,6 +213,14 @@ This plugin a form object which makes table rows permutable using %s, and submit
         show_image=False,
         short_description='',
         long_description='',
+        status='under-construction',
+    ),
+    
+    plugin_shopping=dict(
+        label='ShoppingManager',
+        show_image=False,
+        short_description='A minimum set of codes for making a e-commerce site',
+        long_description="""A minimum set of codes for making a e-commerce site.""",
         status='under-construction',
     ),
 )

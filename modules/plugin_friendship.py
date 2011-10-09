@@ -18,8 +18,8 @@ class Friendship(object):
         settings.table_friend_name = 'friend'
         settings.table_friend = None
         
-        settings.status_requesting = 'r'
-        settings.status_confirmed = 'c'
+        settings.status_requesting = 'requesting'
+        settings.status_confirmed = 'confirmed'
         
     def define_tables(self, table_user_name, migrate=True, fake_migrate=False):
         db, settings = self.db, self.settings
@@ -29,9 +29,7 @@ class Friendship(object):
                 settings.table_friend_name,
                 Field('user', 'reference %s' % table_user_name),
                 Field('friend', 'reference %s' % table_user_name),
-                Field('status', length=1, default=settings.status_requesting,
-                      requires=IS_IN_SET([settings.status_requesting, 
-                                          settings.status_confirmed])),
+                Field('status', length=16, default=settings.status_requesting),
                 Field('mutual', 'integer', default=0),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_friend_name, []))

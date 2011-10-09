@@ -2,11 +2,12 @@
 from plugin_messaging import Messaging
 from gluon.tools import Auth
 import unittest
+import datetime
 
 if request.function == 'test':
     db = DAL('sqlite:memory:')
 
-### setup core objects #########################################################    
+### setup core objects #########################################################
 auth = Auth(db)
 messaging = Messaging(db)
 messaging.settings.table_message_thread_name = 'plugin_messaging_message_thread'
@@ -20,21 +21,19 @@ messaging.settings.extra_fields = {
 auth.define_tables()
 table_user = auth.settings.table_user
 
-messaging.define_tables(auth.settings.table_user_name)
+messaging.define_tables(str(table_user))
 table_message_thread = messaging.settings.table_message_thread
 table_message = messaging.settings.table_message
 
 ### populate records ###########################################################
 num_users = 3
 user_ids = {}
-for i in range(1, num_users+1):   
-    email = 'user%s@test.com' % i
+for user_no in range(1, num_users+1):   
+    email = 'user%s@test.com' % user_no
     user = db(auth.settings.table_user.email==email).select().first()
-    user_ids[i] = user and user.id or auth.settings.table_user.insert(email=email)
+    user_ids[user_no] = user and user.id or auth.settings.table_user.insert(email=email)
     
-import datetime
-deleted = db(db['plugin_messaging_message_thread'].created_on<
-            request.now-datetime.timedelta(minutes=30)).delete()
+deleted = db(table_message_thread.created_on<request.now-datetime.timedelta(minutes=30)).delete()
 if deleted:
     session.flash = 'the database has been refreshed'
     redirect(URL('index'))
@@ -51,6 +50,8 @@ def index():
         else:
             user_chooser.append(A('user%s' % i, _href=URL('index', args=i)))
     user_chooser = DIV(XML(' '.join([r.xml() for r in user_chooser])), _style='font-weight:bold')
+    
+    unit_tests = [A('basic test', _href=URL('test'))]
     
     if not request.args(1):
         records = messaging.message_threads(user_id).select(
@@ -75,7 +76,7 @@ def index():
         return dict(current_user=user_chooser,
                     message=form,
                     message_threads=message_threads,
-                    tests=[A('unit test', _href=URL('test'))],
+                    unit_tests=unit_tests,
                     )
     else:
         other_no = request.args(1)
@@ -103,15 +104,15 @@ def index():
                     message_to='user%s' % other_no,
                     messages=messages,
                     reply=form,
-                    tests=[A('unit test', _href=URL('test'))],
+                    unit_tests=unit_tests,
                     )
       
 ### unit tests #################################################################
 class TestMessaging(unittest.TestCase):
 
     def setUp(self):
-        messaging.settings.table_message_thread.truncate()
-        messaging.settings.table_message.truncate()
+        table_message_thread.truncate()
+        table_message.truncate()
         
     def test_add_message(self):
         user_id = 1
@@ -156,12 +157,13 @@ class TestMessaging(unittest.TestCase):
         messaging.delete_messages(user_id, other_id, message_ids[1:])
         self.assertEqual(messaging.messages(user_thread.id).count(), 1)
         
+def run_test(TestCase):
+    import cStringIO
+    stream = cStringIO.StringIO()
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
+    unittest.TextTestRunner(stream=stream, verbosity=2).run(suite)
+    return stream.getvalue()
+    
 def test():
-    def run_test(TestCase):
-        import cStringIO
-        stream = cStringIO.StringIO()
-        suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
-        unittest.TextTestRunner(stream=stream, verbosity=2).run(suite)
-        return stream.getvalue()
     return dict(back=A('back', _href=URL('index')),
                 output=CODE(run_test(TestMessaging)))

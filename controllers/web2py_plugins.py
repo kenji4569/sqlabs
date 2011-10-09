@@ -36,7 +36,7 @@ The code parts are organized in %s, and easily available.""") % ('Web2py', T("a 
                         'plugin_tablecheckbox', 
                         'plugin_tablepermuter', 
                     ))),
-                ('SNS Components (very experimental)',
+                ('SNS Plugins (experimental)',
                      map(lambda k: (k, info_plugin_metas[k]), (
                         'plugin_comment_box', 
                         'plugin_friendship',

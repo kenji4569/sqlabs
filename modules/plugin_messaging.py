@@ -20,11 +20,12 @@ class Messaging(object):
         
         settings.table_message_thread_name = 'message_thread'
         settings.table_message_thread = None
+        
         settings.table_message_name = 'message'
         settings.table_message = None
         
-        settings.status_unread = 'u'
-        settings.status_read = 'r'
+        settings.status_unread = 'unread'
+        settings.status_read = 'read'
         
     def define_tables(self, table_user_name, migrate=True, fake_migrate=False):
         db, settings = self.db, self.settings
@@ -34,9 +35,7 @@ class Messaging(object):
                 settings.table_message_thread_name,
                 Field('user', 'reference %s' % table_user_name),
                 Field('other', 'reference %s' % table_user_name),
-                Field('status', length=1, default=settings.status_read,
-                      requires=IS_IN_SET([(settings.status_unread, 'unread'), 
-                                          (settings.status_read, 'read')])),
+                Field('status', length=16, default=settings.status_read),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_message_thread_name, []))
                 
@@ -47,7 +46,6 @@ class Messaging(object):
                 Field('message_thread', 'reference %s' % settings.table_message_thread_name),
                 Field('body', 'text'),
                 Field('forward', 'text'),
-                Field('created_on', 'datetime', default=current.request.now),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_message_name, []))
   

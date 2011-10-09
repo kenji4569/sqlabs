@@ -2,6 +2,7 @@
 from plugin_friendship import Friendship
 from gluon.tools import Auth
 import unittest
+import datetime
 
 if request.function == 'test':
     db = DAL('sqlite:memory:')
@@ -26,14 +27,12 @@ table_friend = friendship.settings.table_friend
 ### populate records ###########################################################
 num_users = 4
 user_ids = {}
-for i in range(1, num_users+1):   
-    email = 'user%s@test.com' % i
+for user_no in range(1, num_users+1):   
+    email = 'user%s@test.com' % user_no
     user = db(table_user.email==email).select().first()
-    user_ids[i] = user and user.id or table_user.insert(email=email)
+    user_ids[user_no] = user and user.id or table_user.insert(email=email)
 
-import datetime
-deleted = db(db['plugin_friendship_friend'].created_on<
-            request.now-datetime.timedelta(minutes=30)).delete()
+deleted = db(table_friend.created_on<request.now-datetime.timedelta(minutes=30)).delete()
 if deleted:
     friendship.refresh_all_mutuals()
     session.flash = 'the database has been refreshed'
@@ -98,7 +97,7 @@ def index():
 class TestFriendship(unittest.TestCase):
 
     def setUp(self):
-        friendship.settings.table_friend.truncate()
+        table_friend.truncate()
 
     def test_add_friend(self):
         friendship.add_friend(user_ids[1], user_ids[2])
@@ -175,13 +174,14 @@ class TestFriendship(unittest.TestCase):
         friend = friendship.friend(user_ids[1], user_ids[2]).select().first()
         self.assertEqual(friend.affinity, 1.0)
         
+def run_test(TestCase):
+    import cStringIO
+    stream = cStringIO.StringIO()
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
+    unittest.TextTestRunner(stream=stream, verbosity=2).run(suite)
+    return stream.getvalue()
+    
 def test():
-    def run_test(TestCase):
-        import cStringIO
-        stream = cStringIO.StringIO()
-        suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
-        unittest.TextTestRunner(stream=stream, verbosity=2).run(suite)
-        return stream.getvalue()
     return dict(back=A('back', _href=URL('index')),
                 output=CODE(run_test(TestFriendship)))
     
