@@ -34,7 +34,7 @@ class Friendship(object):
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_friend_name, []))
  
-    def add_friend(self, user_id, friend_id):
+    def add_friend(self, user_id, friend_id, **extra_vars):
         table_friend = self.settings.table_friend
         if user_id == friend_id:
             raise ValueError
@@ -42,7 +42,7 @@ class Friendship(object):
         if self.db(table_friend.user==user_id)(table_friend.friend==friend_id).count():
             raise ValueError
         
-        table_friend.insert(user=user_id, friend=friend_id)
+        table_friend.insert(user=user_id, friend=friend_id, **extra_vars)
         
     def friend_requests(self, user_id):
         table_friend = self.settings.table_friend
