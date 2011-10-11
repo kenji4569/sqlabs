@@ -2696,7 +2696,8 @@ AnyTime.picker = function( id, options )
 		    	return;
 		    }
 		    else
-    			this.showPkr(null);
+    			//this.showPkr(null); // <- for direct input
+                return;
 
 		    event.preventDefault();
 		

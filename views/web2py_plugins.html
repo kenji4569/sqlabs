@@ -5,7 +5,12 @@
   ← {{=T('Back to the web2py-plugin list')}}
 </a></p>
 
-<h3>{{=response.web2py_plugins.plugin_label}}</h3>
+<h3>{{=response.web2py_plugins.plugin_label}}
+{{if response.web2py_plugins.plugin_adopted:}}
+&nbsp;&nbsp;
+<small style="color:#D00;">({{=T('This plugin is now adopted as a web2py built-in!')}})</small>
+{{pass}}
+</h3>
 <p>{{=response.web2py_plugins.plugin_long_description or response.web2py_plugins.plugin_short_description}}</p>
 
 <hr/>

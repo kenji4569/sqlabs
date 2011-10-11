@@ -39,6 +39,7 @@ The lazy options widget receives js events and sends ajax requests to populate i
     ),
     plugin_anytime_widget=dict(
         label='Anytime Widget',
+        adopted=True,
         short_description=T('A date-time picker widget using anytime.js'),
         long_description=XML(T("""
 This plugin provides time, date and datetime picker widgets using %s.
@@ -216,11 +217,18 @@ This plugin a form object which makes table rows permutable using %s, and submit
         status='under-construction',
     ),
     
-    plugin_shopping=dict(
-        label='ShoppingManager',
+    plugin_catalog=dict(
+        label='Catalog Manager',
         show_image=False,
-        short_description='A minimum set of codes for making a e-commerce site',
-        long_description="""A minimum set of codes for making a e-commerce site.""",
+        short_description='',
+        long_description="""""",
+        status='under-construction',
+    ),
+    plugin_checkout=dict(
+        label='Checkout Manager',
+        show_image=False,
+        short_description='',
+        long_description="""""",
         status='under-construction',
     ),
 )
@@ -267,6 +275,7 @@ if request.controller.startswith('plugin_'):
     info_plugin = get_info_plugin_metas()[plugin_name]
     response.web2py_plugins = Storage(
         plugin_name=plugin_name,
+        plugin_adopted=info_plugin.get('adopted', False),
         plugin_label=info_plugin['label'],
         plugin_short_description=info_plugin['short_description'],
         plugin_long_description=info_plugin['long_description'],

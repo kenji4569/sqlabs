@@ -12,6 +12,10 @@
   <ul>
     {{for detail_key, detail in subsection[1]:}}
     <li id="{{=detail_key}}" class="ex_container" style="position:relative;">
+    
+    {{if detail.get('adopted', False):}}
+    <small style="position:absolute;top:-2px;right:5px;color:#D00;">{{=T('Adopted in web2py')}}</small>
+    {{pass}}
       <h3>
         {{if detail.get('status') == 'under-construction':}}
           {{=detail['label']}}
