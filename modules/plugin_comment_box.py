@@ -21,8 +21,8 @@ class CommentBox(object):
                                         current.T('View all %s comments') % total, _href='#', 
                                         _class='plugin_comment_box_view_all')
         settings.footers = [TEXTAREA('', _placeholder=current.T('Write a comment..'),
-                                  _rows=1, _class='plugin_comment_box_add')]
-        settings.tooltip = LABEL('X', _class='plugin_comment_box_remove')
+                                  _rows=1, _class='plugin_comment_box_create')]
+        settings.tooltip = LABEL('X', _class='plugin_comment_box_delete')
         settings.limit = 2
         
         settings.table_comment_name = 'comment'
@@ -45,7 +45,7 @@ class CommentBox(object):
                 Field('created_on', 'datetime', default=current.request.now),
                 migrate=migrate, fake_migrate=fake_migrate)
                 
-    def add_comment(self, user_id, target_id, body):
+    def create_comment(self, user_id, target_id, body):
         settings = self.settings
         settings.table_comment.insert(target=target_id,
                      user=user_id,
@@ -53,7 +53,7 @@ class CommentBox(object):
         if settings.oncomment:
             settings.oncomment(target_id, user_id)
             
-    def remove_comment(self, user_id, comment_id):
+    def delete_comment(self, user_id, comment_id):
         db, table_comment = self.db, self.settings.table_comment
         
         if db(table_comment.id==comment_id)(table_comment.user==user_id).count():
@@ -116,12 +116,12 @@ class CommentBox(object):
         if form.accepts(current.request.vars, current.session):
             user_id, target_id = form.vars.user_id, form.vars.target_id
             view_all = True if form.vars.view_all == 'true' else False
-            if form.vars.action == 'add':
+            if form.vars.action == 'create':
                 current.response.flash = self.messages.record_created
-                self.add_comment(user_id, target_id, form.vars.body)
-            elif form.vars.action == 'remove':
+                self.create_comment(user_id, target_id, form.vars.body)
+            elif form.vars.action == 'delete':
                 current.response.flash = self.messages.record_deleted
-                self.remove_comment(user_id, form.vars.comment_id)
+                self.delete_comment(user_id, form.vars.comment_id)
             elif form.vars.action == 'view_all':
                 view_all = True
             else:
@@ -148,7 +148,7 @@ function post_form(el_id) {
 function is_view_all(el) {
     return !el.find('.plugin_comment_box_view_all').length;
 }
-function add(self) {
+function create(self) {
     var el = $(self).closest('.plugin_comment_box'),
         el_id = el.attr('id'),
         el_id_parts = el_id.split('__'),
@@ -156,19 +156,19 @@ function add(self) {
         target_id = el_id_parts[2],
         body = el.find('textarea').val();  
     set_inputs({form_id:'%(form_id)s', user_id:user_id, target_id: target_id, 
-                action:'add', body: body, view_all:is_view_all(el)});
+                action:'create', body: body, view_all:is_view_all(el)});
     post_form(el_id);
 }
-$('.plugin_comment_box_add').live('keypress', function(e){
+$('.plugin_comment_box_create').live('keypress', function(e){
     if (this.tagName=='TEXTAREA' && e.keyCode==13 && !e.shiftKey){
-        add(this); return false;
+        create(this); return false;
     }
 }).live('click', function(e){
     if (this.tagName=='INPUT') {
-        add(this); return false;
+        create(this); return false;
     }
 });
-$('.plugin_comment_box_remove').live('click', function(e){
+$('.plugin_comment_box_delete').live('click', function(e){
     var el = $(this).closest('.plugin_comment_box'),
         el_id = el.attr('id'),
         el_id_parts = el_id.split('__'),
@@ -177,7 +177,7 @@ $('.plugin_comment_box_remove').live('click', function(e){
         comment_el = $(this).closest('.plugin_comment_box_comment'),
         comment_id = comment_el.attr('id').split('__')[1];
     set_inputs({form_id:'%(form_id)s', user_id:user_id, target_id: target_id, 
-                action:'remove', comment_id: comment_id, view_all:is_view_all(el)});
+                action:'delete', comment_id: comment_id, view_all:is_view_all(el)});
     post_form(el_id);
     return false;
 });

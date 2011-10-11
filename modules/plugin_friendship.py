@@ -34,7 +34,7 @@ class Friendship(object):
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_friend_name, []))
  
-    def add_friend(self, user_id, friend_id, **extra_vars):
+    def create_friend(self, user_id, friend_id, **extra_vars):
         table_friend = self.settings.table_friend
         if user_id == friend_id:
             raise ValueError
@@ -92,7 +92,7 @@ class Friendship(object):
             
         db(table_friend.friend==user_id)(table_friend.user==friend_id).delete()
             
-    def remove_friend(self, user_id, friend_id):
+    def delete_friend(self, user_id, friend_id):
         db, settings, table_friend = self.db, self.settings, self.settings.table_friend
         
         if not db(table_friend.user==user_id)(table_friend.friend==friend_id)(

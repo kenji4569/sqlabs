@@ -58,7 +58,7 @@ class Messaging(object):
     def messages(self, thread_id):
         return self.db(self.settings.table_message.thread==thread_id)
         
-    def add_message(self, user_id, other_id, body, forward_message_ids=None, **extra):
+    def create_message(self, user_id, other_id, body, forward_message_ids=None, **extra):
         db, settings = self.db, self.settings
         if str(user_id) == str(other_id):
             raise ValueError

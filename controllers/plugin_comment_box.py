@@ -96,22 +96,22 @@ class TestCommentBox(unittest.TestCase):
     def test_crud(self):
         for target_id in range(1, 3):
             user_id = 1
-            comment_box.add_comment(user_id, target_id, 'body_1')
+            comment_box.create_comment(user_id, target_id, 'body_1')
             self.assertEqual(comment_box.comments(target_id).select().first().body, 'body_1')
             
-            comment_box.add_comment(user_id, target_id, 'body_2')
+            comment_box.create_comment(user_id, target_id, 'body_2')
             self.assertEqual(comment_box.comments(target_id).count(), 2)
             
             user_id = 2
-            comment_box.add_comment(user_id, target_id, 'body_3')
+            comment_box.create_comment(user_id, target_id, 'body_3')
             
             comments = comment_box.comments(target_id).select()
             self.assertEqual(len(comments), 3)
             
-            comment_box.remove_comment(user_id, comments[2])
+            comment_box.delete_comment(user_id, comments[2])
             self.assertEqual(comment_box.comments(target_id).count(), 2)
             
-            self.assertRaises(ValueError, comment_box.remove_comment, user_id, comments[1])
+            self.assertRaises(ValueError, comment_box.delete_comment, user_id, comments[1])
             self.assertEqual(comment_box.comments(target_id).count(), 2)
         
 def run_test(TestCase):

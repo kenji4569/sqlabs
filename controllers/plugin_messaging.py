@@ -70,7 +70,8 @@ def index():
         form = SQLFORM.factory(Field('other', label='To', requires=IS_IN_SET(others)),
                                Field('body'))
         if form.accepts(request.vars, session):
-            messaging.add_message(user_id, user_ids[int(form.vars.other)], form.vars.body)
+            messaging.create_message(user_id, user_ids[int(form.vars.other)], form.vars.body)
+            session.flash = T('Record Created')
             redirect(URL('index', args=[user_no, form.vars.other]))
         
         return dict(current_user=user_chooser,
@@ -96,7 +97,8 @@ def index():
         
         form = SQLFORM.factory(Field('body'))
         if form.accepts(request.vars, session):
-            messaging.add_message(user_id, other_id, form.vars.body)
+            messaging.create_message(user_id, other_id, form.vars.body)
+            session.flash = T('Record Created')
             redirect(URL('index', args=request.args))
         
         return dict(back=A('back', _href=URL('index', args=user_no)),
@@ -114,14 +116,14 @@ class TestMessaging(unittest.TestCase):
         table_thread.truncate()
         table_message.truncate()
         
-    def test_add_message(self):
+    def test_create_message(self):
         user_id = 1
         other_id = 2
         
         self.assertEqual(messaging.threads(user_id).count(), 0)
         
         body = 'test'
-        messaging.add_message(user_id, other_id, body)
+        messaging.create_message(user_id, other_id, body)
         
         user_thread = messaging.thread(user_id, other_id).select().first()
         self.assertEqual(user_thread.status, messaging.settings.status_read)
@@ -138,7 +140,7 @@ class TestMessaging(unittest.TestCase):
         self.assertEqual(message.body, body)
         
         body = 'test2'
-        messaging.add_message(user_id, other_id, body)
+        messaging.create_message(user_id, other_id, body)
         self.assertEqual(messaging.messages(user_thread.id).count(), 2)
         self.assertEqual(messaging.messages(other_thread.id).count(), 2)
         
@@ -146,12 +148,12 @@ class TestMessaging(unittest.TestCase):
         user_id = 1
         other_id = 2
         for i in range(3):
-            messaging.add_message(user_id, other_id, 'test')
+            messaging.create_message(user_id, other_id, 'test')
         messaging.delete_messages(user_id, other_id)
         self.assertEqual(messaging.threads(user_id).count(), 0)
         
         for i in range(3):
-            messaging.add_message(user_id, other_id, 'test')
+            messaging.create_message(user_id, other_id, 'test')
         user_thread = messaging.thread(user_id, other_id).select().first()
         message_ids = [r.id for r in messaging.messages(user_thread.id).select()]
         messaging.delete_messages(user_id, other_id, message_ids[1:])
