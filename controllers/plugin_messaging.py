@@ -10,7 +10,7 @@ if request.function == 'test':
 ### setup core objects #########################################################
 auth = Auth(db)
 messaging = Messaging(db)
-messaging.settings.table_message_thread_name = 'plugin_messaging_message_thread'
+messaging.settings.table_thread_name = 'plugin_messaging_message_thread'
 messaging.settings.table_message_name = 'plugin_messaging_message'
 messaging.settings.extra_fields = {
     'plugin_messaging_message_thread': 
@@ -22,7 +22,7 @@ auth.define_tables()
 table_user = auth.settings.table_user
 
 messaging.define_tables(str(table_user))
-table_message_thread = messaging.settings.table_message_thread
+table_thread = messaging.settings.table_thread
 table_message = messaging.settings.table_message
 
 ### populate records ###########################################################
@@ -33,7 +33,7 @@ for user_no in range(1, num_users+1):
     user = db(auth.settings.table_user.email==email).select().first()
     user_ids[user_no] = user and user.id or auth.settings.table_user.insert(email=email)
     
-deleted = db(table_message_thread.created_on<request.now-datetime.timedelta(minutes=30)).delete()
+deleted = db(table_thread.created_on<request.now-datetime.timedelta(minutes=30)).delete()
 if deleted:
     session.flash = 'the database has been refreshed'
     redirect(URL('index'))
@@ -54,17 +54,17 @@ def index():
     unit_tests = [A('basic test', _href=URL('test'))]
     
     if not request.args(1):
-        records = messaging.message_threads(user_id).select(
-                    table_user.ALL, table_message_thread.ALL,
-                    left=(table_user.on(table_user.id==table_message_thread.other)))
-        message_threads = []
+        records = messaging.threads(user_id).select(
+                    table_user.ALL, table_thread.ALL,
+                    left=(table_user.on(table_user.id==table_thread.other)))
+        threads = []
         for record in records:
             el = A(record[table_user].email[:5], 
                                      _href=URL('index', args=[user_no, record[table_user].email[4]]))
-            if record[table_message_thread].status == messaging.settings.status_unread:
+            if record[table_thread].status == messaging.settings.status_unread:
                 el =  SPAN(el, ' unread', _style='background:silver')
             
-            message_threads.append(el)
+            threads.append(el)
             
         others = [(i, 'user%s' % i) for i in range(1, num_users+1) if i != user_no]
         form = SQLFORM.factory(Field('other', label='To', requires=IS_IN_SET(others)),
@@ -75,17 +75,17 @@ def index():
         
         return dict(current_user=user_chooser,
                     message=form,
-                    message_threads=message_threads,
+                    threads=threads,
                     unit_tests=unit_tests,
                     )
     else:
         other_no = request.args(1)
         other_id = user_ids[int(other_no)]
-        message_thread = messaging.message_thread(user_id, other_id).select().first()
-        if message_thread.status == messaging.settings.status_unread:
-            message_thread.update_record(status=messaging.settings.status_read)
+        thread = messaging.thread(user_id, other_id).select().first()
+        if thread.status == messaging.settings.status_unread:
+            thread.update_record(status=messaging.settings.status_read)
         
-        records = messaging.messages(message_thread.id).select(
+        records = messaging.messages(thread.id).select(
                     table_user.ALL, table_message.ALL,
                     orderby=~table_message.id,
                     left=(table_user.on(table_user.id==table_message.user)))
@@ -111,26 +111,26 @@ def index():
 class TestMessaging(unittest.TestCase):
 
     def setUp(self):
-        table_message_thread.truncate()
+        table_thread.truncate()
         table_message.truncate()
         
     def test_add_message(self):
         user_id = 1
         other_id = 2
         
-        self.assertEqual(messaging.message_threads(user_id).count(), 0)
+        self.assertEqual(messaging.threads(user_id).count(), 0)
         
         body = 'test'
         messaging.add_message(user_id, other_id, body)
         
-        user_thread = messaging.message_thread(user_id, other_id).select().first()
+        user_thread = messaging.thread(user_id, other_id).select().first()
         self.assertEqual(user_thread.status, messaging.settings.status_read)
                          
         message = messaging.messages(user_thread.id).select().first()
         self.assertEqual(message.user, user_id)
         self.assertEqual(message.body, body)
         
-        other_thread = messaging.message_thread(other_id, user_id).select().first()
+        other_thread = messaging.thread(other_id, user_id).select().first()
         self.assertEqual(other_thread.status, messaging.settings.status_unread)
         
         message = messaging.messages(other_thread.id).select().first()
@@ -148,11 +148,11 @@ class TestMessaging(unittest.TestCase):
         for i in range(3):
             messaging.add_message(user_id, other_id, 'test')
         messaging.delete_messages(user_id, other_id)
-        self.assertEqual(messaging.message_threads(user_id).count(), 0)
+        self.assertEqual(messaging.threads(user_id).count(), 0)
         
         for i in range(3):
             messaging.add_message(user_id, other_id, 'test')
-        user_thread = messaging.message_thread(user_id, other_id).select().first()
+        user_thread = messaging.thread(user_id, other_id).select().first()
         message_ids = [r.id for r in messaging.messages(user_thread.id).select()]
         messaging.delete_messages(user_id, other_id, message_ids[1:])
         self.assertEqual(messaging.messages(user_thread.id).count(), 1)

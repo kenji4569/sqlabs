@@ -218,16 +218,16 @@ This plugin a form object which makes table rows permutable using %s, and submit
     ),
     
     plugin_catalog=dict(
-        label='Catalog Manager',
+        label='Catalog',
         show_image=False,
-        short_description='',
+        short_description='A minimum set of catalog models for shopping',
         long_description="""""",
         status='under-construction',
     ),
     plugin_checkout=dict(
-        label='Checkout Manager',
+        label='Checkout',
         show_image=False,
-        short_description='',
+        short_description='A minimum set of checkout models for shopping',
         long_description="""""",
         status='under-construction',
     ),
