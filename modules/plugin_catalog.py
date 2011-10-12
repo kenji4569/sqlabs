@@ -39,16 +39,19 @@ class Catalog(object):
                 *settings.extra_fields.get(settings.table_product_name, []))
                 
         if not settings.table_variant_name in db.tables:
-            option_fields = []
-            for option_no in range(1, max(max_options+1, 2)):
-                option_fields.append(
-                    Field('option_%s' % option_no,'reference %s' % settings.table_option_name))
+            _fields = []
+            for option_no in range(1, max(settings.max_options+1, 2)):
+                _fields.append(
+                    Field('option_%s' % option_no, 'reference %s' % settings.table_option_name,
+                          readable=False, writable=False))
+            _fields.extend(settings.extra_fields.get(settings.table_variant_name, []))
             settings.table_variant = db.define_table(
                 settings.table_variant_name,
-                Field('product', 'reference %s' % settings.table_product_name),
+                Field('product', 'reference %s' % settings.table_product_name,
+                      readable=False, writable=False),
                 Field('name'),
                 migrate=migrate, fake_migrate=fake_migrate,
-                *settings.extra_fields.get(settings.table_variant_name, []))
+                *_fields)
         
         if not settings.table_option_group_name in db.tables:
             settings.table_option_group = db.define_table(

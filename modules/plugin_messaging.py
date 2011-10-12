@@ -49,27 +49,28 @@ class Messaging(object):
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_message_name, []))
   
-    def threads(self, user_id):
+    def threads_from_user(self, user_id):
         return self.db(self.settings.table_thread.user==user_id)
         
-    def thread(self, user_id, other_id):
-        return self.threads(user_id)(self.settings.table_thread.other==other_id)
+    def get_thread(self, user_id, other_id, *fields):
+        return self.threads_from_user(user_id)(self.settings.table_thread.other==other_id
+                    ).select(*fields).first()
         
-    def messages(self, thread_id):
+    def messages_from_thread(self, thread_id):
         return self.db(self.settings.table_message.thread==thread_id)
         
-    def create_message(self, user_id, other_id, body, forward_message_ids=None, **extra):
+    def add_message(self, user_id, other_id, body, forward_message_ids=None, **extra):
         db, settings = self.db, self.settings
         if str(user_id) == str(other_id):
             raise ValueError
         
-        user_thread = self.thread(user_id, other_id).select().first()
+        user_thread = self.get_thread(user_id, other_id)
         if not user_thread:
             user_thread_id = settings.table_thread.insert(user=user_id, other=other_id)
         else:
             user_thread_id = user_thread.id
             
-        other_thread = self.thread(other_id, user_id).select().first()
+        other_thread = self.get_thread(other_id, user_id)
         if not other_thread:
             other_thread_id = settings.table_thread.insert(user=other_id, other=user_id,
                                                                    status=settings.status_unread)
@@ -89,11 +90,14 @@ class Messaging(object):
         if settings.onmessage:
             settings.onmessage(user_id, other_id)
            
-    def delete_messages(self, user_id, other_id, message_ids=None):
+    def remove_messages(self, user_id, other_id, message_ids=None):
+        settings = self.settings
         if not message_ids:
-            self.thread(user_id, other_id).delete()
+            self.db(settings.table_thread.user==user_id)(settings.table_thread.other==other_id
+                    ).delete()
         else:
-            thread = self.thread(user_id, other_id).select().first()
+            thread = self.get_thread(user_id, other_id)
             if not thread:
                 raise ValueError
-            self.messages(thread.id)(self.settings.table_message.id.belongs(message_ids)).delete()
+            self.messages_from_thread(thread.id)(settings.table_message.id.belongs(message_ids)
+                                      ).delete()

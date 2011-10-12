@@ -45,7 +45,7 @@ class CommentBox(object):
                 Field('created_on', 'datetime', default=current.request.now),
                 migrate=migrate, fake_migrate=fake_migrate)
                 
-    def create_comment(self, user_id, target_id, body):
+    def add_comment(self, user_id, target_id, body):
         settings = self.settings
         settings.table_comment.insert(target=target_id,
                      user=user_id,
@@ -53,7 +53,7 @@ class CommentBox(object):
         if settings.oncomment:
             settings.oncomment(target_id, user_id)
             
-    def delete_comment(self, user_id, comment_id):
+    def remove_comment(self, user_id, comment_id):
         db, table_comment = self.db, self.settings.table_comment
         
         if db(table_comment.id==comment_id)(table_comment.user==user_id).count():
@@ -61,7 +61,7 @@ class CommentBox(object):
         else:
             raise ValueError
             
-    def comments(self, target_id):
+    def comments_from_target(self, target_id):
         return self.db(self.settings.table_comment.target==target_id)
         
     def element(self, user_id, target_id, view_all=False):  
@@ -71,7 +71,7 @@ class CommentBox(object):
         settings.select_attributes.update(
             limitby=None if view_all else (0, settings.limit+1),
             orderby=~settings.table_comment.id)
-        records = self.comments(target_id).select(
+        records = self.comments_from_target(target_id).select(
             *settings.select_fields, **settings.select_attributes
         )
         elements = []
@@ -79,7 +79,7 @@ class CommentBox(object):
         elements[:0] = settings.headers
             
         if not view_all and len(records) > settings.limit:
-            total = self.comments(target_id).count()
+            total = self.comments_from_target(target_id).count()
             elements.append(LI(settings.view_all_content(total)))
             records = records[:settings.limit]
         
@@ -118,10 +118,10 @@ class CommentBox(object):
             view_all = True if form.vars.view_all == 'true' else False
             if form.vars.action == 'create':
                 current.response.flash = self.messages.record_created
-                self.create_comment(user_id, target_id, form.vars.body)
+                self.add_comment(user_id, target_id, form.vars.body)
             elif form.vars.action == 'delete':
                 current.response.flash = self.messages.record_deleted
-                self.delete_comment(user_id, form.vars.comment_id)
+                self.remove_comment(user_id, form.vars.comment_id)
             elif form.vars.action == 'view_all':
                 view_all = True
             else:

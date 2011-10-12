@@ -34,7 +34,7 @@ class Friendship(object):
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_friend_name, []))
  
-    def create_friend(self, user_id, friend_id, **extra_vars):
+    def add_friend(self, user_id, friend_id, **extra_vars):
         table_friend = self.settings.table_friend
         if user_id == friend_id:
             raise ValueError
@@ -55,8 +55,8 @@ class Friendship(object):
                   table_friend.status==settings.status_requesting).count():
             raise ValueError
             
-        mutual_friends = (set([r.friend for r in self.friends(user_id).select(table_friend.friend)]) &
-                          set([r.friend for r in self.friends(friend_id).select(table_friend.friend)]))
+        mutual_friends = (set([r.friend for r in self.friends_from_user(user_id).select(table_friend.friend)]) &
+                          set([r.friend for r in self.friends_from_user(friend_id).select(table_friend.friend)]))
         for _user_id in (user_id, friend_id):
             db(table_friend.user==_user_id)(table_friend.status==settings.status_confirmed)(
                table_friend.friend.belongs(mutual_friends)).update(mutual=table_friend.mutual+1)
@@ -76,12 +76,13 @@ class Friendship(object):
         if settings.onconfirm:
             settings.onconfirm(user_id, friend_id)
         
-    def friends(self, user_id):
+    def friends_from_user(self, user_id):
         table_friend = self.settings.table_friend
         return self.db(table_friend.user==user_id)(table_friend.status==self.settings.status_confirmed)
         
-    def friend(self, user_id, friend_id):
-        return self.friends(user_id)(self.settings.table_friend.friend==friend_id)
+    def get_friend(self, user_id, friend_id, *fields):
+        return self.friends_from_user(user_id)(self.settings.table_friend.friend==friend_id
+                                      ).select(*fields).first()
     
     def ignore_friend(self, user_id, friend_id):
         db, table_friend = self.db, self.settings.table_friend
@@ -92,15 +93,15 @@ class Friendship(object):
             
         db(table_friend.friend==user_id)(table_friend.user==friend_id).delete()
             
-    def delete_friend(self, user_id, friend_id):
+    def remove_friend(self, user_id, friend_id):
         db, settings, table_friend = self.db, self.settings, self.settings.table_friend
         
         if not db(table_friend.user==user_id)(table_friend.friend==friend_id)(
                   table_friend.status==settings.status_confirmed).count():
             raise ValueError
             
-        mutual_friends = (set([r.friend for r in self.friends(user_id).select(table_friend.friend)]) &
-                          set([r.friend for r in self.friends(friend_id).select(table_friend.friend)]))
+        mutual_friends = (set([r.friend for r in self.friends_from_user(user_id).select(table_friend.friend)]) &
+                          set([r.friend for r in self.friends_from_user(friend_id).select(table_friend.friend)]))
         for _user_id in (user_id, friend_id):
             db(table_friend.user==_user_id)(table_friend.status==settings.status_confirmed)(
                table_friend.friend.belongs(mutual_friends)).update(mutual=table_friend.mutual-1)
@@ -117,7 +118,7 @@ class Friendship(object):
         for record in records:
             user_id = record.user
             friend_id = record.friend
-            mutual_friends = (set([r.friend for r in self.friends(user_id).select(table_friend.friend)]) &
-                          set([r.friend for r in self.friends(friend_id).select(table_friend.friend)]))
+            mutual_friends = (set([r.friend for r in self.friends_from_user(user_id).select(table_friend.friend)]) &
+                          set([r.friend for r in self.friends_from_user(friend_id).select(table_friend.friend)]))
             db(table_friend.user==user_id)(table_friend.friend==friend_id).update(mutual=len(mutual_friends))
         

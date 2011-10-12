@@ -43,7 +43,7 @@ def index():
     user_no = int(request.args(0) or 1)
     user_id = user_ids[user_no]
     
-    for action in ('create_friend', 'confirm_friend', 'ignore_friend', 'delete_friend'):
+    for action in ('add_friend', 'confirm_friend', 'ignore_friend', 'remove_friend'):
         if action in request.vars:
             getattr(friendship, action)(user_id, request.vars[action])
             session.flash = action
@@ -67,13 +67,13 @@ def index():
         status = record[table_friend].status
         if status is None:
             option = A(T('Add friend'), 
-                       _href=URL('index', args=user_no, vars={'create_friend': record[table_user].id}))
+                       _href=URL('index', args=user_no, vars={'add_friend': record[table_user].id}))
         elif status == friendship.settings.status_requesting:
             option = SPAN(T('requesting'), _style='color:blue;')
         else:
             option = SPAN(T('%s mutual friends') % record[table_friend].mutual, ' ',
                           A(T('Remove friend'),
-                            _href=URL('index', args=user_no, vars={'delete_friend': record[table_user].id})),
+                            _href=URL('index', args=user_no, vars={'remove_friend': record[table_user].id})),
                           _style='color:green;')
         friends.append(DIV(record.auth_user.email[:5], ': ', option))
     
@@ -99,79 +99,79 @@ class TestFriendship(unittest.TestCase):
     def setUp(self):
         table_friend.truncate()
 
-    def test_create_friend(self):
-        friendship.create_friend(user_ids[1], user_ids[2])
+    def test_add_friend(self):
+        friendship.add_friend(user_ids[1], user_ids[2])
         self.assertEqual(friendship.friend_requests(user_ids[1]).count(), 0)
         self.assertEqual(friendship.friend_requests(user_ids[2]).count(), 1)
         self.assertEqual([r.user for r in friendship.friend_requests(user_ids[2]).select()], 
                          [user_ids[1]])
                          
     def test_confirm_friend(self):
-        friendship.create_friend(user_ids[1], user_ids[2])
+        friendship.add_friend(user_ids[1], user_ids[2])
         friendship.confirm_friend(user_ids[2], user_ids[1])
         self.assertEqual(friendship.friend_requests(user_ids[1]).count(), 0)
         self.assertEqual(friendship.friend_requests(user_ids[2]).count(), 0)
         
-        friends = friendship.friends(user_ids[1]).select()
+        friends = friendship.friends_from_user(user_ids[1]).select()
         self.assertEqual([r.friend for r in friends], [user_ids[2]])
         self.assertEqual([r.mutual for r in friends], [0])
         
-        friends = friendship.friends(user_ids[2]).select()
+        friends = friendship.friends_from_user(user_ids[2]).select()
         self.assertEqual([r.friend for r in friends], [user_ids[1]])
         self.assertEqual([r.mutual for r in friends], [0])
         
-    def test_delete_friend(self):
-        friendship.create_friend(user_ids[1], user_ids[2])
+    def test_remove_friend(self):
+        friendship.add_friend(user_ids[1], user_ids[2])
         friendship.confirm_friend(user_ids[2], user_ids[1])
-        friendship.delete_friend(user_ids[1], user_ids[2])
+        friendship.remove_friend(user_ids[1], user_ids[2])
         
-        friends = friendship.friends(user_ids[1]).select()
+        friends = friendship.friends_from_user(user_ids[1]).select()
         self.assertEqual(len(friends), 0)
-        friends = friendship.friends(user_ids[2]).select()
+        friends = friendship.friends_from_user(user_ids[2]).select()
         self.assertEqual(len(friends), 0)
         
     
     def test_mutual(self):
-        friendship.create_friend(user_ids[1], user_ids[2])
+        friendship.add_friend(user_ids[1], user_ids[2])
         friendship.confirm_friend(user_ids[2], user_ids[1])
         
-        friendship.create_friend(user_ids[2], user_ids[3])
+        friendship.add_friend(user_ids[2], user_ids[3])
         friendship.confirm_friend(user_ids[3], user_ids[2])
         
-        friendship.create_friend(user_ids[3], user_ids[1])
+        friendship.add_friend(user_ids[3], user_ids[1])
         friendship.confirm_friend(user_ids[1], user_ids[3])
         
         for i in range(1, 4):
-            self.assertEqual([r.mutual for r in friendship.friends(user_ids[i]).select()], [1, 1])
+            self.assertEqual([r.mutual for r in friendship.friends_from_user(user_ids[i]).select()], [1, 1])
         
-        friendship.create_friend(user_ids[1], user_ids[4])
+        friendship.add_friend(user_ids[1], user_ids[4])
         friendship.confirm_friend(user_ids[4], user_ids[1])
         
-        friendship.create_friend(user_ids[2], user_ids[4])
+        friendship.add_friend(user_ids[2], user_ids[4])
         friendship.confirm_friend(user_ids[4], user_ids[2])
         
-        self.assertEqual([r.mutual for r in friendship.friends(user_ids[1]).select()], [2, 1, 1])
-        self.assertEqual([r.mutual for r in friendship.friends(user_ids[2]).select()], [2, 1, 1])
-        self.assertEqual([r.mutual for r in friendship.friends(user_ids[4]).select()], [1, 1])
-        self.assertEqual([r.mutual for r in friendship.friends(user_ids[3]).select()], [1, 1])
+        self.assertEqual([r.mutual for r in friendship.friends_from_user(user_ids[1]).select()], [2, 1, 1])
+        self.assertEqual([r.mutual for r in friendship.friends_from_user(user_ids[2]).select()], [2, 1, 1])
+        self.assertEqual([r.mutual for r in friendship.friends_from_user(user_ids[4]).select()], [1, 1])
+        self.assertEqual([r.mutual for r in friendship.friends_from_user(user_ids[3]).select()], [1, 1])
         
-        friendship.delete_friend(user_ids[1], user_ids[4])
-        friendship.delete_friend(user_ids[2], user_ids[4])
+        friendship.remove_friend(user_ids[1], user_ids[4])
+        friendship.remove_friend(user_ids[2], user_ids[4])
         for i in range(1, 4):
-            self.assertEqual([r.mutual for r in friendship.friends(user_ids[i]).select()], [1, 1])
+            self.assertEqual([r.mutual for r in friendship.friends_from_user(user_ids[i]).select()], [1, 1])
         
     def test_ignore_friend(self):
-        friendship.create_friend(user_ids[1], user_ids[2])
+        friendship.add_friend(user_ids[1], user_ids[2])
         friendship.ignore_friend(user_ids[2], user_ids[1])
         self.assertEqual(friendship.friend_requests(user_ids[1]).count(), 0)
         self.assertEqual(friendship.friend_requests(user_ids[2]).count(), 0)
-        self.assertEqual(friendship.friends(user_ids[1]).count(), 0)
-        self.assertEqual(friendship.friends(user_ids[2]).count(), 0)
+        self.assertEqual(friendship.friends_from_user(user_ids[1]).count(), 0)
+        self.assertEqual(friendship.friends_from_user(user_ids[2]).count(), 0)
         
     def test_extra_fields(self):
-        friendship.create_friend(user_ids[1], user_ids[2])
+        friendship.add_friend(user_ids[1], user_ids[2])
         friendship.confirm_friend(user_ids[2], user_ids[1])
-        friend = friendship.friend(user_ids[1], user_ids[2]).select().first()
+        friend = friendship.get_friend(user_ids[1], user_ids[2])
         self.assertEqual(friend.affinity, 1.0)
         
 def run_test(TestCase):
