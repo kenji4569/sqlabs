@@ -43,6 +43,7 @@ for user_no in range(1, num_users+1):
 
 deleted = db(table_target.created_on<request.now-datetime.timedelta(minutes=30)).delete()
 if deleted:
+    table_comment.truncate()
     for i in range(3-db(table_target.id>0).count()):
         table_target.insert()
     session.flash = 'the database has been refreshed'

@@ -49,7 +49,6 @@ class Catalog(object):
                 settings.table_variant_name,
                 Field('product', 'reference %s' % settings.table_product_name,
                       readable=False, writable=False),
-                Field('name'),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *_fields)
         
@@ -63,13 +62,23 @@ class Catalog(object):
         if not settings.table_option_name in db.tables:
             settings.table_option = db.define_table(
                 settings.table_option_name,
+                Field('option_group', 'reference %s' % settings.table_option_group_name,
+                      readable=False, writable=False),
                 Field('name'),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_option_name, []))
                 
-    # def create_variants(self, product_id, options=None):
-        # pass
+    def add_product(self, vars):
+        table_product = self.settings.table_product
+        table_variant = self.settings.table_variant
+        product_id = table_product.insert(**table_product._filter_fields(vars))
+        master_variant_id = table_variant.insert(product=product_id, 
+                                                 **table_variant._filter_fields(vars))
+        return product_id, master_variant_id
         
+    def options_from_option_group(self, option_group_id):
+        settings = self.settings
+        return self.db(settings.table_option.option_group==option_group_id)
     # def variants(self, product_id):
         # pass
         

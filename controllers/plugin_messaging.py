@@ -35,6 +35,7 @@ for user_no in range(1, num_users+1):
     
 deleted = db(table_thread.created_on<request.now-datetime.timedelta(minutes=30)).delete()
 if deleted:
+    table_message.truncate()
     session.flash = 'the database has been refreshed'
     redirect(URL('index'))
     
@@ -52,8 +53,6 @@ def index():
             else:
                 user_chooser.append(A('user%s' % i, _href=URL('index', args=i)))
         user_chooser = DIV(XML(' '.join([r.xml() for r in user_chooser])), _style='font-weight:bold')
-        
-        unit_tests = [A('basic test', _href=URL('test'))]
         
         records = messaging.threads_from_user(user_id).select(
                     table_user.ALL, table_thread.ALL,
@@ -78,7 +77,7 @@ def index():
         return dict(current_user=user_chooser,
                     message=form,
                     threads=threads,
-                    unit_tests=unit_tests,
+                    unit_tests=[A('basic test', _href=URL('test'))],
                     )
     else:
         other_no = request.args(1)
