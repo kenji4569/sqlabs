@@ -33,8 +33,9 @@ class Catalog(object):
         if not settings.table_product_name in db.tables:
             settings.table_product = db.define_table(
                 settings.table_product_name,
-                Field('name'),
-                Field('available', 'boolean', default=False),
+                Field('title', requires=IS_NOT_EMPTY()),
+                Field('available', 'boolean', default=False, 
+                      widget=SQLFORM.widgets.boolean.widget), # not properly working without it? 
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_product_name, []))
                 
@@ -49,13 +50,14 @@ class Catalog(object):
                 settings.table_variant_name,
                 Field('product', 'reference %s' % settings.table_product_name,
                       readable=False, writable=False),
+                Field('sku', requires=IS_NOT_EMPTY()),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *_fields)
         
         if not settings.table_option_group_name in db.tables:
             settings.table_option_group = db.define_table(
                 settings.table_option_group_name,
-                Field('name'),
+                Field('name', requires=IS_NOT_EMPTY()),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_option_group_name, []))
         
@@ -64,21 +66,78 @@ class Catalog(object):
                 settings.table_option_name,
                 Field('option_group', 'reference %s' % settings.table_option_group_name,
                       readable=False, writable=False),
-                Field('name'),
+                Field('name', requires=IS_NOT_EMPTY()),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_option_name, []))
                 
-    def add_product(self, vars):
+    def add_product(self, vars, variant_vars_list):
+        if not variant_vars_list:
+            raise ValueError
         table_product = self.settings.table_product
         table_variant = self.settings.table_variant
         product_id = table_product.insert(**table_product._filter_fields(vars))
-        master_variant_id = table_variant.insert(product=product_id, 
-                                                 **table_variant._filter_fields(vars))
-        return product_id, master_variant_id
+        for variant_vars in variant_vars_list:
+            table_variant.insert(product=product_id, **table_variant._filter_fields(variant_vars))  
+        return product_id
+        
+    def edit_product(self, product_id, vars, variant_vars_list):
+        table_product = self.settings.table_product
+        table_variant = self.settings.table_variant
+        self.db(table_product.id==product_id).update(**table_product._filter_fields(vars))
+        self.db(table_variant.product==product_id).delete()
+        for variant_vars in variant_vars_list:
+            table_variant.insert(product=product_id, **table_variant._filter_fields(variant_vars))  
+        
+    def remove_product(self, product_id):
+        self.db(self.settings.table_variant.product==product_id).delete()
+        return self.db(self.settings.table_product.id==product_id).delete()
+        
+    def get_product(self, product_id, load_variants=True, load_options=True, load_option_groups=True):
+        settings = self.settings
+        product = self.db(settings.table_product.id==product_id).select().first()
+        if not product:
+            return None
+            
+        if load_variants:
+            if load_options:
+                for option_no in range(1, settings.max_options + 1):
+                    key = 'option_%s' % option_no 
+                    alias = settings.table_option.with_alias(key)
+                    left = alias.on(alias.id==settings.table_variant[key])
+            else:
+                left = None
+            product.variants = self.variants_from_product(product_id).select(left=left)
+            
+            if load_option_groups:
+                option_group_ids = []
+                for i, variant in enumerate(product.variants):
+                    variant.options = []
+                    for option_no in range(1, settings.max_options + 1):
+                        option = variant['option_%s' % option_no]
+                        if not option:
+                            break
+                        variant.options.append(option)
+                        if i == 0:
+                            option_group_ids.append(option.option_group)
+                    
+                if option_group_ids:
+                    product.option_groups = self.get_option_groups(option_group_ids)
+                else:
+                    product.option_groups = []
+                
+        return product
+        
+    def variants_from_product(self, product_id):
+        return self.db(self.settings.table_variant.product==product_id)
         
     def options_from_option_group(self, option_group_id):
         return self.db(self.settings.table_option.option_group==option_group_id)
-    
+        
+    def get_option_groups(self, option_group_ids):
+        option_groups = self.db(self.settings.table_option_group.id.belongs(option_group_ids)).select()
+        option_groups = dict((r.id, r) for r in option_groups)
+        return [option_groups[id] for id in option_group_ids]
+        
     def get_option_sets(self, option_group_ids):
         options_list = [self.options_from_option_group(option_group_id).select()
                         for option_group_id in option_group_ids]
@@ -94,16 +153,4 @@ class Catalog(object):
                 yield tuple(prod)
                 
         return list(itertools_product(*options_list))
-    # def variants(self, product_id):
-        # pass
-        
-    # def is_master_variant(self, variant):
-        # pass
-        
-    # def options(self, option_group_id):
-        # pass
-        
-    # def product_option_info(self, product_id):
-        # pass
-    
     

@@ -76,6 +76,7 @@
 'Fri': '金',
 'Group ID': 'Group ID',
 'Hour': '時',
+'Input at least one variant': 'Input at least one variant',
 'Introducing new products or services being developed by %s': '%s で開発している新商品やサービスを紹介します',
 'Invalid email': '不正なemailです',
 'Invalid query': 'Invalid query',
@@ -106,6 +107,7 @@
 'Record Created': 'レコードを作成しました',
 'Record Deleted': 'レコードを削除しました',
 'Record ID': 'Record ID',
+'Record Updated': 'Record Updated',
 'Registration key': '登録キー',
 'Remove friend': '友達から削除',
 'Reset Password key': 'パスワードキーをリセット',
@@ -159,5 +161,6 @@
 'requesting': '申請しています',
 'this discussion': 'この議論',
 'under construction': '準備中',
+'value already in database or empty': 'value already in database or empty',
 'value not allowed': '許可された値ではありませｎ',
 }
