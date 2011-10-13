@@ -122,6 +122,7 @@
 'Static files': '静的ファイル',
 'Subject': '題名',
 'Submit': '送信する',
+'Success!': 'Success!',
 'Sun': '日',
 'Table name': 'Table name',
 'Thank you for your inquiry.': 'お問い合わせありがとうございます。',

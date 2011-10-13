@@ -77,8 +77,23 @@ class Catalog(object):
         return product_id, master_variant_id
         
     def options_from_option_group(self, option_group_id):
-        settings = self.settings
-        return self.db(settings.table_option.option_group==option_group_id)
+        return self.db(self.settings.table_option.option_group==option_group_id)
+    
+    def get_option_sets(self, option_group_ids):
+        options_list = [self.options_from_option_group(option_group_id).select()
+                        for option_group_id in option_group_ids]
+        if not options_list:
+            return []
+            
+        def itertools_product(*args, **kwds): # for python < 2.6
+            pools = map(tuple, args) * kwds.get('repeat', 1)
+            result = [[]]
+            for pool in pools:
+                result = [x+[y] for x in result for y in pool]
+            for prod in result:
+                yield tuple(prod)
+                
+        return list(itertools_product(*options_list))
     # def variants(self, product_id):
         # pass
         
