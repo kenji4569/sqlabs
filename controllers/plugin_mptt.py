@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from plugin_mptt import MPTTModel
-import random
 import unittest
 import re
 
@@ -18,7 +17,7 @@ leading_whitespace_re = re.compile(r'^\s+', re.MULTILINE)
 def tree_details(text):
     return leading_whitespace_re.sub('',text) 
     
-class TestMPTT(unittest.TestCase):
+class ReparentingTestCase(unittest.TestCase):
 
     def setUp(self):
         mptt.settings.table_tree.truncate()
@@ -34,22 +33,6 @@ class TestMPTT(unittest.TestCase):
         mptt.insert_node(node_id=9,target_id=None,position='last-child')
         mptt.insert_node(node_id=10,target_id=9,position='last-child')
         mptt.insert_node(node_id=11,target_id=9,position='last-child')
-
-#    def test_shuffle(self):
-#        # make sure the shuffled sequence does not lose any elements
-#        random.shuffle(self.seq)
-#        self.seq.sort()
-#        self.assertEqual(self.seq, range(10))
-#        # should raise an exception for an immutable sequence
-#        self.assertRaises(TypeError, random.shuffle, (1,2,3))
-#    
-#    def test_shuffle2(self):
-#        # make sure the shuffled sequence does not lose any elements
-#        random.shuffle(self.seq)
-#        self.seq.sort()
-#        self.assertEqual(self.seq, range(9))
-#        # should raise an exception for an immutable sequence
-#        self.assertRaises(TypeError, random.shuffle, (1,2,3))
 
         # 1 - 1 0 1 16   action
         # 2 1 1 1 2 9    +-- platformer
@@ -87,7 +70,7 @@ class TestMPTT(unittest.TestCase):
         
     def test_new_root_from_leaf_with_siblings(self):
         self.setUp()
-        mptt._make_child_root_node(3)
+        mptt._make_sibling_of_root_node(3,9,'right')
         platformer_2d = db(table_tree.id == 3).select()
         show_db_all = db().select(table_tree.ALL,orderby=table_tree.tree_id)
         
@@ -107,30 +90,7 @@ class TestMPTT(unittest.TestCase):
                                          11 9 2 1 4 5
                                          3 None 3 0 1 2"""))
         
-    def test_new_child_from_root_by_insert(self):
-        self.setUp()
-        mptt.insert_node(1, 9)
-        action = db(table_tree.id == 1).select()
-        rpg = db(table_tree.id == 9).select()
-        show_db_all = db().select(table_tree.ALL,orderby=table_tree.tree_id)
-        
-#        print 'test_new_child_from_root_by_insert'
-#        print get_tree_details(show_db_all)
-        self.assertEqual(get_tree_details(action), '1 9 2 1 6 21')
-        self.assertEqual(get_tree_details(show_db_all),
-                         tree_details("""1 9 2 1 6 21
-                                         2 1 2 2 7 14
-                                         3 2 2 3 8 9
-                                         4 2 2 3 10 11
-                                         5 2 2 3 12 13
-                                         6 1 2 2 15 20
-                                         7 6 2 3 16 17
-                                         8 6 2 3 18 19
-                                         9 None 2 0 1 22
-                                         10 9 2 1 2 3
-                                         11 9 2 1 4 5"""))
-        
-    def test_new_child_from_root_by_move(self):
+    def test_new_child_from_root(self):
         self.setUp()
         mptt.move_node(1, 9)
         action = db(table_tree.id == 1).select()
@@ -199,15 +159,15 @@ class TestMPTT(unittest.TestCase):
                                          10 9 2 1 2 3
                                          11 9 2 1 4 11"""))
         
-    def test_move_subtree_down_level(self):
+    def test_move_child_up_level(self):
         self.setUp()
         mptt.move_node(8, 1)
-        shmup = db(table_tree.id == 6).select()
+        shmup_horizontal = db(table_tree.id == 8).select()
         action = db(table_tree.id == 1).select()
         show_db_all = db().select(table_tree.ALL,orderby=table_tree.tree_id)
-        
-        print 'test_move_child_up_level'
-        print get_tree_details(show_db_all)
+
+#        print 'test_move_child_up_level'
+#        print get_tree_details(show_db_all)
         self.assertEqual(get_tree_details(shmup_horizontal), '8 1 1 1 14 15')
         self.assertEqual(get_tree_details(show_db_all),
                          tree_details("""1 None 1 0 1 16
@@ -221,15 +181,70 @@ class TestMPTT(unittest.TestCase):
                                          9 None 2 0 1 6
                                          10 9 2 1 2 3
                                          11 9 2 1 4 5"""))
-        
-    def test_move_child_up_level(self):
+
+    def test_move_subtree_down_level(self):
         self.setUp()
-        mptt.move_node(8, 1)
+        mptt.move_node(6, 2)
         shmup = db(table_tree.id == 6).select()
         platformer = db(table_tree.id == 2).select()
         show_db_all = db().select(table_tree.ALL,orderby=table_tree.tree_id)
+        
+#        print 'test_move_subtree_down_level'
+#        print get_tree_details(show_db_all)
+        self.assertEqual(get_tree_details(shmup), '6 2 1 2 9 14')
+        self.assertEqual(get_tree_details(show_db_all),
+                         tree_details("""1 None 1 0 1 16
+                                         2 1 1 1 2 15
+                                         3 2 1 2 3 4
+                                         4 2 1 2 5 6
+                                         5 2 1 2 7 8
+                                         6 2 1 2 9 14
+                                         7 6 1 3 10 11
+                                         8 6 1 3 12 13
+                                         9 None 2 0 1 6
+                                         10 9 2 1 2 3
+                                         11 9 2 1 4 5"""))
+        
+    def test_move_to(self):
+        self.setUp()
+        mptt.insert_node(9,1)
+        rpg = db(table_tree.id == 9).select().first()
+        action = db(table_tree.id == 1).select().first()
+        show_db_all = db().select(table_tree.ALL,orderby=table_tree.tree_id)
+        
+        self.assertEqual(rpg.parent_id, action.id)
 
-    
+class DeletionTestCase(unittest.TestCase):
+
+    def setUp(self):
+        mptt.settings.table_tree.truncate()
+        #here for the initialization of Database
+        mptt.insert_node(node_id=1,target_id=None,position='last-child')
+        mptt.insert_node(node_id=2,target_id=1,position='last-child')
+        mptt.insert_node(node_id=3,target_id=2,position='last-child')
+        mptt.insert_node(node_id=4,target_id=2,position='last-child')
+        mptt.insert_node(node_id=5,target_id=1,position='last-child')
+        mptt.insert_node(node_id=6,target_id=5,position='last-child')
+        mptt.insert_node(node_id=7,target_id=5,position='last-child')
+        mptt.insert_node(node_id=8,target_id=1,position='last-child')
+        mptt.insert_node(node_id=9,target_id=8,position='last-child')
+        mptt.insert_node(node_id=10,target_id=8,position='last-child')
+        
+        # 1 - 1 0 1 20    games
+        # 2 1 1 1 2 7     +-- wii
+        # 3 2 1 2 3 4     |   |-- wii_games
+        # 4 2 1 2 5 6     |   +-- wii_hardware
+        # 5 1 1 1 8 13    +-- xbox360
+        # 6 5 1 2 9 10    |   |-- xbox360_games
+        # 7 5 1 2 11 12   |   +-- xbox360_hardware
+        # 8 1 1 1 14 19   +-- ps3
+        # 9 8 1 2 15 16       |-- ps3_games
+        # 10 8 1 2 17 18      +-- ps3_hardware
+        
+    def test_delete_root_node(self):
+        show_db_all = db().select(table_tree.ALL,orderby=table_tree.tree_id)
+        #print get_tree_details(show_db_all)
+            
 def run_test(TestCase):
     import cStringIO
     stream = cStringIO.StringIO()
@@ -239,7 +254,7 @@ def run_test(TestCase):
 
 def index():
     
-    return dict(output=CODE(run_test(TestMPTT)))
+    return dict(output1=CODE(run_test(ReparentingTestCase)),output2=CODE(run_test(DeletionTestCase)))
 
 def test():
     db, table_tree = mptt.db, mptt.settings.table_tree
