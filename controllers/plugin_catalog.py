@@ -261,14 +261,20 @@ def index():
             session.flash = T('Record Created')
             redirect(URL())
         
-        extracolumns = [{'label':'View',
+        extracolumns = [{'label':'Sale Price',
+                         'content':lambda row, rc: '%s-%s' % (
+                                                    min([v.sale_price for v in row.variants]),
+                                                    max([v.sale_price for v in row.variants]))},
+                        {'label':'View',
                          'content':lambda row, rc: A('View', _href=URL('index', args=['view', row.id]))},   
                         {'label':'Edit',
                          'content':lambda row, rc: A('Edit', _href=URL('index', args=['edit', row.id]))},
                         {'label':'Delete',
                          'content':lambda row, rc: A('Delete', _href=URL('index', args=['delete', row.id]))},
                     ]
-        products = SOLIDTABLE(db(table_product.id>0).select(orderby=~table_product.id), 
+        
+        products = catalog.get_products_by_query(table_product.id>0, orderby=~table_product.id)
+        products = SOLIDTABLE(products, 
                               headers='labels', extracolumns=extracolumns)
         return dict(product_form=form, 
                     products=products,
@@ -277,6 +283,9 @@ def index():
     elif request.args(0) == 'edit':
         product_id = request.args(1)
         product = catalog.get_product(product_id)
+        if not product:
+            session.flash = 'the database has been refreshed'
+            redirect(URL())
         for f in table_product:
             f.default = product[f]
             

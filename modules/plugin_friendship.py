@@ -80,9 +80,9 @@ class Friendship(object):
         table_friend = self.settings.table_friend
         return self.db(table_friend.user==user_id)(table_friend.status==self.settings.status_confirmed)
         
-    def get_friend(self, user_id, friend_id, *fields):
+    def get_friend(self, user_id, friend_id, *fields, **attributes):
         return self.friends_from_user(user_id)(self.settings.table_friend.friend==friend_id
-                                      ).select(*fields).first()
+                                      ).select(*fields, **attributes).first()
     
     def ignore_friend(self, user_id, friend_id):
         db, table_friend = self.db, self.settings.table_friend

@@ -92,9 +92,10 @@ class Catalog(object):
         self.db(self.settings.table_variant.product==product_id).delete()
         return self.db(self.settings.table_product.id==product_id).delete()
         
-    def get_product(self, product_id, load_variants=True, load_options=True, load_option_groups=True):
+    def get_product(self, product_id, load_variants=True, load_options=True, 
+                    load_option_groups=True, *fields, **attributes):
         settings = self.settings
-        product = self.db(settings.table_product.id==product_id).select().first()
+        product = self.db(settings.table_product.id==product_id).select(*fields, **attributes).first()
         if not product:
             return None
             
@@ -126,6 +127,35 @@ class Catalog(object):
                     product.option_groups = []
                 
         return product
+    
+    def get_products_by_query(self, query, load_variants=True, load_options=True, 
+                              load_option_groups=True, *fields, **attributes):
+        db = self.db
+        table_product = self.settings.table_product
+        table_variant = self.settings.table_variant
+        
+        products = db(table_product.id>0).select(*fields, **attributes)
+        if products:
+            option_group_pools = {}
+            from itertools import groupby
+            variants = db(table_variant.product.belongs([r.id for r in products])
+                          ).select(orderby=table_variant.product)
+            _variants = {}
+            for k, g in groupby(variants, key=lambda r: r.product):
+                _variants[k] = list(g)
+            for product in products:
+                product.variants = _variants[product.id]
+                # option_group_ids = []
+                # for i, variant in enumerate(product.variants):
+                    # variant.options = []
+                    # for option_no in range(1, settings.max_options + 1):
+                        # option = variant['option_%s' % option_no]
+                        # if not option:
+                            # break
+                        # variant.options.append(option)
+                        # if i == 0:
+                            # option_group_ids.append(option.option_group)
+        return products
         
     def variants_from_product(self, product_id):
         return self.db(self.settings.table_variant.product==product_id)
@@ -133,8 +163,9 @@ class Catalog(object):
     def options_from_option_group(self, option_group_id):
         return self.db(self.settings.table_option.option_group==option_group_id)
         
-    def get_option_groups(self, option_group_ids):
-        option_groups = self.db(self.settings.table_option_group.id.belongs(option_group_ids)).select()
+    def get_option_groups(self, option_group_ids, *fields, **attributes):
+        option_groups = self.db(self.settings.table_option_group.id.belongs(option_group_ids)
+                               ).select(*fields, **attributes)
         option_groups = dict((r.id, r) for r in option_groups)
         return [option_groups[id] for id in option_group_ids]
         

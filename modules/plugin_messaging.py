@@ -52,9 +52,9 @@ class Messaging(object):
     def threads_from_user(self, user_id):
         return self.db(self.settings.table_thread.user==user_id)
         
-    def get_thread(self, user_id, other_id, *fields):
+    def get_thread(self, user_id, other_id, *fields, **attributes):
         return self.threads_from_user(user_id)(self.settings.table_thread.other==other_id
-                    ).select(*fields).first()
+                    ).select(*fields, **attributes).first()
         
     def messages_from_thread(self, thread_id):
         return self.db(self.settings.table_message.thread==thread_id)
