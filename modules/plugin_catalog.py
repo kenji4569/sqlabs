@@ -33,7 +33,7 @@ class Catalog(object):
         if not settings.table_product_name in db.tables:
             settings.table_product = db.define_table(
                 settings.table_product_name,
-                Field('title', requires=IS_NOT_EMPTY()),
+                Field('name', requires=IS_NOT_EMPTY()),
                 Field('available', 'boolean', default=False, 
                       widget=SQLFORM.widgets.boolean.widget), # not properly working without it? 
                 migrate=migrate, fake_migrate=fake_migrate,
