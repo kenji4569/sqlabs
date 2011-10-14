@@ -22,7 +22,9 @@ catalog.settings.table_option_name = 'plugin_catalog_option'
 catalog.settings.extra_fields = {
     'plugin_catalog_product': [
         Field('description', 'text', label=T('Description')),
-        Field('image', 'upload', label=T('Image')),
+        Field('image', 'upload', label=T('Image'), autodelete=True, 
+              uploadfolder=os.path.join(request.folder, 'uploads'),
+              requires=IS_NULL_OR(IS_LENGTH(10240)), comment='size < 10k'),
         Field('created_on', 'datetime', default=request.now, label=T('Created on'),
               readable=False, writable=False),
         # --- Other possible fields ---
@@ -249,7 +251,6 @@ def process_variants_requires():
 
 def index():
     if not request.args(0):
-        
         form = SQLFORM.factory(table_product, 
                                Field('option_groups', 'list:reference', 
                                      label=T('Option groups'),
@@ -258,7 +259,8 @@ def index():
                                                 table_option_group.id, '%(name)s', multiple=True))),
                                Field('variants', widget=variants_widget,
                                      label=T('Variants'),
-                                     requires=process_variants_requires()))
+                                     requires=process_variants_requires()),
+                               table_name=str(table_product))
         
         form.validate()  
         if form.accepted:
@@ -296,8 +298,8 @@ def index():
         if not product:
             session.flash = 'the database has been refreshed'
             redirect(URL())
-        for f in table_product:
-            f.default = product[f]
+        # for f in table_product:
+            # f.default = product[f]
             
         option_group_ids = [r.id for r in product.option_groups]
         request.vars.option_groups = request.vars.option_groups or map(str, option_group_ids)
@@ -313,7 +315,8 @@ def index():
             for name in variant:
                 request.vars['variant__%s__%s' % (option_set_key, name)] = variant[name]
         
-        form = SQLFORM.factory(table_product, 
+        form = SQLFORM(DAL(None).define_table(str(table_product),
+                               table_product, 
                                Field('option_groups', 'list:reference', 
                                      label=T('Option groups'),
                                      widget=option_groups_widget,
@@ -322,7 +325,9 @@ def index():
                                                 table_option_group.id, '%(name)s', multiple=True))),
                                Field('variants', widget=variants_widget,
                                      label=T('Variants'),
-                                     requires=variants_requires))
+                                     requires=variants_requires)), 
+                               product,
+                               upload=URL('download'))
                                
         form.validate()  
         if form.accepted:
@@ -335,7 +340,8 @@ def index():
     elif request.args(0) == 'view':
         product_id = request.args(1)
         product = catalog.get_product(product_id)
-        form = SQLFORM(table_product, product, readonly=True)
+        form = SQLFORM(table_product, product, readonly=True,
+                       upload=URL('download'))
         
         option_groups = [r.name for r in product.option_groups]
         
@@ -354,6 +360,8 @@ def index():
         session.flash = T('Record Deleted')
         redirect(URL())
         
+def download():
+    return response.download(request, db)
   
 ### unit tests #################################################################
 class TestCatalog(unittest.TestCase):
