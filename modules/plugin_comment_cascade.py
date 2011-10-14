@@ -134,7 +134,7 @@ class CommentCascade(object):
             current.response.js = """
 jQuery('#%(form_id)s').find('input[name=_formkey]').val('%(formkey)s');
 """ % dict(form_id=form.vars.form_id, formkey=form.formkey)
-            raise HTTP(200, self.element(user_id, target_id, view_all))
+            raise HTTP(200, self.generate_comment_box(user_id, target_id, view_all))
             
         import uuid
         _form_id = str(uuid.uuid4())

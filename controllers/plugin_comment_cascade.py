@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plugin_comment_box import CommentCascade
+from plugin_comment_cascade import CommentCascade
 from gluon.tools import Auth
 import unittest
 from gluon.contrib.populate import populate
@@ -10,10 +10,10 @@ if request.function == 'test':
     
 ### setup core objects #########################################################
 auth = Auth(db)
-comment_box = CommentBox(db)
-comment_box.settings.table_comment_name = 'plugin_comment_box_comment'
-comment_box.settings.extra_fields = {
-    'plugin_comment_box_comment': 
+comment_cascade = CommentCascade(db)
+comment_cascade.settings.table_comment_name = 'plugin_comment_cascade_comment'
+comment_cascade.settings.extra_fields = {
+    'plugin_comment_cascade_comment': 
         [Field('created_on', 'datetime', default=request.now)],
 }
 
@@ -46,13 +46,13 @@ for user_no in range(1, num_users+1):
     user = db(table_user.email==email).select().first()
     user_ids[user_no] = user and user.id or table_user.insert(email=email)
 
-deleted = db(table_target.created_on<request.now-datetime.timedelta(minutes=30)).delete()
-if deleted:
+if db(table_target.created_on<request.now-datetime.timedelta(minutes=30)).count():
+    table_target.truncate()
     table_comment.truncate()
-    for i in range(3-db(table_target.id>0).count()):
-        table_target.insert()
     session.flash = 'the database has been refreshed'
     redirect(URL('index'))
+for i in range(3-db(table_target.id>0).count()):
+    table_target.insert()
     
 ### demo functions #############################################################
 def index():
