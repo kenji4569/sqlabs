@@ -15,7 +15,7 @@ class Friendship(object):
         
         settings.onconfirm = None
         
-        settings.table_edge_name = 'edge'
+        settings.table_edge_name = 'friendship_edge'
         settings.table_edge = None
         
         settings.status_requesting = 'requesting'

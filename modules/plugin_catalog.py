@@ -2,7 +2,7 @@
 # This plugins is licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 # Authors: Kenji Hosoda <hosoda@s-cubism.jp>
 from gluon import *
-from gluon.storage import Storage
+from gluon.storage import Storage, Messages
 
 class Catalog(object):
     
@@ -11,64 +11,83 @@ class Catalog(object):
         
         settings = self.settings = Storage()
         
-        settings.max_options = 2
-        
         settings.extra_fields = {}
         
-        settings.table_product_name = 'product'
+        settings.table_product_name = 'catalog_product'
         settings.table_product = None
         
-        settings.table_variant_name = 'product_variant'
+        settings.table_variant_name = 'catalog_variant'
         settings.table_variant = None
         
-        settings.table_option_group_name = 'product_option_group'
+        settings.table_option_group_name = 'catalog_option_group'
         settings.table_option_group = None
         
-        settings.table_option_name = 'product_option'
+        settings.table_option_name = 'catalog_option'
         settings.table_option = None
+        
+        messages = self.messages = Messages(current.T)
+        messages.is_empty = 'Cannot be empty'
+        self.messages.label_name = 'Name'
+        self.messages.label_available = 'Available'
+        self.messages.label_sku = 'SKU'
+        
+        self.init_record_pool()
+        
+    def init_record_pool(self):
+        self._option_pool = {}
+        self._option_group_pool = {}
         
     def define_tables(self, migrate=True, fake_migrate=False):
         db, settings = self.db, self.settings
         
         if not settings.table_product_name in db.tables:
-            settings.table_product = db.define_table(
+            table = db.define_table(
                 settings.table_product_name,
-                Field('name', requires=IS_NOT_EMPTY()),
+                Field('name', label=self.messages.label_name),
                 Field('available', 'boolean', default=False, 
+                      label=self.messages.label_available,
                       widget=SQLFORM.widgets.boolean.widget), # not properly working without it? 
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_product_name, []))
+            table.name.requires = \
+                IS_NOT_EMPTY(error_message=self.messages.is_empty)
+        settings.table_product = db[settings.table_product_name]
                 
         if not settings.table_variant_name in db.tables:
-            _fields = []
-            for option_no in range(1, max(settings.max_options+1, 2)):
-                _fields.append(
-                    Field('option_%s' % option_no, 'reference %s' % settings.table_option_name,
-                          readable=False, writable=False))
-            _fields.extend(settings.extra_fields.get(settings.table_variant_name, []))
-            settings.table_variant = db.define_table(
+            table = db.define_table(
                 settings.table_variant_name,
                 Field('product', 'reference %s' % settings.table_product_name,
                       readable=False, writable=False),
-                Field('sku', requires=IS_NOT_EMPTY()),
+                Field('sku', label=self.messages.label_sku),
+                Field('options', 'list:reference %s' % settings.table_option_name,
+                      readable=False, writable=False),
                 migrate=migrate, fake_migrate=fake_migrate,
-                *_fields)
-        
+                *settings.extra_fields.get(settings.table_variant_name, []))
+            table.sku.requires = \
+                IS_NOT_EMPTY(error_message=self.messages.is_empty)
+        settings.table_variant = db[settings.table_variant_name]
+                
         if not settings.table_option_group_name in db.tables:
-            settings.table_option_group = db.define_table(
+            table = db.define_table(
                 settings.table_option_group_name,
-                Field('name', requires=IS_NOT_EMPTY()),
+                Field('name', label=self.messages.label_name),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_option_group_name, []))
+            table.name.requires = \
+                IS_NOT_EMPTY(error_message=self.messages.is_empty)
+        settings.table_option_group = db[settings.table_option_group_name]
         
         if not settings.table_option_name in db.tables:
-            settings.table_option = db.define_table(
+            table = db.define_table(
                 settings.table_option_name,
                 Field('option_group', 'reference %s' % settings.table_option_group_name,
                       readable=False, writable=False),
-                Field('name', requires=IS_NOT_EMPTY()),
+                Field('name', label=self.messages.label_name),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_option_name, []))
+            table.name.requires = \
+                IS_NOT_EMPTY(error_message=self.messages.is_empty)
+        settings.table_option = db[settings.table_option_name]
                 
     def add_product(self, vars, variant_vars_list):
         if not variant_vars_list:
@@ -92,42 +111,47 @@ class Catalog(object):
         self.db(self.settings.table_variant.product==product_id).delete()
         return self.db(self.settings.table_product.id==product_id).delete()
         
+    def get_options(self, option_ids, *fields, **attributes):
+        return self._get_records(self.settings.table_option, 
+                                 option_ids, self._option_pool,
+                                 *fields, **attributes)
+                                 
+    def get_option_groups(self, option_group_ids, *fields, **attributes):
+        return self._get_records(self.settings.table_option_group, 
+                                 option_group_ids, self._option_pool,
+                                 *fields, **attributes)
+        
+    def _get_records(self, table, ids, pool, *fields, **attributes):
+        if not ids:
+            return []
+        _ids = [e for e in ids if e not in pool]
+        if _ids:
+            records = self.db(table.id.belongs(_ids)).select(*fields, **attributes)
+            pool.update(**dict([(r.id, r) for r in records]))
+        return [pool[id] for id in ids]
+    
     def get_product(self, product_id, load_variants=True, load_options=True, 
-                    load_option_groups=True, *fields, **attributes):
+                    load_option_groups=True, 
+                    variant_fields=[], variant_attributes={},
+                    *fields, **attributes):
         settings = self.settings
         product = self.db(settings.table_product.id==product_id).select(*fields, **attributes).first()
         if not product:
             return None
             
         if load_variants:
+            product.variants = self.variants_from_product(product_id
+                                    ).select(*variant_fields, **variant_attributes)
             if load_options:
-                for option_no in range(1, settings.max_options + 1):
-                    key = 'option_%s' % option_no 
-                    alias = settings.table_option.with_alias(key)
-                    left = alias.on(alias.id==settings.table_variant[key])
-            else:
-                left = None
-            product.variants = self.variants_from_product(product_id).select(left=left)
+                for variant in product.variants:
+                    variant.options = self.get_options(variant.options)
+                if load_option_groups:       
+                    product.option_groups = self.get_option_groups(
+                        [option.option_group for option 
+                            in product.variants and product.variants[0].options or []])
             
-            if load_option_groups:
-                option_group_ids = []
-                for i, variant in enumerate(product.variants):
-                    variant.options = []
-                    for option_no in range(1, settings.max_options + 1):
-                        option = variant['option_%s' % option_no]
-                        if not option:
-                            break
-                        variant.options.append(option)
-                        if i == 0:
-                            option_group_ids.append(option.option_group)
-                    
-                if option_group_ids:
-                    product.option_groups = self.get_option_groups(option_group_ids)
-                else:
-                    product.option_groups = []
-                
         return product
-    
+        
     def get_products_by_query(self, query, load_variants=True, load_options=True, 
                               load_option_groups=True, *fields, **attributes):
         db = self.db
@@ -135,26 +159,24 @@ class Catalog(object):
         table_variant = self.settings.table_variant
         
         products = db(table_product.id>0).select(*fields, **attributes)
-        if products:
-            option_group_pools = {}
+        if products and load_variants:
             from itertools import groupby
             variants = db(table_variant.product.belongs([r.id for r in products])
                           ).select(orderby=table_variant.product)
             _variants = {}
             for k, g in groupby(variants, key=lambda r: r.product):
                 _variants[k] = list(g)
+               
             for product in products:
-                product.variants = _variants[product.id]
-                # option_group_ids = []
-                # for i, variant in enumerate(product.variants):
-                    # variant.options = []
-                    # for option_no in range(1, settings.max_options + 1):
-                        # option = variant['option_%s' % option_no]
-                        # if not option:
-                            # break
-                        # variant.options.append(option)
-                        # if i == 0:
-                            # option_group_ids.append(option.option_group)
+                product.variants = _variants.get(product.id, [])
+                if load_options:
+                    for variant in product.variants:
+                        variant.options = self.get_options(variant.options)
+                    if load_option_groups:       
+                        product.option_groups = self.get_option_groups(
+                            [option.option_group for option 
+                                in product.variants and product.variants[0].options or []])
+                            
         return products
         
     def variants_from_product(self, product_id):
@@ -162,12 +184,6 @@ class Catalog(object):
         
     def options_from_option_group(self, option_group_id):
         return self.db(self.settings.table_option.option_group==option_group_id)
-        
-    def get_option_groups(self, option_group_ids, *fields, **attributes):
-        option_groups = self.db(self.settings.table_option_group.id.belongs(option_group_ids)
-                               ).select(*fields, **attributes)
-        option_groups = dict((r.id, r) for r in option_groups)
-        return [option_groups[id] for id in option_group_ids]
         
     def get_option_sets(self, option_group_ids):
         options_list = [self.options_from_option_group(option_group_id).select()

@@ -27,7 +27,7 @@ class CommentCascade(object):
         settings.tooltip = LABEL('X', _class='plugin_comment_cascade_delete')
         settings.limit = 2
         
-        settings.table_comment_name = 'comment'
+        settings.table_comment_name = 'comment_cascade_comment'
         settings.table_comment = None
         
         messages = self.messages = Messages(current.T)

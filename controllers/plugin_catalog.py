@@ -16,14 +16,14 @@ if request.function == 'test':
 auth = Auth(db)
 catalog = Catalog(db)
 catalog.settings.table_product_name = 'plugin_catalog_product'
-catalog.settings.table_variant_name = 'plugin_catalog_product_variant'
-catalog.settings.table_option_group_name = 'plugin_catalog_product_option_group'
-catalog.settings.table_option_name = 'plugin_catalog_product_option'
+catalog.settings.table_variant_name = 'plugin_catalog_variant'
+catalog.settings.table_option_group_name = 'plugin_catalog_option_group'
+catalog.settings.table_option_name = 'plugin_catalog_option'
 catalog.settings.extra_fields = {
     'plugin_catalog_product': [
-        Field('description', 'text'),
-        Field('image', 'upload'),
-        Field('created_on', 'datetime', default=request.now,
+        Field('description', 'text', label=T('Description')),
+        Field('image', 'upload', label=T('Image')),
+        Field('created_on', 'datetime', default=request.now, label=T('Created on'),
               readable=False, writable=False),
         # --- Other possible fields ---
         # Field('status'),
@@ -36,16 +36,16 @@ catalog.settings.extra_fields = {
         # Field('reward_point_rate'),
         # Field('keywords'),
     ],
-    'plugin_catalog_product_variant': [
-        Field('sale_price', 'integer', requires=IS_NOT_EMPTY(), default=0),
-        Field('inventory_quantity', 'integer', requires=IS_NOT_EMPTY(), default=0),
+    'plugin_catalog_variant': [
+        Field('sale_price', 'integer', label=T('Sale price'), default=0),
+        Field('inventory_quantity', 'integer', label=T('Inventory quantity'), default=0),
         # --- Other possible fields ---
         # Field('retail_price', 'integer'),
         # Field('inventory_level', 'integer'),
         # Field('weight', 'integer'),
         # Field('taxable', 'boolean'),
     ],
-    # 'plugin_catalog_product_option': [
+    # 'plugin_catalog_option': [
         # Field('price_charge'),],
 }
 
@@ -77,14 +77,17 @@ if not db(table_option_group.id>0).count():
 
 # --- common functions ---------------------------------------------------------
 
+MAX_OPTIONS = 2
 def option_groups_widget(field, value, **attributes):
     inner = hmultiselect_widget(field, value, **attributes)
     script = SCRIPT(""" 
 jQuery(document).ready(function() {
     var buttons = jQuery('#%(id)s input[type=button]');
-    buttons.click(function(){
+    buttons.click(function(e){
         var options = jQuery(%(select_el_id)s).children();
-        if (options.length >= %(max_options)s) {
+        if (options.length > %(max_options)s) {
+            alert('! Number of options should be less than or equal to ' + %(max_options)s);
+        } else if (options.length == %(max_options)s) {
             jQuery(%(unselected_el_id)s).prop('disabled', true);
             jQuery(buttons[0]).prop('disabled', true);
         } else {
@@ -99,7 +102,7 @@ jQuery(document).ready(function() {
 }); """ % dict(id=inner.attributes['_id'],
                select_el_id=field.name,
                unselected_el_id="unselected_%s" % field.name,
-               max_options=catalog.settings.max_options))
+               max_options=MAX_OPTIONS))
     return SPAN(script, inner)
     
 class IS_DELETE_OR(Validator):
@@ -159,7 +162,7 @@ def variants_widget(field, value, **attributes):
         if option_set_key != 'master':
             fields.insert(0, Field('variant__%s__active' % option_set_key, 
                                    'boolean', default=True if ajax else not deleted, 
-                                    label='Active', comment=_get_comment('active')))
+                                    label=T('Active'), comment=_get_comment('active')))
                                     
         return SQLFORM.factory( buttons=[], *fields).components[0]
         
@@ -227,10 +230,10 @@ def get_variant_vars_list(vars):
     variant_vars_list = []        
     for option_set_key, reduced_vars in reduced_vars_dict.items():
         if option_set_key == 'master':
-            variant_vars_list.append(reduced_vars) 
+            reduced_vars['options'] = []
+            variant_vars_list.append(reduced_vars)
         elif reduced_vars.get('active'):
-            for i, option_id in enumerate(option_set_key.split('_')):
-                reduced_vars['option_%s' % (i + 1)] = option_id
+            reduced_vars['options'] = option_set_key.split('_')
             variant_vars_list.append(reduced_vars)  
     return variant_vars_list
     
@@ -249,10 +252,12 @@ def index():
         
         form = SQLFORM.factory(table_product, 
                                Field('option_groups', 'list:reference', 
+                                     label=T('Option groups'),
                                      widget=option_groups_widget,
                                      requires=IS_EMPTY_OR(IS_IN_DB(db, 
                                                 table_option_group.id, '%(name)s', multiple=True))),
                                Field('variants', widget=variants_widget,
+                                     label=T('Variants'),
                                      requires=process_variants_requires()))
         
         form.validate()  
@@ -261,15 +266,20 @@ def index():
             session.flash = T('Record Created')
             redirect(URL())
         
-        extracolumns = [{'label':'Sale Price',
+        extracolumns = [{'label':T('Sale price'),
                          'content':lambda row, rc: '%s-%s' % (
-                                                    min([v.sale_price for v in row.variants]),
-                                                    max([v.sale_price for v in row.variants]))},
-                        {'label':'View',
+                                                    row.variants and min([v.sale_price for v in row.variants]),
+                                                    row.variants and max([v.sale_price for v in row.variants]))},
+                        {'label':T('Option groups'),
+                         'content':lambda row, rc: ', '.join([og.name for og in row.option_groups]) or '*master*'},
+                        {'label':T('Options'),
+                         'content':lambda row, rc: ', '.join(['-'.join([o.name for o in v.options]) 
+                                                                            for v in row.variants]) or '*master*'},
+                        {'label':T('View'),
                          'content':lambda row, rc: A('View', _href=URL('index', args=['view', row.id]))},   
-                        {'label':'Edit',
+                        {'label':T('Edit'),
                          'content':lambda row, rc: A('Edit', _href=URL('index', args=['edit', row.id]))},
-                        {'label':'Delete',
+                        {'label':T('Delete'),
                          'content':lambda row, rc: A('Delete', _href=URL('index', args=['delete', row.id]))},
                     ]
         
@@ -305,11 +315,13 @@ def index():
         
         form = SQLFORM.factory(table_product, 
                                Field('option_groups', 'list:reference', 
+                                     label=T('Option groups'),
                                      widget=option_groups_widget,
                                      default=option_group_ids or None,
                                      requires=IS_EMPTY_OR(IS_IN_DB(db, 
                                                 table_option_group.id, '%(name)s', multiple=True))),
                                Field('variants', widget=variants_widget,
+                                     label=T('Variants'),
                                      requires=variants_requires))
                                
         form.validate()  
@@ -327,7 +339,8 @@ def index():
         
         option_groups = [r.name for r in product.option_groups]
         
-        variants = ['-'.join([o.name for o in variant.options]) + ' : ' + variant.sku  
+        variants = ['-'.join([o.name for o in variant.options]) or '*master*' + 
+                    ' : ' + variant.sku  
                         for variant in product.variants]
         
         return dict(back=A('back', _href=URL('index')), 
