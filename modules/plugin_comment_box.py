@@ -4,12 +4,14 @@
 from gluon import *
 from gluon.storage import Storage, Messages
 
-class CommentBox(object):
+class CommentCascade(object):
     
     def __init__(self, db):
         self.db = db
         
         settings = self.settings = Storage()
+        
+        settings.extra_fields = {}
         
         settings.oncomment = None
 
@@ -19,10 +21,10 @@ class CommentBox(object):
         settings.content = lambda row: row
         settings.view_all_content = lambda total: A(
                                         current.T('View all %s comments') % total, _href='#', 
-                                        _class='plugin_comment_box_view_all')
+                                        _class='plugin_comment_cascade_view_all')
         settings.footers = [TEXTAREA('', _placeholder=current.T('Write a comment..'),
-                                  _rows=1, _class='plugin_comment_box_create')]
-        settings.tooltip = LABEL('X', _class='plugin_comment_box_delete')
+                                  _rows=1, _class='plugin_comment_cascade_create')]
+        settings.tooltip = LABEL('X', _class='plugin_comment_cascade_delete')
         settings.limit = 2
         
         settings.table_comment_name = 'comment'
@@ -37,19 +39,21 @@ class CommentBox(object):
         db, settings = self.db, self.settings
         
         if not settings.table_comment_name in db.tables:
-            settings.table_comment = db.define_table(
+            table = db.define_table(
                 settings.table_comment_name,
                 Field('target', 'reference %s' % table_target_name),
                 Field('user', 'reference %s' % table_user_name),
-                Field('body', 'text'),
-                Field('created_on', 'datetime', default=current.request.now),
-                migrate=migrate, fake_migrate=fake_migrate)
+                Field('body_text', 'text'),
+                migrate=migrate, fake_migrate=fake_migrate,
+                *settings.extra_fields.get(settings.table_comment_name, []))
+        settings.table_comment = db[settings.table_comment_name]
                 
-    def add_comment(self, user_id, target_id, body):
+    def add_comment(self, user_id, target_id, body_text, *fields, **attributes):
         settings = self.settings
         settings.table_comment.insert(target=target_id,
-                     user=user_id,
-                     body=body)
+                                      user=user_id,
+                                      body_text=body_text,
+                                      *fields, **attributes)
         if settings.oncomment:
             settings.oncomment(target_id, user_id)
             
@@ -64,9 +68,9 @@ class CommentBox(object):
     def comments_from_target(self, target_id):
         return self.db(self.settings.table_comment.target==target_id)
         
-    def element(self, user_id, target_id, view_all=False):  
+    def generate_comment_box(self, user_id, target_id, view_all=False):  
         settings = self.settings
-        _id = 'plugin_comment_box__%s__%s' % (user_id, target_id)
+        _id = 'plugin_comment_cascade__%s__%s' % (user_id, target_id)
             
         settings.select_attributes.update(
             limitby=None if view_all else (0, settings.limit+1),
@@ -93,16 +97,16 @@ class CommentBox(object):
                 _comment_id = record.id
             if settings.tooltip and str(_user_id) == str(user_id):
                 content = DIV(DIV(settings.tooltip, 
-                                  _class='plugin_comment_box_tooltip', 
+                                  _class='plugin_comment_cascade_tooltip', 
                                   _style='float:right;visibility:hidden;'), 
                               DIV(content, _style='display:table-cell;padding-right:5px;'))
             elements.append(LI(content, 
-                               _class='plugin_comment_box_comment', 
-                               _id='plugin_comment_box_comment__%s' % _comment_id))
+                               _class='plugin_comment_cascade_comment', 
+                               _id='plugin_comment_cascade_comment__%s' % _comment_id))
         
         elements.extend(settings.footers)
         
-        return DIV(UL(*elements), _id=_id, _class='plugin_comment_box')
+        return DIV(UL(*elements), _id=_id, _class='plugin_comment_cascade')
     
     def process(self):
         settings = self.settings
@@ -111,14 +115,14 @@ class CommentBox(object):
                     INPUT(_type='hidden', _name='user_id'),
                     INPUT(_type='hidden', _name='action'),
                     INPUT(_type='hidden', _name='comment_id'),
-                    INPUT(_type='hidden', _name='body'),
+                    INPUT(_type='hidden', _name='body_text'),
                     INPUT(_type='hidden', _name='view_all'))
         if form.accepts(current.request.vars, current.session):
             user_id, target_id = form.vars.user_id, form.vars.target_id
             view_all = True if form.vars.view_all == 'true' else False
             if form.vars.action == 'create':
                 current.response.flash = self.messages.record_created
-                self.add_comment(user_id, target_id, form.vars.body)
+                self.add_comment(user_id, target_id, form.vars.body_text)
             elif form.vars.action == 'delete':
                 current.response.flash = self.messages.record_deleted
                 self.remove_comment(user_id, form.vars.comment_id)
@@ -146,20 +150,20 @@ function post_form(el_id) {
     $('.flash').hide().html(''); web2py_ajax_page('post', '%(url)s', form.serialize(), el_id);
 }
 function is_view_all(el) {
-    return !el.find('.plugin_comment_box_view_all').length;
+    return !el.find('.plugin_comment_cascade_view_all').length;
 }
 function create(self) {
-    var el = $(self).closest('.plugin_comment_box'),
+    var el = $(self).closest('.plugin_comment_cascade'),
         el_id = el.attr('id'),
         el_id_parts = el_id.split('__'),
         user_id = el_id_parts[1],
         target_id = el_id_parts[2],
-        body = el.find('textarea').val();  
+        body_text = el.find('textarea').val();  
     set_inputs({form_id:'%(form_id)s', user_id:user_id, target_id: target_id, 
-                action:'create', body: body, view_all:is_view_all(el)});
+                action:'create', body_text: body_text, view_all:is_view_all(el)});
     post_form(el_id);
 }
-$('.plugin_comment_box_create').live('keypress', function(e){
+$('.plugin_comment_cascade_create').live('keypress', function(e){
     if (this.tagName=='TEXTAREA' && e.keyCode==13 && !e.shiftKey){
         create(this); return false;
     }
@@ -168,28 +172,28 @@ $('.plugin_comment_box_create').live('keypress', function(e){
         create(this); return false;
     }
 });
-$('.plugin_comment_box_delete').live('click', function(e){
-    var el = $(this).closest('.plugin_comment_box'),
+$('.plugin_comment_cascade_delete').live('click', function(e){
+    var el = $(this).closest('.plugin_comment_cascade'),
         el_id = el.attr('id'),
         el_id_parts = el_id.split('__'),
         user_id = el_id_parts[1],
         target_id = el_id_parts[2],
-        comment_el = $(this).closest('.plugin_comment_box_comment'),
+        comment_el = $(this).closest('.plugin_comment_cascade_comment'),
         comment_id = comment_el.attr('id').split('__')[1];
     set_inputs({form_id:'%(form_id)s', user_id:user_id, target_id: target_id, 
                 action:'delete', comment_id: comment_id, view_all:is_view_all(el)});
     post_form(el_id);
     return false;
 });
-$('.plugin_comment_box_comment').live({
+$('.plugin_comment_cascade_comment').live({
     mouseenter:function(e){
-        $(this).find('.plugin_comment_box_tooltip').css('visibility', 'visible');
+        $(this).find('.plugin_comment_cascade_tooltip').css('visibility', 'visible');
     }, mouseleave:function(e){
-        $(this).find('.plugin_comment_box_tooltip').css('visibility', 'hidden');
+        $(this).find('.plugin_comment_cascade_tooltip').css('visibility', 'hidden');
     }
 });
-$('.plugin_comment_box_view_all').live('click', function() {
-    var el = $(this).closest('.plugin_comment_box'),
+$('.plugin_comment_cascade_view_all').live('click', function() {
+    var el = $(this).closest('.plugin_comment_cascade'),
         el_id = el.attr('id'),
         el_id_parts = el_id.split('__'),
         user_id = el_id_parts[1],
