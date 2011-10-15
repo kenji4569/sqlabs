@@ -73,7 +73,7 @@ def index():
     for target in targets:
         _targets[target.id] = DIV(
             DIV('', _class='comment_bubble'),
-            comment_cascade.generate_comment_box(user_id, target.id))
+            comment_cascade.render_comment_box(user_id, target.id))
         
     style = STYLE("""
 .plugin_comment_cascade {word-break:break-all;width:300px;line-height: 1.1em;}

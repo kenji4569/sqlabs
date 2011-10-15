@@ -118,7 +118,7 @@ class Catalog(object):
                                  
     def get_option_groups(self, option_group_ids, *fields, **attributes):
         return self._get_records(self.settings.table_option_group, 
-                                 option_group_ids, self._option_pool,
+                                 option_group_ids, self._option_group_pool,
                                  *fields, **attributes)
         
     def _get_records(self, table, ids, pool, *fields, **attributes):
@@ -126,7 +126,7 @@ class Catalog(object):
             return []
         _ids = [e for e in ids if e not in pool]
         if _ids:
-            records = self.db(table.id.belongs(_ids)).select(*fields, **attributes)
+            records = self.db(table.id.belongs(set(_ids))).select(*fields, **attributes)
             pool.update(**dict([(r.id, r) for r in records]))
         return [pool[id] for id in ids]
     
@@ -153,30 +153,61 @@ class Catalog(object):
         return product
         
     def get_products_by_query(self, query, load_variants=True, load_options=True, 
-                              load_option_groups=True, *fields, **attributes):
+                              *fields, **attributes):
         db = self.db
         table_product = self.settings.table_product
         table_variant = self.settings.table_variant
         
         products = db(table_product.id>0).select(*fields, **attributes)
-        if products and load_variants:
-            from itertools import groupby
-            variants = db(table_variant.product.belongs([r.id for r in products])
-                          ).select(orderby=table_variant.product)
-            _variants = {}
-            for k, g in groupby(variants, key=lambda r: r.product):
-                _variants[k] = list(g)
-               
-            for product in products:
-                product.variants = _variants.get(product.id, [])
-                if load_options:
-                    for variant in product.variants:
-                        variant.options = self.get_options(variant.options)
-                    if load_option_groups:       
-                        product.option_groups = self.get_option_groups(
-                            [option.option_group for option 
-                                in product.variants and product.variants[0].options or []])
-                            
+        
+        if not products or not load_variants:
+            return products
+            
+        from itertools import groupby
+        variants = db(table_variant.product.belongs([r.id for r in products])
+                      ).select(orderby=table_variant.product)
+        _variants = {}
+        for k, g in groupby(variants, key=lambda r: r.product):
+            _variants[k] = list(g)
+           
+        for product in products:
+            product.variants = _variants.get(product.id, [])
+            
+        if not load_options:
+            return products
+            
+        class BulkLoader(object):
+            def __init__(self):
+                self.flatten = []
+                self.sizes = []
+            def register(self, values):
+                self.flatten.extend(values)
+                self.sizes.append(len(values))
+            def load(self, fn):
+                self.flatten = fn(self.flatten)
+            def retrieve(self):
+                size = self.sizes.pop(0)
+                objects = self.flatten[:size]
+                self.flatten = self.flatten[size:]
+                return objects
+                
+        bulk_loader = BulkLoader()        
+        for product in products:
+            for variant in product.variants:
+                bulk_loader.register(variant.options or [])
+        bulk_loader.load(self.get_options)
+        for product in products:
+            for variant in product.variants:
+                variant.options = bulk_loader.retrieve()
+            
+        bulk_loader = BulkLoader()
+        for product in products:
+            bulk_loader.register([option.option_group for option 
+                    in product.variants and product.variants[0].options or []])
+        bulk_loader.load(self.get_option_groups)
+        for product in products:
+            product.option_groups = bulk_loader.retrieve()
+                    
         return products
         
     def variants_from_product(self, product_id):
