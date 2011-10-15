@@ -331,8 +331,7 @@ def index():
         product_id = request.args(1)
         product = catalog.get_product(product_id, load_option_groups=False)
         if not product:
-            session.flash = 'the database has been refreshed'
-            redirect(URL())
+            raise HTTP(404)
             
         request.vars.option_groups = request.vars.option_groups or map(str, product.option_groups)
         variants_requires = process_variants_requires()
@@ -372,6 +371,9 @@ def index():
     elif request.args(0) == 'view':
         product_id = request.args(1)
         product = catalog.get_product(product_id)
+        if not product:
+            raise HTTP(404)
+            
         form = SQLFORM(table_product, product, readonly=True,
                        upload=URL('download'))
         
