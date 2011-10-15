@@ -358,7 +358,8 @@ def index():
                                      label=T('Variants'),
                                      requires=variants_requires)), 
                                product,
-                               upload=URL('download'))
+                               upload=URL('download'),
+                               formstyle='ul')
                                
         form.validate()  
         if form.accepted:
