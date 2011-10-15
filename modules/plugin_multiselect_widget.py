@@ -13,17 +13,22 @@ def multiselect_widget(field, value, **attributes):
         else:
             raise SyntaxError, 'widget cannot determine options of %s'  % field
     
-    selected_opts = []
+    selected_opts = {}
     unselected_opts = []
     
     _value = map(str, value) if value else []
     for (k, v) in options:
         opt = OPTION(v, _value=k)
         if _value and k in _value:
-            selected_opts.append(opt)
+            selected_opts[k] = opt
         else:
             unselected_opts.append(opt)
-    
+            
+    if _value:
+        selected_opts = [selected_opts[k] for k in _value if k in selected_opts] # preserve the sort order
+    else:
+        select_opts = []
+        
     unselected_el_id = "unselected_%s" % field.name
     select_el_id = field.name
     

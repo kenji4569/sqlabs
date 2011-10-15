@@ -18,7 +18,7 @@ def tight_input_widget(field, value, **attributes):
     _length = None
     
     if field.requires:
-        if isinstance(field.requires, IS_EMPTY_OR):
+        if hasattr(field.requires, 'other') and field.requires.other:
             requires =  field.requires.other
         else:
             requires = field.requires

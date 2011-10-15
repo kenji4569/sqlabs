@@ -4,6 +4,21 @@
 from gluon import *
 from gluon.storage import Storage, Messages
 
+class _BulkLoader(object):
+    def __init__(self):
+        self.flattened = []
+        self.sizes = []
+    def register(self, values):
+        self.flattened.extend(values)
+        self.sizes.append(len(values))
+    def load(self, fn):
+        self.flattened = fn(self.flattened)
+    def retrieve(self):
+        size = self.sizes.pop(0)
+        objects = self.flattened[:size]
+        self.flattened = self.flattened[size:]
+        return objects
+        
 class Catalog(object):
     
     def __init__(self, db):
@@ -61,6 +76,7 @@ class Catalog(object):
                 Field('sku', label=self.messages.label_sku),
                 Field('options', 'list:reference %s' % settings.table_option_name,
                       readable=False, writable=False),
+                Field('sort_order', 'integer'),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_variant_name, []))
             table.sku.requires = \
@@ -145,14 +161,15 @@ class Catalog(object):
             if load_options:
                 for variant in product.variants:
                     variant.options = self.get_options(variant.options)
+                product.option_groups = [option.option_group for option 
+                        in product.variants and product.variants[0].options or []]
                 if load_option_groups:       
-                    product.option_groups = self.get_option_groups(
-                        [option.option_group for option 
-                            in product.variants and product.variants[0].options or []])
+                    product.option_groups = self.get_option_groups(product.option_groups)
             
         return product
         
     def get_products_by_query(self, query, load_variants=True, load_options=True, 
+                              load_option_groups=True, 
                               *fields, **attributes):
         db = self.db
         table_product = self.settings.table_product
@@ -165,7 +182,7 @@ class Catalog(object):
             
         from itertools import groupby
         variants = db(table_variant.product.belongs([r.id for r in products])
-                      ).select(orderby=table_variant.product)
+                      ).select(orderby=table_variant.product|table_variant.sort_order)
         _variants = {}
         for k, g in groupby(variants, key=lambda r: r.product):
             _variants[k] = list(g)
@@ -176,22 +193,7 @@ class Catalog(object):
         if not load_options:
             return products
             
-        class BulkLoader(object):
-            def __init__(self):
-                self.flatten = []
-                self.sizes = []
-            def register(self, values):
-                self.flatten.extend(values)
-                self.sizes.append(len(values))
-            def load(self, fn):
-                self.flatten = fn(self.flatten)
-            def retrieve(self):
-                size = self.sizes.pop(0)
-                objects = self.flatten[:size]
-                self.flatten = self.flatten[size:]
-                return objects
-                
-        bulk_loader = BulkLoader()        
+        bulk_loader = _BulkLoader()        
         for product in products:
             for variant in product.variants:
                 bulk_loader.register(variant.options or [])
@@ -199,14 +201,18 @@ class Catalog(object):
         for product in products:
             for variant in product.variants:
                 variant.options = bulk_loader.retrieve()
-            
-        bulk_loader = BulkLoader()
+        
+        if load_option_groups:        
+            bulk_loader = _BulkLoader()
         for product in products:
-            bulk_loader.register([option.option_group for option 
-                    in product.variants and product.variants[0].options or []])
-        bulk_loader.load(self.get_option_groups)
-        for product in products:
-            product.option_groups = bulk_loader.retrieve()
+            product.option_groups = [option.option_group for option 
+                    in product.variants and product.variants[0].options or []]
+            if load_option_groups:
+                bulk_loader.register(product.option_groups)
+        if load_option_groups:
+            bulk_loader.load(self.get_option_groups)
+            for product in products:
+                product.option_groups = bulk_loader.retrieve()
                     
         return products
         

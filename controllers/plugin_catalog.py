@@ -5,6 +5,7 @@ import unittest
 from gluon.contrib.populate import populate
 from plugin_solidtable import SOLIDTABLE
 from plugin_multiselect_widget import hmultiselect_widget
+from plugin_tight_input_widget import tight_input_widget
 from gluon.validators import Validator
 from collections import defaultdict
 from gluon.utils import web2py_uuid
@@ -39,8 +40,12 @@ catalog.settings.extra_fields = {
         # Field('keywords'),
     ],
     'plugin_catalog_variant': [
-        Field('sale_price', 'integer', label=T('Sale price'), default=0),
-        Field('inventory_quantity', 'integer', label=T('Inventory quantity'), default=0),
+        Field('sale_price', 'integer', label=T('Sale price'), default=0,
+              requires=IS_INT_IN_RANGE(0, 1000000),
+              widget=tight_input_widget),
+        Field('inventory_quantity', 'integer', label=T('Inventory quantity'), default=0,
+              requires=IS_INT_IN_RANGE(0, 1000000),
+              widget=tight_input_widget),
         # --- Other possible fields ---
         # Field('retail_price', 'integer'),
         # Field('inventory_level', 'integer'),
@@ -139,40 +144,61 @@ def variants_widget(field, value, **attributes):
                             in (request.vars.get(keyword, '') or trigger or '').split(',')
                                 if option_group_id]
     
-    def _get_variant_form(option_set_key):
-        def _get_comment(name):
+    def _get_variant_elements(option_set_key, sort_order=0):
+        def _get_field_comment(name):
             if option_set_key != 'master':
-                return INPUT(_type='button', _value='→ apply all',
+                return INPUT(_type='button', _value=T('Apply all'),
                              _onclick='apply_for_all_variants("%s", "%s");' % (option_set_key, name))
         
-        deleted = (option_set_key != 'master') and not request.vars.get('variant__%s__active' % option_set_key)
+        deleted = (option_set_key != 'master') and not request.vars.get('variant__%s__available' % option_set_key)
         fields = []
+        hidden = {}
         for f in table_variant:
+            new_name = 'variant__%s__%s' % (option_set_key, f.name)
+            
+            if f.name == 'sort_order':
+                f.default = sort_order
+                
             if ajax:
                 default = f.default
             else:
                 default = request.vars.get('variant__%s__%s' % (option_set_key, f.name)) or f.default
-            
-            if f.name == 'sku':
+
+            if f.name == 'sort_order':
+                hidden[new_name] = f.default
+                continue
+            elif f.name == 'sku':
                 default = default or web2py_uuid()
                 
-            fields.append(Field('variant__%s__%s' % (option_set_key, f.name), f.type, 
+            fields.append(Field(new_name, f.type, 
                         readable=f.readable, writable=f.writable, label=f.label, 
-                        requires=IS_DELETE_OR(deleted, f.requires), 
-                        default=default, comment=_get_comment(f.name)))
+                        requires=IS_DELETE_OR(deleted, f.requires), widget=f.widget,
+                        default=default, comment=_get_field_comment(f.name)))
         
         if option_set_key != 'master':
-            fields.insert(0, Field('variant__%s__active' % option_set_key, 
+            fields.insert(0, Field('variant__%s__available' % option_set_key, 
                                    'boolean', default=True if ajax else not deleted, 
-                                    label=T('Active'), comment=_get_comment('active')))
+                                    label=T('Available'), comment=_get_field_comment('available')))
                                     
-        return SQLFORM.factory( buttons=[], *fields).components[0]
+        form = SQLFORM.factory(buttons=[], hidden=hidden, *fields)
         
-    def _output():
+        trs = form.elements('tr')
+        fls = []
+        fws = []
+        fcs = []
+        for tr in trs:
+            fl, fw, fc = tr.elements('td')
+            fls.append(fl)
+            fws.append(fw)
+            fcs.append(fc)
+            
+        return fls, fws, fcs, form.hidden_fields()
         
+    def _render_variants():
         option_sets = catalog.get_option_sets(option_group_ids)
         if not option_sets:
-            return _get_variant_form('master')
+            fls, fws, fcs, hidden = _get_variant_elements('master')
+            return TABLE([TR(fls[i], fws[i], fcs[i]) for i in range(len(fls))], hidden)
         
         option_set_keys = ['_'.join([str(option.id) for option in option_set])
                                 for option_set in option_sets]
@@ -196,16 +222,22 @@ function apply_for_all_variants(option_set_key, name) {
     });
 }""" % ('["%s"]' % '","'.join(option_set_keys)))
    
-        inner = []
-        for option_set_key, option_set in zip(option_set_keys, option_sets):
-            inner.append(DIV(
-                H4(' '.join([r.name for r in option_set])),
-                _get_variant_form(option_set_key)))
-                
-        return DIV(script, *inner) 
+        table_inner = []
+        for sort_order, (option_set_key, option_set) in enumerate(zip(option_set_keys, option_sets)):
+            fls, fws, fcs, hidden = _get_variant_elements(option_set_key, sort_order)
+            if sort_order == 0:
+                table_inner.append(TR(TD(LABEL(T('Option groups'), hidden), script), *fls))
+            tr_inner = [TD(H4(':'.join([r.name for r in option_set])))]
+            if sort_order == 0:
+                tr_inner.extend([TD(SPAN(*fws[i].components), 
+                                    SPAN(*fcs[i].components)) for i in range(len(fls))])
+            else:
+                tr_inner.extend([TD(SPAN(*fws[i].components)) for i in range(len(fls))])
+            table_inner. append(TR(*tr_inner))
+        return TABLE(*table_inner) 
         
     if ajax:
-        raise HTTP(200, _output())
+        raise HTTP(200, _render_variants())
          
     script = SCRIPT(""" 
 jQuery(document).ready(function() {
@@ -221,7 +253,7 @@ jQuery(document).ready(function() {
                url=URL(r=request, args=request.args), 
                disp_el_id=disp_el_id))
                
-    return SPAN(script, INPUT(**attr), DIV(_output(), _id=disp_el_id), **attributes)
+    return SPAN(script, INPUT(**attr), DIV(_render_variants(), _id=disp_el_id), **attributes)
     
 def get_variant_vars_list(vars):
     reduced_vars_dict = defaultdict(dict)
@@ -234,7 +266,7 @@ def get_variant_vars_list(vars):
         if option_set_key == 'master':
             reduced_vars['options'] = []
             variant_vars_list.append(reduced_vars)
-        elif reduced_vars.get('active'):
+        elif reduced_vars.get('available'):
             reduced_vars['options'] = option_set_key.split('_')
             variant_vars_list.append(reduced_vars)  
     return variant_vars_list
@@ -243,7 +275,7 @@ def process_variants_requires():
     variants_requires = None
     if request.vars.option_groups:
         if all(not v for k, v in request.vars.items() 
-                     if k.startswith('variant__') and k.endswith('__active')):
+                     if k.startswith('variant__') and k.endswith('__available')):
             variants_requires = IS_NOT_EMPTY('Input at least one variant')
     return variants_requires
 
@@ -260,7 +292,9 @@ def index():
                                Field('variants', widget=variants_widget,
                                      label=T('Variants'),
                                      requires=process_variants_requires()),
-                               table_name=str(table_product))
+                               table_name=str(table_product),
+                               formstyle = 'ul',
+                               )
         
         form.validate()  
         if form.accepted:
@@ -269,13 +303,14 @@ def index():
             redirect(URL())
         
         extracolumns = [{'label':T('Sale price'),
-                         'content':lambda row, rc: '%s-%s' % (
+                         'content':lambda row, rc: '%s - %s' % (
                                                     row.variants and min([v.sale_price for v in row.variants]),
-                                                    row.variants and max([v.sale_price for v in row.variants]))},
+                                                    row.variants and max([v.sale_price for v in row.variants]))
+                                                    if row.option_groups else row.variants[0].sale_price},
                         {'label':T('Option groups'),
                          'content':lambda row, rc: ', '.join([og.name for og in row.option_groups]) or '*master*'},
                         {'label':T('Options'),
-                         'content':lambda row, rc: ', '.join(['-'.join([o.name for o in v.options]) 
+                         'content':lambda row, rc: ', '.join([':'.join([o.name for o in v.options]) 
                                                                             for v in row.variants]) or '*master*'},
                         {'label':T('View'),
                          'content':lambda row, rc: A('View', _href=URL('index', args=['view', row.id]))},   
@@ -294,16 +329,12 @@ def index():
     
     elif request.args(0) == 'edit':
         product_id = request.args(1)
-        product = catalog.get_product(product_id)
+        product = catalog.get_product(product_id, load_option_groups=False)
         if not product:
             session.flash = 'the database has been refreshed'
             redirect(URL())
-        # for f in table_product:
-            # f.default = product[f]
             
-        option_group_ids = [r.id for r in product.option_groups]
-        request.vars.option_groups = request.vars.option_groups or map(str, option_group_ids)
-            
+        request.vars.option_groups = request.vars.option_groups or map(str, product.option_groups)
         variants_requires = process_variants_requires()
            
         for variant in product.variants:
@@ -311,7 +342,7 @@ def index():
                 option_set_key = 'master'
             else:
                 option_set_key = '_'.join([str(option.id) for option in variant.options])
-                request.vars['variant__%s__active' % option_set_key] = True
+                request.vars['variant__%s__available' % option_set_key] = True
             for name in variant:
                 request.vars['variant__%s__%s' % (option_set_key, name)] = variant[name]
         
@@ -320,7 +351,7 @@ def index():
                                Field('option_groups', 'list:reference', 
                                      label=T('Option groups'),
                                      widget=option_groups_widget,
-                                     default=option_group_ids or None,
+                                     default=product.option_groups or None,
                                      requires=IS_EMPTY_OR(IS_IN_DB(db, 
                                                 table_option_group.id, '%(name)s', multiple=True))),
                                Field('variants', widget=variants_widget,
