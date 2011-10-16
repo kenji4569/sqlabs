@@ -387,6 +387,7 @@ class TestCatalog(unittest.TestCase):
         table_product.truncate()
         
     def test_basic(self):
+        # TODO
         pass
         
 def run_test(TestCase):
