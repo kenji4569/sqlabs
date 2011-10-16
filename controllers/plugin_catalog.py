@@ -198,7 +198,7 @@ def variants_widget(field, value, **attributes):
         return fls, fws, fcs, form.hidden_fields()
         
     def _render_variants():
-        option_sets = catalog.get_option_sets(trigger)
+        option_sets = catalog.get_option_sets(option_group_ids=trigger)
         if not option_sets:
             fls, fws, fcs, hidden = _get_variant_elements(get_master_option_set_key())
             return TABLE([TR(fls[i], fws[i], fcs[i]) for i in range(len(fls))], hidden)

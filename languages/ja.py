@@ -114,6 +114,7 @@
 'Oct': '10月',
 'Option groups': '規格',
 'Options': '規格分類',
+'Ordered on': 'Ordered on',
 'Origin': 'Origin',
 'Paginate: ': '1ページに:',
 'Password': 'パスワード',

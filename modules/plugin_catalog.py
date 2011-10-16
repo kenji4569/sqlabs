@@ -173,10 +173,9 @@ class Catalog(object):
                               variant_fields=[], variant_attributes={},
                               *fields, **attributes):
         db = self.db
-        table_product = self.settings.table_product
         table_variant = self.settings.table_variant
         
-        products = db(table_product.id>0).select(*fields, **attributes)
+        products = db(query).select(*fields, **attributes)
         
         if not products or not load_variants:
             return products
