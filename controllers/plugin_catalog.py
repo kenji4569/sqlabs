@@ -258,6 +258,25 @@ def define_virtual_product_table(product=None):
                                                 if k.startswith('variant__') and 
                                                    k.endswith('__available')):
             variants_requires = IS_NOT_EMPTY('Input at least one variant')
+        else:
+            if request.vars.option_groups:
+                skus = [request.post_vars[k.replace('__available', '__sku')] 
+                            for k, v in request.post_vars.items() 
+                                if k.startswith('variant__') and  k.endswith('__available')]
+            elif 'variant__master__sku' in request.post_vars:
+                skus = [request.post_vars['variant__master__sku']]
+            else:
+                skus = None
+                
+            if skus:
+                if len(skus) != len(set(skus)):
+                    variants_requires = IS_NOT_EMPTY('SKUs should be unique values')
+                    
+                old_skus = [v.sku for v in product.variants] if product else []
+                new_skus = [sku for sku in skus if sku not in old_skus]
+                if new_skus:
+                    if db(table_variant.sku.belongs(new_skus)).count():
+                        variants_requires = IS_NOT_EMPTY('SKUs already in database')
     elif product:
         request.vars.option_groups = map(str, product.option_groups)
         

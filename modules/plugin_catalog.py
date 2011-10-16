@@ -41,10 +41,9 @@ class Catalog(object):
         settings.table_option = None
         
         messages = self.messages = Messages(current.T)
-        messages.is_empty = 'Cannot be empty'
-        self.messages.label_name = 'Name'
-        self.messages.label_available = 'Available'
-        self.messages.label_sku = 'SKU'
+        messages.label_name = 'Name'
+        messages.label_available = 'Available'
+        messages.label_sku = 'SKU'
         
         self.init_record_pool()
         
@@ -64,8 +63,7 @@ class Catalog(object):
                       widget=SQLFORM.widgets.boolean.widget), # not properly working without it? 
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_product_name, []))
-            table.name.requires = \
-                IS_NOT_EMPTY(error_message=self.messages.is_empty)
+            table.name.requires = IS_NOT_EMPTY()
         settings.table_product = db[settings.table_product_name]
                 
         if not settings.table_variant_name in db.tables:
@@ -73,14 +71,13 @@ class Catalog(object):
                 settings.table_variant_name,
                 Field('product', 'reference %s' % settings.table_product_name,
                       readable=False, writable=False),
-                Field('sku', label=self.messages.label_sku),
+                Field('sku', unique=True, label=self.messages.label_sku),
                 Field('options', 'list:reference %s' % settings.table_option_name,
                       readable=False, writable=False),
                 Field('sort_order', 'integer'),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_variant_name, []))
-            table.sku.requires = \
-                IS_NOT_EMPTY(error_message=self.messages.is_empty)
+            table.sku.requires = IS_NOT_EMPTY()
         settings.table_variant = db[settings.table_variant_name]
                 
         if not settings.table_option_group_name in db.tables:
@@ -89,8 +86,7 @@ class Catalog(object):
                 Field('name', label=self.messages.label_name),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_option_group_name, []))
-            table.name.requires = \
-                IS_NOT_EMPTY(error_message=self.messages.is_empty)
+            table.name.requires = IS_NOT_EMPTY()
         settings.table_option_group = db[settings.table_option_group_name]
         
         if not settings.table_option_name in db.tables:
@@ -101,8 +97,7 @@ class Catalog(object):
                 Field('name', label=self.messages.label_name),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_option_name, []))
-            table.name.requires = \
-                IS_NOT_EMPTY(error_message=self.messages.is_empty)
+            table.name.requires = IS_NOT_EMPTY()
         settings.table_option = db[settings.table_option_name]
                 
     def add_product(self, product_vars, variant_vars_list):

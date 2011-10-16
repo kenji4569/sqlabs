@@ -1,6 +1,6 @@
 # coding: utf8
 {
-"\n%s arranges its radio buttons vertically, which occupies a relatively large area. \nHere we implemented a horizontal radio widget, and further made it clickable for it's labels. \n": '%sはラジオボタンを垂直に配置するため、少し広めの領域を占めてしまいます。そこで水平のラジオウィジェットを実装し、さらにラベルをクリック可能にしました。',
+"\n%s arranges its radio buttons vertically, which occupies a relatively large area. \nHere we implemented a horizontal radio widget, and further made it clickable for it's labels. \n": "%s arranges its radio buttons vertically, which occupies a relatively large area. \r\nHere we implemented a horizontal radio widget, and further made it clickable for it's labels. \r\n",
 '\n%s is made by a single select tag,\nwhich would be difficult to handle when it had many options.\nWe built more user-friendly multiple select widget with two select tags.\nYou can choice between horizontal or vertical layout.\n': '%s は単一のセレクトタグからなり、多数のオプションを持つ場合に扱うのが困難になります。そこで、より使い勝手のよい、２つのセレクトタグからなる複数選択ウィジェットを作成しました。水平まはた垂直のレイアウトを選ぶことができます。\r\n',
 '\nA WYSIWYG editor widget using %s. You can specify your language by a contructor argument, and include your image chooser.\n': '%sを使用したWYSIWYGエディターウィジェットです。コンストラクタの引数で使用言語を指定することができ、さらに独自の画像選択機能を組み込むことができます。\r\n',
 '\nA custom %s for denser layout using multi-line columns. \nYou can specify structured fields corresponding to the layout.\nOther functionarities are same as SQLFORM, including facotry and readonly forms.\n': 'より密なレイアウトのための複合カラムを用いたカスタム%sです。レイアウトに対応する構造化したフィールドを指定することができます。他の機能はSQLFORMと同じで、factoryやreadonlyフォームも利用可能です。',
@@ -129,6 +129,8 @@
 'Reset Password key': 'パスワードキーをリセット',
 'Role': 'ロール',
 'SKU': '単品コード',
+'SKUs already in database': '単品コードは既にデータベースに存在しています',
+'SKUs should be unique values': '単品コードは一意な値にしてください',
 'Sale price': '販売価格',
 'Sat': '土',
 'Search': '検索',
@@ -182,7 +184,6 @@
 'register': '登録',
 'this discussion': 'この議論',
 'under construction': '準備中',
-'value already in database or empty': '値はデータベースに既に存在するか、空です',
-'value not allowed': '許可された値ではありませｎ',
-'空にすることはできません': '空にすることはできません',
+'value already in database or empty': '値は空、もしくは、データベースに既に存在しています',
+'value not allowed': '許可された値ではありません',
 }
