@@ -232,4 +232,13 @@ class Catalog(object):
                 yield tuple(prod)
                 
         return list(itertools_product(*options_list))
+        
+    def get_master_option_set_key(self):
+        return 'master'
+        
+    def get_option_set_key(self, options):
+        return '_'.join([str(option.id) for option in options])
+        
+    def get_option_ids_by_option_set_key(self, option_set_key):
+        return option_set_key.split('_')
     

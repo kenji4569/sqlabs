@@ -142,11 +142,11 @@ def variants_widget(field, value, **attributes):
         
     def _get_variant_elements(option_set_key, sort_order=0):
         def _get_field_comment(name):
-            if option_set_key != 'master':
+            if option_set_key != catalog.get_master_option_set_key():
                 return INPUT(_type='button', _value=T('Apply all'),
                              _onclick='apply_for_all_variants("%s", "%s");' % (option_set_key, name))
         
-        deleted = (option_set_key != 'master') and not request.vars.get('variant__%s__available' % option_set_key)
+        deleted = (option_set_key != catalog.get_master_option_set_key()) and not request.vars.get('variant__%s__available' % option_set_key)
         fields = []
         hidden = {}
         for f in table_variant:
@@ -171,7 +171,7 @@ def variants_widget(field, value, **attributes):
                         requires=IS_DELETE_OR(deleted, f.requires), widget=f.widget,
                         default=default, comment=_get_field_comment(f.name)))
         
-        if option_set_key != 'master':
+        if option_set_key != catalog.get_master_option_set_key():
             fields.insert(0, Field('variant__%s__available' % option_set_key, 
                                    'boolean', default=True if ajax else not deleted, 
                                     label=T('Available'), comment=_get_field_comment('available')))
@@ -191,11 +191,10 @@ def variants_widget(field, value, **attributes):
     def _render_variants():
         option_sets = catalog.get_option_sets(trigger)
         if not option_sets:
-            fls, fws, fcs, hidden = _get_variant_elements('master')
+            fls, fws, fcs, hidden = _get_variant_elements(catalog.get_master_option_set_key())
             return TABLE([TR(fls[i], fws[i], fcs[i]) for i in range(len(fls))], hidden)
         
-        option_set_keys = ['_'.join([str(option.id) for option in option_set])
-                                for option_set in option_sets]
+        option_set_keys = [catalog.get_option_set_key(options) for options in option_sets]
         
         script = SCRIPT(""" 
 jQuery.fn.mod_val = function(value){
@@ -282,9 +281,9 @@ def define_virtual_product_table(product=None):
         
         for variant in product.variants:
             if not request.vars.option_groups:
-                option_set_key = 'master'
+                option_set_key = catalog.get_master_option_set_key()
             else:
-                option_set_key = '_'.join([str(option.id) for option in variant.options])
+                option_set_key = catalog.get_option_set_key(variant.options)
                 request.vars['variant__%s__available' % option_set_key] = True
             for name in variant:
                 request.vars['variant__%s__%s' % (option_set_key, name)] = variant[name]
@@ -310,11 +309,11 @@ def filter_virtual_product_fields(vars):
             reduced_vars_dict[option_set_key][var_name] = v
     variant_vars_list = []        
     for option_set_key, reduced_vars in reduced_vars_dict.items():
-        if option_set_key == 'master':
+        if option_set_key == catalog.get_master_option_set_key():
             reduced_vars['options'] = []
             variant_vars_list.append(table_variant._filter_fields(reduced_vars))
         elif reduced_vars.get('available'):
-            reduced_vars['options'] = option_set_key.split('_')
+            reduced_vars['options'] = catalog.get_option_ids_by_option_set_key(option_set_key)
             variant_vars_list.append(table_variant._filter_fields(reduced_vars))
     return product_vars, variant_vars_list
     
