@@ -18,6 +18,7 @@ checkout.settings.extra_fields = {
     'plugin_checkout_purchase_order': 
         [Field('billing_address', 'text'),
          Field('shipping_address', 'text'),
+         Field('ordered_on', 'datetime', label=T('Ordered on')),
          Field('created_on', 'datetime', default=request.now)],
 }
 

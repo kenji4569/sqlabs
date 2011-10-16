@@ -8,8 +8,10 @@ def multiselect_widget(field, value, **attributes):
     if not isinstance(requires, (list, tuple)):
         requires = [requires]
     if requires:
-        if hasattr(requires[0], 'options'):
-            options = requires[0].options()
+        for require in requires:
+            if hasattr(require, 'options'):
+                options = require.options()
+                break
         else:
             raise SyntaxError, 'widget cannot determine options of %s'  % field
     

@@ -22,7 +22,6 @@ class Checkout(object):
         settings.price_type = 'integer'
         
         messages = self.messages = Messages(current.T)
-        messages.label_ordered_on = 'Ordered on'
         
     def define_tables(self, table_user_name, migrate=True, fake_migrate=False):
         db, settings = self.db, self.settings
@@ -30,9 +29,8 @@ class Checkout(object):
         if not settings.table_purchase_order_name in db.tables:
             table = db.define_table(
                 settings.table_purchase_order_name,
-                Field('user', 'reference %s' % table_user_name),
+                Field('user', 'integer'),
                 Field('status', length=16), 
-                Field('ordered_on', 'datetime', label=self.messages.label_ordered_on),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_purchase_order_name, []))
         settings.table_purchase_order = db[settings.table_purchase_order_name]
@@ -44,7 +42,7 @@ class Checkout(object):
                 Field('sku'),
                 Field('quantity', 'integer'),
                 Field('price', settings.price_type),
-                Field('detail', 'text'), # data for tracing
+                Field('detail', 'text'),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_line_item_name, []))
         settings.table_line_item = db[settings.table_line_item_name]

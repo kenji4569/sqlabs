@@ -3,11 +3,10 @@ from plugin_multiselect_widget import hmultiselect_widget, vmultiselect_widget
 db = DAL('sqlite:memory:')
 db.define_table('product', 
     Field('colors', 'list:integer',
-          requires = IS_EMPTY_OR(IS_IN_SET([(1, 'red'), (2, 'blue'), (3, 'green')],
-                                                  multiple=True))),
+          requires = [IS_NOT_EMPTY(), 
+                      IS_IN_SET([(1, 'red'), (2, 'blue'), (3, 'green')], multiple=True)]),
     Field('shapes',
-          requires = IS_EMPTY_OR(IS_IN_SET(['circle', 'square', 'triangle'],
-                                                  multiple=True))),
+          requires = IS_IN_SET(['circle', 'square', 'triangle'], multiple=True)),
 )
 
 ################################ The core ######################################
