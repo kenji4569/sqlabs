@@ -105,23 +105,20 @@ class Catalog(object):
                 IS_NOT_EMPTY(error_message=self.messages.is_empty)
         settings.table_option = db[settings.table_option_name]
                 
-    def add_product(self, vars, variant_vars_list):
+    def add_product(self, product_vars, variant_vars_list):
         if not variant_vars_list:
             raise ValueError
-        table_product = self.settings.table_product
-        table_variant = self.settings.table_variant
-        product_id = table_product.insert(**table_product._filter_fields(vars))
+        product_id = self.settings.table_product.insert(**product_vars)
         for variant_vars in variant_vars_list:
-            table_variant.insert(product=product_id, **table_variant._filter_fields(variant_vars))  
+            self.settings.table_variant.insert(product=product_id, **variant_vars)  
         return product_id
         
-    def edit_product(self, product_id, vars, variant_vars_list):
-        table_product = self.settings.table_product
+    def edit_product(self, product_id, product_vars, variant_vars_list):
+        self.db(self.settings.table_product.id==product_id).update(**product_vars)
         table_variant = self.settings.table_variant
-        self.db(table_product.id==product_id).update(**table_product._filter_fields(vars))
         self.db(table_variant.product==product_id).delete()
         for variant_vars in variant_vars_list:
-            table_variant.insert(product=product_id, **table_variant._filter_fields(variant_vars))  
+            table_variant.insert(product=product_id, **variant_vars)  
         
     def remove_product(self, product_id):
         self.db(self.settings.table_variant.product==product_id).delete()
