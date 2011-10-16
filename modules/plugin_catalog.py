@@ -40,10 +40,15 @@ class Catalog(object):
         settings.table_option_name = 'catalog_option'
         settings.table_option = None
         
+        settings.price_type = 'integer'
+        
         messages = self.messages = Messages(current.T)
         messages.label_name = 'Name'
         messages.label_available = 'Available'
         messages.label_sku = 'SKU'
+        
+        messages.label_price = 'Sale price'
+        messages.label_quantity = 'Inventory quantity'
         
         self.init_record_pool()
         
@@ -75,6 +80,8 @@ class Catalog(object):
                 Field('options', 'list:reference %s' % settings.table_option_name,
                       readable=False, writable=False),
                 Field('sort_order', 'integer'),
+                Field('price', settings.price_type, label=self.messages.label_price),
+                Field('quantity', 'integer', label=self.messages.label_quantity),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_variant_name, []))
             table.sku.requires = IS_NOT_EMPTY()
@@ -232,13 +239,4 @@ class Catalog(object):
                 yield tuple(prod)
                 
         return list(itertools_product(*options_list))
-        
-    def get_master_option_set_key(self):
-        return 'master'
-        
-    def get_option_set_key(self, options):
-        return '_'.join([str(option.id) for option in options])
-        
-    def get_option_ids_by_option_set_key(self, option_set_key):
-        return option_set_key.split('_')
-    
+       

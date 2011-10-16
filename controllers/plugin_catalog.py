@@ -37,19 +37,12 @@ catalog.settings.extra_fields = {
         # Field('reward_point_rate'),
         # Field('keywords'),
     ],
-    'plugin_catalog_variant': [
-        Field('sale_price', 'integer', label=T('Sale price'), default=0,
-              requires=IS_INT_IN_RANGE(0, 1000000),
-              widget=tight_input_widget),
-        Field('inventory_quantity', 'integer', label=T('Inventory quantity'), default=0,
-              requires=IS_INT_IN_RANGE(0, 1000000),
-              widget=tight_input_widget),
-        # --- Other possible fields ---
+    # 'plugin_catalog_variant': [
         # Field('retail_price', 'integer'),
         # Field('inventory_level', 'integer'),
         # Field('weight', 'integer'),
         # Field('taxable', 'boolean'),
-    ],
+    # ],
     # 'plugin_catalog_option': [
         # Field('price_charge'),],
 }
@@ -61,6 +54,12 @@ table_variant = catalog.settings.table_variant
 table_option_group = catalog.settings.table_option_group
 table_option = catalog.settings.table_option
 
+table_variant.price.requires = IS_INT_IN_RANGE(0, 1000000)
+table_variant.price.widget = tight_input_widget
+
+table_variant.quantity.requires = IS_EMPTY_OR(IS_INT_IN_RANGE(0, 1000000))
+table_variant.quantity.widget = tight_input_widget
+                    
 ### populate records ###########################################################
 import datetime
 if db(table_product.created_on<request.now-datetime.timedelta(minutes=60)).count():
@@ -81,6 +80,16 @@ if not db(table_option_group.id>0).count():
 ### demo functions #############################################################
 
 # --- common functions ---------------------------------------------------------
+
+ 
+def get_master_option_set_key():
+    return 'master'
+    
+def get_option_set_key(options):
+    return '_'.join([str(option.id) for option in options])
+    
+def get_option_ids_by_option_set_key(option_set_key):
+    return option_set_key.split('_')
 
 MAX_OPTIONS = 2
 def option_groups_widget(field, value, **attributes):
@@ -142,11 +151,11 @@ def variants_widget(field, value, **attributes):
         
     def _get_variant_elements(option_set_key, sort_order=0):
         def _get_field_comment(name):
-            if option_set_key != catalog.get_master_option_set_key():
+            if option_set_key != get_master_option_set_key():
                 return INPUT(_type='button', _value=T('Apply all'),
                              _onclick='apply_for_all_variants("%s", "%s");' % (option_set_key, name))
         
-        deleted = (option_set_key != catalog.get_master_option_set_key()) and not request.vars.get('variant__%s__available' % option_set_key)
+        deleted = (option_set_key != get_master_option_set_key()) and not request.vars.get('variant__%s__available' % option_set_key)
         fields = []
         hidden = {}
         for f in table_variant:
@@ -171,7 +180,7 @@ def variants_widget(field, value, **attributes):
                         requires=IS_DELETE_OR(deleted, f.requires), widget=f.widget,
                         default=default, comment=_get_field_comment(f.name)))
         
-        if option_set_key != catalog.get_master_option_set_key():
+        if option_set_key != get_master_option_set_key():
             fields.insert(0, Field('variant__%s__available' % option_set_key, 
                                    'boolean', default=True if ajax else not deleted, 
                                     label=T('Available'), comment=_get_field_comment('available')))
@@ -191,10 +200,10 @@ def variants_widget(field, value, **attributes):
     def _render_variants():
         option_sets = catalog.get_option_sets(trigger)
         if not option_sets:
-            fls, fws, fcs, hidden = _get_variant_elements(catalog.get_master_option_set_key())
+            fls, fws, fcs, hidden = _get_variant_elements(get_master_option_set_key())
             return TABLE([TR(fls[i], fws[i], fcs[i]) for i in range(len(fls))], hidden)
         
-        option_set_keys = [catalog.get_option_set_key(options) for options in option_sets]
+        option_set_keys = [get_option_set_key(options) for options in option_sets]
         
         script = SCRIPT(""" 
 jQuery.fn.mod_val = function(value){
@@ -281,9 +290,9 @@ def define_virtual_product_table(product=None):
         
         for variant in product.variants:
             if not request.vars.option_groups:
-                option_set_key = catalog.get_master_option_set_key()
+                option_set_key = get_master_option_set_key()
             else:
-                option_set_key = catalog.get_option_set_key(variant.options)
+                option_set_key = get_option_set_key(variant.options)
                 request.vars['variant__%s__available' % option_set_key] = True
             for name in variant:
                 request.vars['variant__%s__%s' % (option_set_key, name)] = variant[name]
@@ -309,11 +318,11 @@ def filter_virtual_product_fields(vars):
             reduced_vars_dict[option_set_key][var_name] = v
     variant_vars_list = []        
     for option_set_key, reduced_vars in reduced_vars_dict.items():
-        if option_set_key == catalog.get_master_option_set_key():
+        if option_set_key == get_master_option_set_key():
             reduced_vars['options'] = []
             variant_vars_list.append(table_variant._filter_fields(reduced_vars))
         elif reduced_vars.get('available'):
-            reduced_vars['options'] = catalog.get_option_ids_by_option_set_key(option_set_key)
+            reduced_vars['options'] = get_option_ids_by_option_set_key(option_set_key)
             variant_vars_list.append(table_variant._filter_fields(reduced_vars))
     return product_vars, variant_vars_list
     
@@ -330,9 +339,9 @@ def index():
         
         extracolumns = [{'label':T('Sale price'),
                          'content':lambda row, rc: '%s - %s' % (
-                                                    row.variants and min([v.sale_price for v in row.variants]),
-                                                    row.variants and max([v.sale_price for v in row.variants]))
-                                                    if row.option_groups else row.variants and row.variants[0].sale_price},
+                                                    row.variants and min([v.price for v in row.variants]),
+                                                    row.variants and max([v.price for v in row.variants]))
+                                                    if row.option_groups else row.variants and row.variants[0].price},
                         {'label':T('Option groups'),
                          'content':lambda row, rc: ', '.join([og.name for og in row.option_groups]) or '*master*'},
                         {'label':T('Options'),
@@ -406,7 +415,7 @@ class TestCatalog(unittest.TestCase):
         
     def test_basic(self):
         # TODO
-        pass
+        raise NotImplementedError
         
 def run_test(TestCase):
     import cStringIO

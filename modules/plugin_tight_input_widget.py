@@ -18,10 +18,10 @@ def tight_input_widget(field, value, **attributes):
     _length = None
     
     if field.requires:
-        if hasattr(field.requires, 'other') and field.requires.other:
-            requires =  field.requires.other
-        else:
-            requires = field.requires
+        requires = field.requires
+        while hasattr(requires, 'other') and requires.other:
+            requires =  requires.other
+            
         if type(requires) in (list, tuple):
             for r in requires:
                 _length = _get_length(r)
