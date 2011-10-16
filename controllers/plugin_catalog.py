@@ -220,8 +220,8 @@ function apply_for_all_variants(option_set_key, name) {
         for sort_order, (option_set_key, option_set) in enumerate(zip(option_set_keys, option_sets)):
             fls, fws, fcs, hidden = _get_variant_elements(option_set_key, sort_order)
             if sort_order == 0:
-                table_inner.append(TR(TD(LABEL(T('Option groups'), hidden), script), *fls))
-            tr_inner = [TD(H4(':'.join([r.name for r in option_set])))]
+                table_inner.append(TR(TD(LABEL(T('Option groups')), script), *fls))
+            tr_inner = [TD(H4(':'.join([r.name for r in option_set])), hidden)]
             if sort_order == 0:
                 tr_inner.extend([TD(SPAN(*fws[i].components), 
                                     SPAN(*fcs[i].components)) for i in range(len(fls))])

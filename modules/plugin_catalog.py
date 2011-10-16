@@ -154,7 +154,8 @@ class Catalog(object):
             
         if load_variants:
             product.variants = self.variants_from_product(product_id
-                                    ).select(*variant_fields, **variant_attributes)
+                    ).select(orderby=settings.table_variant.sort_order, 
+                             *variant_fields, **variant_attributes)
             if load_options:
                 for variant in product.variants:
                     variant.options = self.get_options(variant.options)
@@ -167,6 +168,7 @@ class Catalog(object):
         
     def get_products_by_query(self, query, load_variants=True, load_options=True, 
                               load_option_groups=True, 
+                              variant_fields=[], variant_attributes={},
                               *fields, **attributes):
         db = self.db
         table_product = self.settings.table_product
@@ -179,7 +181,8 @@ class Catalog(object):
             
         from itertools import groupby
         variants = db(table_variant.product.belongs([r.id for r in products])
-                      ).select(orderby=table_variant.product|table_variant.sort_order)
+                      ).select(orderby=table_variant.product|table_variant.sort_order,
+                               *variant_fields, **variant_attributes)
         _variants = {}
         for k, g in groupby(variants, key=lambda r: r.product):
             _variants[k] = list(g)
