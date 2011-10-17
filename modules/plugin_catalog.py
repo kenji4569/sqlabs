@@ -145,8 +145,8 @@ class Catalog(object):
             pool.update(**dict([(r.id, r) for r in records]))
         return [pool[id] for id in ids]
     
-    def get_product(self, product_id, load_variants=True, load_options=True, 
-                    load_option_groups=True, 
+    def get_product(self, product_id, load_variants=True, 
+                    load_options=True, load_option_groups=True, 
                     variant_fields=[], variant_attributes={},
                     *fields, **attributes):
         settings = self.settings
@@ -168,8 +168,8 @@ class Catalog(object):
             
         return product
         
-    def get_products_by_query(self, query, load_variants=True, load_options=True, 
-                              load_option_groups=True, 
+    def get_products_by_query(self, query, load_variants=True, 
+                              load_options=True, load_option_groups=True, 
                               variant_fields=[], variant_attributes={},
                               *fields, **attributes):
         db = self.db
@@ -216,6 +216,27 @@ class Catalog(object):
                 product.option_groups = bulk_loader.retrieve()
                     
         return products
+        
+    def get_variant(self, variant_id, load_product=True, 
+                    load_options=True, load_option_groups=True, 
+                    product_fields=[], product_attributes={},
+                    *fields, **attributes):
+        settings = self.settings
+        variant = self.db(settings.table_variant.id==variant_id).select(*fields, **attributes).first()
+        if not variant:
+            return None
+           
+        if load_product:
+            variant.product = self.get_product(variant.product, load_variants=False,
+                                               *product_fields, **product_attributes)
+            if load_options:
+                variant.options = self.get_options(variant.options)
+                variant.product.option_groups = [option.option_group for option 
+                                                    in variant.options or []]
+                if load_option_groups:       
+                    variant.product.option_groups = self.get_option_groups(variant.product.option_groups)
+            
+        return variant
         
     def variants_from_product(self, product_id):
         return self.db(self.settings.table_variant.product==product_id)

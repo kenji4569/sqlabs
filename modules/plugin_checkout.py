@@ -23,7 +23,7 @@ class Checkout(object):
         
         messages = self.messages = Messages(current.T)
         
-    def define_tables(self, table_user_name, migrate=True, fake_migrate=False):
+    def define_tables(self, migrate=True, fake_migrate=False):
         db, settings = self.db, self.settings
         
         if not settings.table_purchase_order_name in db.tables:
@@ -47,13 +47,21 @@ class Checkout(object):
                 *settings.extra_fields.get(settings.table_line_item_name, []))
         settings.table_line_item = db[settings.table_line_item_name]
         
-    def get_cart(self, user_id):
-        #TODO
-        pass
+    def get_cart(self):
+        session = current.session
+        line_items = session.checkout_line_items or {}
+        total_price = session.checkout_total_price or 0
+        return line_items, total_price
               
-    def add_cart(self, user_id, sku, quantity, price, detail):
-        # TODO
-        pass
+    def add_to_cart(self, item_id, price, quantity):
+        session = current.session
+        line_items, total_price = self.get_cart()
+        
+        total_price += quantity*price
+        line_items[item_id] = line_items.get(item_id, 0) + quantity
+        
+        session.checkout_line_items = line_items
+        session.checkout_total_price = total_price
         
         
             

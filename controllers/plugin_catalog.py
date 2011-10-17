@@ -343,7 +343,7 @@ def index():
                                                     row.variants and max([v.price for v in row.variants]))
                                                     if row.option_groups else row.variants and row.variants[0].price},
                         {'label':T('Option groups'),
-                         'content':lambda row, rc: ', '.join([og.name for og in row.option_groups]) or '*master*'},
+                         'content':lambda row, rc: ':'.join([og.name for og in row.option_groups]) or '*master*'},
                         {'label':T('Options'),
                          'content':lambda row, rc: ', '.join([':'.join([o.name for o in v.options]) 
                                                                             for v in row.variants]) or '*master*'},

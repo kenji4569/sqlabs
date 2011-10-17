@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from plugin_checkout import Checkout
 from plugin_catalog import Catalog
-from gluon.tools import Auth
 import unittest
 from gluon.contrib.populate import populate
 
@@ -9,7 +8,6 @@ if request.function == 'test':
     db = DAL('sqlite:memory:')
     
 ### setup core objects #########################################################
-auth = Auth(db)
 
 checkout = Checkout(db)
 checkout.settings.table_purchase_order_name = 'plugin_checkout_purchase_order'
@@ -29,10 +27,8 @@ catalog.settings.table_option_group_name = 'plugin_checkout_option_group'
 catalog.settings.table_option_name = 'plugin_checkout_option'
 
 ### define tables ##############################################################
-auth.define_tables()
-table_user = auth.settings.table_user
 
-checkout.define_tables(str(table_user))
+checkout.define_tables()
 table_purchase_order = checkout.settings.table_purchase_order
 table_line_item = checkout.settings.table_line_item
 
@@ -43,18 +39,12 @@ table_option_group = catalog.settings.table_option_group
 table_option = catalog.settings.table_option
 
 ### populate records ###########################################################
-num_users = 3
-user_ids = {}
-for user_no in range(1, num_users+1):   
-    email = 'user%s@test.com' % user_no
-    user = db(auth.settings.table_user.email==email).select().first()
-    user_ids[user_no] = user and user.id or auth.settings.table_user.insert(email=email)
-    
 import datetime
 if db(table_purchase_order.created_on<request.now-datetime.timedelta(minutes=60)).count():
     for table in (table_purchase_order, table_line_item, 
                   table_product, table_variant, table_option_group, table_option):
         table.truncate()
+    session.forget(resposne)
     session.flash = 'the database has been refreshed'
     redirect(URL('index'))
     
@@ -76,26 +66,72 @@ if not db(table_product.id>0).count():
                   
 ### demo functions #############################################################
 def index():
-    user_no = int(request.args(0) or 1)
-    user_id = user_ids[user_no]
-    
-    user_chooser = []
-    for i in range(1, num_users+1):
-        if i == user_no:
-            user_chooser.append(SPAN('user%s' % user_no))
-        else:
-            user_chooser.append(A('user%s' % i, _href=URL('index', args=i)))
-    user_chooser = DIV(XML(' '.join([r.xml() for r in user_chooser])), _style='font-weight:bold')
-    
     if not request.args(0):
-        response.flash = 'test'
-        
         products = catalog.get_products_by_query(table_product.id>0)
+        products_inner = []
+        for product in products:
+            fields = [Field('quantity', label=T('Quantity'), default=1,
+                            requires=IS_INT_IN_RANGE(1, 100))]
+            hidden = {}
+            if product.option_groups:
+                fields.insert(0, Field('variant', label=':'.join([og.name for og in product.option_groups]),
+                      requires=IS_IN_SET([(v.id, ':'.join([o.name for o in v.options]) + (' ($%s)' % v.price))
+                                            for v in product.variants],
+                                         zero='--- %s ---' % T('Please Select'))))
+                 
+                price = [v.price for v in product.variants]
+                price = '$%s - $%s' % (min(price), max(price))
+            else:
+                if not product.variants:
+                    continue # It won't happen, but is for safe.
+                hidden['variant'] = product.variants[0].id
+                price = '$%s' % product.variants[0].price
+               
+            form = SQLFORM.factory(_action=URL(args=['add_to_cart']), submit_button=T('Add to Cart'),
+                                   hidden=hidden, *fields)
+            
+            products_inner.append(DIV(H4(product.name), 
+                                     H6(T('Sale price'), ' : ', price), 
+                                     form))
+        products = DIV(*products_inner) 
         
-        return dict(current_user=user_chooser,
+        line_items, total_price = checkout.get_cart()
+        cart = dict(total_items=sum(line_items.values() or [0]),
+                    total_price='$%s' % total_price,
+                    view=A(T('View'), _href=URL(args='cart')))
+        
+        return dict(cart=cart,
                     products=products,
                     unit_tests=[A('basic test', _href=URL('test'))])
+                    
+    elif request.args(0) == 'add_to_cart':
+        variant_id = request.post_vars.variant
+        variant = catalog.get_variant(variant_id, load_product=False)
+        checkout.add_to_cart(variant_id, variant.price, int(request.post_vars.quantity))
         
+        session.flash = 'Added to Cart'
+        redirect(URL(args='cart'))
+        
+    elif request.args(0) == 'cart':
+        line_items, _total_price = checkout.get_cart()
+        
+        items_inner = []
+        sub_total_price = 0
+        for variant_id, quantity in line_items.items():
+            variant = catalog.get_variant(variant_id)
+            sub_total_price += variant.price * quantity
+            if variant.product.option_groups:
+                option_set = ' :' + ', '.join([og.name + ':' + o.name for og, o 
+                    in zip(variant.product.option_groups, variant.options)])
+            else:
+                option_set = ''
+            items_inner.append(DIV(H4(variant.product.name + option_set), 
+                                  H6(T('Unit Price'), ' : $%s' % variant.price),
+                                  H6(T('Quantity'), ' : %s' % quantity)))
+        line_items = DIV(*items_inner) 
+        return dict(back=A('back', _href=URL('index')),
+                    line_items=line_items,
+                    total_price='$%s' % sub_total_price)
   
 ### unit tests #################################################################
 class TestCheckout(unittest.TestCase):
