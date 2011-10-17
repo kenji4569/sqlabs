@@ -70,11 +70,12 @@ def index():
         products = catalog.get_products_by_query(table_product.id>0)
         products_inner = []
         for product in products:
-            fields = [Field('quantity', label=T('Quantity'), default=1,
+            fields = [Field('quantity', 'integer', label=T('Quantity'), default=1,
                             requires=IS_INT_IN_RANGE(1, 100))]
             hidden = {}
             if product.option_groups:
-                fields.insert(0, Field('variant', label=':'.join([og.name for og in product.option_groups]),
+                fields.insert(0, 
+                      Field('variant', label=':'.join([og.name for og in product.option_groups]),
                       requires=IS_IN_SET([(v.id, ':'.join([o.name for o in v.options]) + (' ($%s)' % v.price))
                                             for v in product.variants],
                                          zero='--- %s ---' % T('Please Select'))))
@@ -87,9 +88,16 @@ def index():
                 hidden['variant'] = product.variants[0].id
                 price = '$%s' % product.variants[0].price
                
-            form = SQLFORM.factory(_action=URL(args=['add_to_cart']), submit_button=T('Add to Cart'),
+            form = SQLFORM.factory(submit_button=T('Add to Cart'),
+                                   formname='product_%s' % product.id,
                                    hidden=hidden, *fields)
-            
+            if form.accepts(request.vars, formname='product_%s' % product.id):
+                variant_id = int(request.post_vars.variant)
+                variant = catalog.get_variant(variant_id, load_product=False)
+                checkout.add_to_cart(variant_id, variant.price, form.vars.quantity)
+                session.flash = T('Added to Cart')
+                redirect(URL(args='cart'))
+                
             products_inner.append(DIV(H4(product.name), 
                                      H6(T('Sale price'), ' : ', price), 
                                      form))
@@ -102,23 +110,36 @@ def index():
         
         return dict(cart=cart,
                     products=products,
+                    xxx=LOAD('plugin_checkout','hoge',ajax=True),
                     unit_tests=[A('basic test', _href=URL('test'))])
-                    
-    elif request.args(0) == 'add_to_cart':
-        variant_id = request.post_vars.variant
-        variant = catalog.get_variant(variant_id, load_product=False)
-        checkout.add_to_cart(variant_id, variant.price, int(request.post_vars.quantity))
-        
-        session.flash = 'Added to Cart'
-        redirect(URL(args='cart'))
-        
+               
     elif request.args(0) == 'cart':
         line_items, _total_price = checkout.get_cart()
-        
-        items_inner = []
+        variants = dict((variant_id, catalog.get_variant(variant_id)) 
+                            for variant_id in line_items.keys())
+        fields = []
+        for variant_id, quantity in line_items.items():
+            fields.append(Field('quantity_%s' % variant_id, 'ineger',
+                    default=quantity, requires=IS_INT_IN_RANGE(1, 100)))
+        form = SQLFORM.factory(submit_button=T('Update Cart'),
+                               *fields)
+        if form.accepts(request.vars, session):
+            new_line_items = {}
+            new_total_price = 0
+            for field_name, quantity in form.vars.items():
+                if field_name.startswith('quantity_'):
+                    variant_id = int(field_name.split('_')[-1])
+                    variant = variants[variant_id]
+                    new_line_items[variant_id] = quantity
+                    new_total_price += variant.price * quantity
+            checkout.update_cart(new_line_items, new_total_price)
+            session.flash = T('Updated')
+            redirect(URL(args=request.args))
+        print line_items
+        items_inner = [form.custom.begin]
         sub_total_price = 0
         for variant_id, quantity in line_items.items():
-            variant = catalog.get_variant(variant_id)
+            variant = variants[variant_id]
             sub_total_price += variant.price * quantity
             if variant.product.option_groups:
                 option_set = ' :' + ', '.join([og.name + ':' + o.name for og, o 
@@ -126,13 +147,16 @@ def index():
             else:
                 option_set = ''
             items_inner.append(DIV(H4(variant.product.name + option_set), 
-                                  H6(T('Unit Price'), ' : $%s' % variant.price),
-                                  H6(T('Quantity'), ' : %s' % quantity)))
+                  DIV(T('Unit Price'), ' : $%s' % variant.price),
+                  DIV(T('Quantity'), form.custom.widget['quantity_%s' % variant_id])))
+        items_inner.append(form.custom.submit)
+        items_inner.append(form.custom.end)
+        
         line_items = DIV(*items_inner) 
         return dict(back=A('back', _href=URL('index')),
                     line_items=line_items,
                     total_price='$%s' % sub_total_price)
-  
+          
 ### unit tests #################################################################
 class TestCheckout(unittest.TestCase):
 

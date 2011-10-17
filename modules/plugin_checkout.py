@@ -60,8 +60,9 @@ class Checkout(object):
         total_price += quantity*price
         line_items[item_id] = line_items.get(item_id, 0) + quantity
         
+        self.update_cart(line_items, total_price)
+        
+    def update_cart(self, line_items, total_price):
+        session = current.session
         session.checkout_line_items = line_items
-        session.checkout_total_price = total_price
-        
-        
-            
+        session.checkout_total_price = total_price    
