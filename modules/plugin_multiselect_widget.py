@@ -76,13 +76,12 @@ jQuery(document).ready(function() {
                        **attributes)
         else:
             return DIV(script_el, select_el, BR(),
-                       CENTER(
-                            INPUT(_type='button', _value='↓  %s  ↓' % current.T('delete'),
-                                  _onclick=('plugin_multiselect_widget_move("%s", "%s");' %
-                                            (select_el_id, unselected_el_id))), ' ',
-                            INPUT(_type='button', _value='↑  %s  ↑' % current.T('register'), 
+                       CENTER(INPUT(_type='button', _value='↑  %s  ↑' % current.T('register'), 
                                  _onclick=('plugin_multiselect_widget_move("%s", "%s");' % 
-                                           (unselected_el_id, select_el_id))), 
+                                           (unselected_el_id, select_el_id))), ' ',
+                              INPUT(_type='button', _value='↓  %s  ↓' % current.T('delete'),
+                                  _onclick=('plugin_multiselect_widget_move("%s", "%s");' %
+                                            (select_el_id, unselected_el_id))), 
                         _style='padding:5px 0px;width:%spx;' % width),
                        unselected_el,
                        _id='%s_%s' % (field._tablename, field.name),
