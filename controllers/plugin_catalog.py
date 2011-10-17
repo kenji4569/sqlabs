@@ -81,16 +81,6 @@ if not db(table_option_group.id>0).count():
 
 # --- common functions ---------------------------------------------------------
 
- 
-def get_master_option_set_key():
-    return 'master'
-    
-def get_option_set_key(options):
-    return '_'.join([str(option.id) for option in options])
-    
-def get_option_ids_by_option_set_key(option_set_key):
-    return option_set_key.split('_')
-
 MAX_OPTIONS = 2
 def option_groups_widget(field, value, **attributes):
     inner = hmultiselect_widget(field, value, **attributes)
@@ -119,6 +109,15 @@ jQuery(document).ready(function() {
                max_options=MAX_OPTIONS))
     return DIV(inner, script)
     
+def get_master_option_set_key():
+    return 'master'
+    
+def get_option_set_key(options):
+    return '_'.join([str(option.id) for option in options])
+    
+def get_option_ids_by_option_set_key(option_set_key):
+    return option_set_key.split('_')
+
 class IS_DELETE_OR(Validator):
     def __init__(self, deleted, other):
         self.deleted, self.other = deleted, other
