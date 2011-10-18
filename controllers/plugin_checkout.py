@@ -4,6 +4,8 @@ from plugin_catalog import Catalog
 import unittest
 from gluon.contrib.populate import populate
 
+print 'A'
+
 if request.function == 'test':
     db = DAL('sqlite:memory:')
     
@@ -65,52 +67,93 @@ if not db(table_product.id>0).count():
                               options=[option_ids['large']])])
                   
 ### demo functions #############################################################
+
+def render_product(product):
+    _id = 'plugin_checkout_product__%s' % (product.id)
+    
+    fields = [Field('quantity', 'integer', label=T('Quantity'), default=1,
+                    requires=IS_INT_IN_RANGE(1, 100))]
+    hidden = {'product': product.id}
+    if product.option_groups:
+        fields.insert(0, 
+              Field('variant', label=':'.join([og.name for og in product.option_groups]),
+              requires=IS_IN_SET([(v.id, ':'.join([o.name for o in v.options]) + (' ($%s)' % v.price))
+                                    for v in product.variants],
+                                 zero='--- %s ---' % T('Please Select'))))
+        price = [v.price for v in product.variants]
+        price = '$%s - $%s' % (min(price), max(price))
+    else:
+        if not product.variants:
+            return DIV() # It won't happen, but is for safe.
+        hidden['variant'] = product.variants[0].id
+        price = '$%s' % product.variants[0].price
+       
+    form = SQLFORM.factory(submit_button=T('Add to Cart'),
+                           formname='product_%s' % product.id,
+                           hidden=hidden, *fields)
+    form.elements('input[type=submit]')[0].attributes['_onclick'] = """
+$('.flash').hide().html('');
+web2py_ajax_page('post', '%(url)s', jQuery(this).closest('form').serialize(), '%(id)s'); 
+return false;""" % dict(url=URL(args=request.args, vars=request.get_vars), id=_id)
+
+    if form.accepts(request.vars, formname='product_%s' % product.id):
+        variant_id = int(request.post_vars.variant)
+        variant = catalog.get_variant(variant_id, load_product=False)
+        checkout.add_to_cart(variant_id, variant.price, form.vars.quantity)
+        response.flash = T('Added to Cart')
+        response.js = 'jQuery("body").trigger("plugin_checkout_cart_updated", "%s")' % _id
+    inner = DIV(H4(product.name), H6(T('Sale price'), ' : ', price), form)
+    if request.ajax:
+        raise HTTP(200, inner)
+    return DIV(inner ,_id=_id, _class='plugin_checkout_product')
+               
+def render_cart():
+    _id = 'plugin_checkout_cart'
+    
+    line_items, total_price = checkout.get_cart()
+    inner = BEAUTIFY(dict(
+                total_items=sum(line_items.values() or [0]),
+                total_price='$%s' % total_price,
+                view=A(T('View'), _href=URL('index', args='cart'))))
+        
+    if request.ajax:
+        raise HTTP(200, inner)
+    
+    script = SCRIPT(""" 
+(function($) {
+$.extend({
+  add2cart: function(source_id, target_id) {
+    var source = $('#' + source_id ), target = $('#' + target_id ), shadow = $('#' + source_id + '_shadow');
+    if( !shadow.attr('id') ) {
+      $('body').prepend('<div id="'+source.attr('id')+'_shadow" style="display: none; background-color: #ddd; border: solid 1px darkgray; position: static; top: 0px; z-index: 100000;">&nbsp;</div>');
+      var shadow = $('#'+source.attr('id')+'_shadow');
+    }
+    shadow.width(source.css('width')).height(source.css('height')).css('top', source.offset().top).css('left', source.offset().left).css('opacity', 0.5).show();
+    shadow.css('position', 'absolute');
+    shadow.animate( { width: target.innerWidth(), height: target.innerHeight(), top: target.offset().top, left: target.offset().left }, { duration: 300 } )
+    .animate( { opacity: 0 }, { duration: 100, complete: function(){ shadow.hide(); } } );
+  }
+});
+$(function(){
+    $('body').bind('plugin_checkout_cart_updated', function(e, target_id){
+        web2py_component('%(url)s','%(id)s'); $.add2cart(target_id, '%(id)s')
+    })})
+})(jQuery);"""  % dict(url=URL(args=request.args, vars=request.get_vars), id=_id))
+
+    return DIV(script, inner, _id=_id, _class='plugin_checkout_cart') 
+
 def index():
     if not request.args(0):
-        products = catalog.get_products_by_query(table_product.id>0)
-        products_inner = []
-        for product in products:
-            fields = [Field('quantity', 'integer', label=T('Quantity'), default=1,
-                            requires=IS_INT_IN_RANGE(1, 100))]
-            hidden = {}
-            if product.option_groups:
-                fields.insert(0, 
-                      Field('variant', label=':'.join([og.name for og in product.option_groups]),
-                      requires=IS_IN_SET([(v.id, ':'.join([o.name for o in v.options]) + (' ($%s)' % v.price))
-                                            for v in product.variants],
-                                         zero='--- %s ---' % T('Please Select'))))
-                 
-                price = [v.price for v in product.variants]
-                price = '$%s - $%s' % (min(price), max(price))
-            else:
-                if not product.variants:
-                    continue # It won't happen, but is for safe.
-                hidden['variant'] = product.variants[0].id
-                price = '$%s' % product.variants[0].price
-               
-            form = SQLFORM.factory(submit_button=T('Add to Cart'),
-                                   formname='product_%s' % product.id,
-                                   hidden=hidden, *fields)
-            if form.accepts(request.vars, formname='product_%s' % product.id):
-                variant_id = int(request.post_vars.variant)
-                variant = catalog.get_variant(variant_id, load_product=False)
-                checkout.add_to_cart(variant_id, variant.price, form.vars.quantity)
-                session.flash = T('Added to Cart')
-                redirect(URL(args='cart'))
-                
-            products_inner.append(DIV(H4(product.name), 
-                                     H6(T('Sale price'), ' : ', price), 
-                                     form))
-        products = DIV(*products_inner) 
+        if request.post_vars.product:
+            product = catalog.get_product(request.post_vars.product)
+            render_product(product)
         
-        line_items, total_price = checkout.get_cart()
-        cart = dict(total_items=sum(line_items.values() or [0]),
-                    total_price='$%s' % total_price,
-                    view=A(T('View'), _href=URL(args='cart')))
+        cart = render_cart()
+        
+        products = catalog.get_products_by_query(table_product.id>0)
         
         return dict(cart=cart,
-                    products=products,
-                    xxx=LOAD('plugin_checkout','hoge',ajax=True),
+                    products=DIV(*[render_product(product) for product in products]),
                     unit_tests=[A('basic test', _href=URL('test'))])
                
     elif request.args(0) == 'cart':
@@ -135,7 +178,7 @@ def index():
             checkout.update_cart(new_line_items, new_total_price)
             session.flash = T('Updated')
             redirect(URL(args=request.args))
-        print line_items
+ 
         items_inner = [form.custom.begin]
         sub_total_price = 0
         for variant_id, quantity in line_items.items():
