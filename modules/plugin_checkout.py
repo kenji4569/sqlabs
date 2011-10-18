@@ -52,13 +52,32 @@ class Checkout(object):
         line_items = session.checkout_line_items or {}
         total_price = session.checkout_total_price or 0
         return line_items, total_price
-              
+         
+    def clear_cart(self):
+        session = current.session
+        self.update_cart({}, 0)
+        
     def add_to_cart(self, item_id, price, quantity):
+        item_id = int(item_id)
         session = current.session
         line_items, total_price = self.get_cart()
         
         total_price += quantity*price
         line_items[item_id] = line_items.get(item_id, 0) + quantity
+        
+        self.update_cart(line_items, total_price)
+        
+    def remove_from_cart(self, item_id, price):
+        item_id = int(item_id)
+        session = current.session
+        line_items, total_price = self.get_cart()
+        quantity = line_items.get(item_id, 0)
+        
+        total_price -= quantity*price
+        if item_id in line_items:
+            del line_items[item_id]
+        if not line_items:
+            total_price = 0
         
         self.update_cart(line_items, total_price)
         

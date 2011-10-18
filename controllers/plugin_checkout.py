@@ -4,8 +4,6 @@ from plugin_catalog import Catalog
 import unittest
 from gluon.contrib.populate import populate
 
-print 'A'
-
 if request.function == 'test':
     db = DAL('sqlite:memory:')
     
@@ -114,7 +112,7 @@ def render_cart():
     inner = BEAUTIFY(dict(
                 total_items=sum(line_items.values() or [0]),
                 total_price='$%s' % total_price,
-                view=A(T('View'), _href=URL('index', args='cart'))))
+                view=A(T('View Cart'), _href=URL('index', args='cart'))))
         
     if request.ajax:
         raise HTTP(200, inner)
@@ -157,6 +155,13 @@ def index():
                     unit_tests=[A('basic test', _href=URL('test'))])
                
     elif request.args(0) == 'cart':
+        if request.args(1) == 'remove':
+            variant_id = request.args(2)
+            variant = catalog.get_variant(variant_id, load_product=False)
+            checkout.remove_from_cart(variant_id, variant.price)
+            session.flash = T('Removed from Cart')
+            redirect(URL(args='cart'))
+    
         line_items, _total_price = checkout.get_cart()
         variants = dict((variant_id, catalog.get_variant(variant_id)) 
                             for variant_id in line_items.keys())
@@ -167,15 +172,12 @@ def index():
         form = SQLFORM.factory(submit_button=T('Update Cart'),
                                *fields)
         if form.accepts(request.vars, session):
-            new_line_items = {}
-            new_total_price = 0
+            checkout.clear_cart()
             for field_name, quantity in form.vars.items():
                 if field_name.startswith('quantity_'):
                     variant_id = int(field_name.split('_')[-1])
-                    variant = variants[variant_id]
-                    new_line_items[variant_id] = quantity
-                    new_total_price += variant.price * quantity
-            checkout.update_cart(new_line_items, new_total_price)
+                    if variant_id in variants:
+                        checkout.add_to_cart(variant_id, variants[variant_id].price, quantity)
             session.flash = T('Updated')
             redirect(URL(args=request.args))
  
@@ -190,15 +192,28 @@ def index():
             else:
                 option_set = ''
             items_inner.append(DIV(H4(variant.product.name + option_set), 
+                  DIV(INPUT(_type='button', _value=T('Remove'), 
+                            _onclick='location.href="%s"' % URL(args=['cart', 'remove', variant_id]))),
                   DIV(T('Unit Price'), ' : $%s' % variant.price),
-                  DIV(T('Quantity'), form.custom.widget['quantity_%s' % variant_id])))
+                  DIV(T('Quantity'), form.custom.widget['quantity_%s' % variant_id]),
+                  ))
         items_inner.append(form.custom.submit)
         items_inner.append(form.custom.end)
         
-        line_items = DIV(*items_inner) 
         return dict(back=A('back', _href=URL('index')),
-                    line_items=line_items,
-                    total_price='$%s' % sub_total_price)
+                    line_items=DIV(*items_inner) ,
+                    total_price='$%s' % sub_total_price, 
+                  **{'→': DIV(INPUT(_type='button', _value='Continue Shopping',
+                                    _onclick='location.href="%s"' % URL()), ' ',
+                              INPUT(_type='button', _value='Go to Checkout',
+                                    _onclick='location.href="%s"' % URL(args='checkout')))})
+                    
+    elif request.args(0) == 'checkout':
+        
+        return dict(back=A('back', _href=URL(args='cart')),
+                    bill_address=DIV('bill_address'),
+                    ship_address=DIV('ship_address'))
+        
           
 ### unit tests #################################################################
 class TestCheckout(unittest.TestCase):
