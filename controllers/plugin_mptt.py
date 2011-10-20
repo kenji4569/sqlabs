@@ -242,9 +242,101 @@ class DeletionTestCase(unittest.TestCase):
         # 10 8 1 2 17 18      +-- ps3_hardware
         
     def test_delete_root_node(self):
+        self.setUp()
+        mptt.insert_node(node_id=11,target_id=1,position='left')
+        mptt.insert_node(node_id=12,target_id=1,position='right')
         show_db_all = db().select(table_tree.ALL,orderby=table_tree.tree_id)
-        #print get_tree_details(show_db_all)
-            
+        
+        self.assertEqual(get_tree_details(show_db_all),
+                         tree_details("""11 None 1 0 1 2
+                                         1 None 2 0 1 20
+                                         2 1 2 1 2 7
+                                         3 2 2 2 3 4
+                                         4 2 2 2 5 6
+                                         5 1 2 1 8 13
+                                         6 5 2 2 9 10
+                                         7 5 2 2 11 12
+                                         8 1 2 1 14 19
+                                         9 8 2 2 15 16
+                                         10 8 2 2 17 18
+                                         12 None 3 0 1 2"""),
+                         'Setup for test produced unexpected result')
+
+        mptt.delete_node(1)
+        show_db_all = db().select(table_tree.ALL,orderby=table_tree.tree_id)
+        self.assertEqual(get_tree_details(show_db_all),
+                         tree_details("""11 None 1 0 1 2
+                                         12 None 3 0 1 2"""))
+        
+    def test_delete_last_node_with_sibling(self):
+        self.setUp()
+        mptt.delete_node(9)
+        show_db_all = db().select(table_tree.ALL,orderby=table_tree.tree_id)
+#        print 'test_delete_last_node_with_sibling'
+#        print get_tree_details(show_db_all)
+
+        self.assertEqual(get_tree_details(show_db_all),
+                         tree_details("""1 None 1 0 1 18
+                                         2 1 1 1 2 7
+                                         3 2 1 2 3 4
+                                         4 2 1 2 5 6
+                                         5 1 1 1 8 13
+                                         6 5 1 2 9 10
+                                         7 5 1 2 11 12
+                                         8 1 1 1 14 17
+                                         10 8 1 2 15 16"""))
+        
+    def test_delete_last_node_with_descendants(self):
+        self.setUp()
+        mptt.delete_node(8)
+        show_db_all = db().select(table_tree.ALL,orderby=table_tree.tree_id)
+#       print 'test_delete_last_node_with_descendants'
+#        print get_tree_details(show_db_all)
+        
+        self.assertEqual(get_tree_details(show_db_all),
+                         tree_details("""1 None 1 0 1 14
+                                         2 1 1 1 2 7
+                                         3 2 1 2 3 4
+                                         4 2 1 2 5 6
+                                         5 1 1 1 8 13
+                                         6 5 1 2 9 10
+                                         7 5 1 2 11 12"""))
+        
+    def test_delete_node_with_siblings(self):
+        self.setUp()
+        mptt.delete_node(6)
+        show_db_all = db().select(table_tree.ALL,orderby=table_tree.tree_id)
+#        print 'test_delete_node_with_siblings'
+#        print get_tree_details(show_db_all)
+        
+        self.assertEqual(get_tree_details(show_db_all),
+                         tree_details("""1 None 1 0 1 18
+                                         2 1 1 1 2 7
+                                         3 2 1 2 3 4
+                                         4 2 1 2 5 6
+                                         5 1 1 1 8 11
+                                         7 5 1 2 9 10
+                                         8 1 1 1 12 17
+                                         9 8 1 2 13 14
+                                         10 8 1 2 15 16"""))
+
+    def test_delete_node_with_descendants_and_siblings(self):
+        self.setUp()
+        mptt.delete_node(5)
+        show_db_all = db().select(table_tree.ALL,orderby=table_tree.tree_id)
+        
+#        print 'test_delete_node_with_descendants_and_siblings'
+#        print get_tree_details(show_db_all)
+        self.assertEqual(get_tree_details(show_db_all),
+                         tree_details("""1 None 1 0 1 14
+                                         2 1 1 1 2 7
+                                         3 2 1 2 3 4
+                                         4 2 1 2 5 6
+                                         8 1 1 1 8 13
+                                         9 8 1 2 9 10
+                                         10 8 1 2 11 12"""))
+        
+        
 def run_test(TestCase):
     import cStringIO
     stream = cStringIO.StringIO()
@@ -254,30 +346,4 @@ def run_test(TestCase):
 
 def index():
     
-    return dict(output1=CODE(run_test(ReparentingTestCase)),output2=CODE(run_test(DeletionTestCase)))
-
-def test():
-    db, table_tree = mptt.db, mptt.settings.table_tree
-    #db.tree.insert(title='Food', left=1, right=2)
-    mptt.add_node(node_id=1, parent_node_id=0, tree_id=1, node_level=0)
-    mptt.add_node(node_id=2, parent_node_id=1, tree_id=1, node_level=1)
-    mptt.add_node(node_id=3, parent_node_id=1, tree_id=1, node_level=1)
-    mptt.add_node(node_id=4, parent_node_id=1, tree_id=1, node_level=1)
-    mptt.add_node(node_id=5, parent_node_id=2, tree_id=1, node_level=2)
-    #mptt.delete_node(2)
-    print db().select(table_tree.ALL)
-    
-    print "get_ancestors:", mptt.get_ancestors(5, table_tree.id)
-    print "get_leafnodes:", mptt.get_leafnodes(table_tree.id)
-    print "get_next_sibling:", mptt.get_next_sibling(3,table_tree.id)
-    print "get_previous_sibling:", mptt.get_previous_sibling(3,table_tree.id)
-    print "get_root:", mptt.get_root()
-    print "is_child_node:", mptt.is_child_node(2)
-    print "is_leaf_node:", mptt.is_leaf_node(2)
-    print "is_root_node:", mptt.is_root_node(2)
-    print "is_ancestor_of:", mptt.is_ancestor_of(1,2)
-    print "is_descendant_of:", mptt.is_descendant_of(1,2)
-    
-    output = db().select(table_tree.ALL)
-    return dict(output=output)
-
+    return dict(test1=CODE(run_test(ReparentingTestCase)),test2=CODE(run_test(DeletionTestCase)))
