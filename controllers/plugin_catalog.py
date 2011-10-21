@@ -154,7 +154,7 @@ def variants_widget(field, value, **attributes):
                 return INPUT(_type='button', _value=T('Apply all'),
                              _onclick='apply_for_all_variants("%s", "%s");' % (option_set_key, name))
         
-        deleted = (option_set_key != get_master_option_set_key()) and not request.vars.get('variant__%s__available' % option_set_key)
+        deleted = (option_set_key != get_master_option_set_key()) and not request.vars.get('variant__%s__active' % option_set_key)
         fields = []
         hidden = {}
         for f in table_variant:
@@ -180,9 +180,9 @@ def variants_widget(field, value, **attributes):
                         default=default, comment=_get_field_comment(f.name)))
         
         if option_set_key != get_master_option_set_key():
-            fields.insert(0, Field('variant__%s__available' % option_set_key, 
+            fields.insert(0, Field('variant__%s__active' % option_set_key, 
                                    'boolean', default=True if ajax else not deleted, 
-                                    label=T('Available'), comment=_get_field_comment('available')))
+                                    label=T('Active'), comment=_get_field_comment('active')))
                                     
         form = SQLFORM.factory(buttons=[], hidden=hidden, *fields)
         
@@ -263,13 +263,13 @@ def define_virtual_product_table(product=None):
         request.post_vars.variants = None
         if request.vars.option_groups and all(not v for k, v in request.post_vars.items() 
                                                 if k.startswith('variant__') and 
-                                                   k.endswith('__available')):
+                                                   k.endswith('__active')):
             variants_requires = IS_NOT_EMPTY('Input at least one variant')
         else:
             if request.vars.option_groups:
-                skus = [request.post_vars[k.replace('__available', '__sku')] 
+                skus = [request.post_vars[k.replace('__active', '__sku')] 
                             for k, v in request.post_vars.items() 
-                                if k.startswith('variant__') and  k.endswith('__available')]
+                                if k.startswith('variant__') and  k.endswith('__active')]
             elif 'variant__master__sku' in request.post_vars:
                 skus = [request.post_vars['variant__master__sku']]
             else:
@@ -292,7 +292,7 @@ def define_virtual_product_table(product=None):
                 option_set_key = get_master_option_set_key()
             else:
                 option_set_key = get_option_set_key(variant.options)
-                request.vars['variant__%s__available' % option_set_key] = True
+                request.vars['variant__%s__active' % option_set_key] = True
             for name in variant:
                 request.vars['variant__%s__%s' % (option_set_key, name)] = variant[name]
         
@@ -320,7 +320,7 @@ def filter_virtual_product_fields(vars):
         if option_set_key == get_master_option_set_key():
             reduced_vars['options'] = []
             variant_vars_list.append(table_variant._filter_fields(reduced_vars))
-        elif reduced_vars.get('available'):
+        elif reduced_vars.get('active'):
             reduced_vars['options'] = get_option_ids_by_option_set_key(option_set_key)
             variant_vars_list.append(table_variant._filter_fields(reduced_vars))
     return product_vars, variant_vars_list

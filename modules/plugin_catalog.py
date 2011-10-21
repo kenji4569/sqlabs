@@ -44,7 +44,7 @@ class Catalog(object):
         
         messages = self.messages = Messages(current.T)
         messages.label_name = 'Name'
-        messages.label_available = 'Available'
+        messages.label_active = 'Active'
         messages.label_sku = 'SKU'
         
         messages.label_price = 'Sale price'
@@ -63,8 +63,8 @@ class Catalog(object):
             table = db.define_table(
                 settings.table_product_name,
                 Field('name', label=self.messages.label_name),
-                Field('available', 'boolean', default=False, 
-                      label=self.messages.label_available,
+                Field('active', 'boolean', default=False, 
+                      label=self.messages.label_active,
                       widget=SQLFORM.widgets.boolean.widget), # not properly working without it? 
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_product_name, []))
