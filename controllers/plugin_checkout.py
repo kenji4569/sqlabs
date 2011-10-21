@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from plugin_checkout import Checkout
 from plugin_catalog import Catalog
+from gluon.tools import Auth
 import unittest
 from gluon.contrib.populate import populate
 
@@ -8,6 +9,7 @@ if request.function == 'test':
     db = DAL('sqlite:memory:')
     
 ### setup core objects #########################################################
+auth = Auth(db)
 
 checkout = Checkout(db)
 checkout.settings.table_purchase_order_name = 'plugin_checkout_purchase_order'
@@ -27,6 +29,8 @@ catalog.settings.table_option_group_name = 'plugin_checkout_option_group'
 catalog.settings.table_option_name = 'plugin_checkout_option'
 
 ### define tables ##############################################################
+auth.define_tables()
+table_user = auth.settings.table_user
 
 checkout.define_tables()
 table_purchase_order = checkout.settings.table_purchase_order
@@ -39,6 +43,12 @@ table_option_group = catalog.settings.table_option_group
 table_option = catalog.settings.table_option
 
 ### populate records ###########################################################
+user_ids = {}  
+email = 'bob@test.com'
+user = db(table_user.email==email).select().first()
+user_ids['bob'] = user and user.id or table_user.insert(
+    email=email, first_name='Bob', last_name='Smith')
+    
 import datetime
 if db(table_purchase_order.created_on<request.now-datetime.timedelta(minutes=60)).count():
     for table in (table_purchase_order, table_line_item, 
@@ -66,7 +76,7 @@ if not db(table_product.id>0).count():
                   
 ### demo functions #############################################################
 
-def render_product(product):
+def render_product_block(product):
     _id = 'plugin_checkout_product__%s' % (product.id)
     
     fields = [Field('quantity', 'integer', label=T('Quantity'), default=1,
@@ -105,14 +115,14 @@ return false;""" % dict(url=URL(args=request.args, vars=request.get_vars), id=_i
         raise HTTP(200, inner)
     return DIV(inner ,_id=_id, _class='plugin_checkout_product')
                
-def render_cart():
+def render_cart_block(cart_url):
     _id = 'plugin_checkout_cart'
     
     line_items, total_price = checkout.get_cart()
     inner = BEAUTIFY(dict(
                 total_items=sum(line_items.values() or [0]),
                 total_price='$%s' % total_price,
-                view=A(T('View Cart'), _href=URL('index', args='cart'))))
+                view=A(T('View Cart'), _href=cart_url)))
         
     if request.ajax:
         raise HTTP(200, inner)
@@ -141,27 +151,36 @@ $(function(){
     return DIV(script, inner, _id=_id, _class='plugin_checkout_cart') 
 
 def index():
-    if not request.args(0):
+    def url(args=None, vars={}):
+        if 'login' in request.get_vars:
+            vars['login'] = 1
+        return URL(args=args, vars=vars)
+        
+    if request.get_vars.login:
+        auth.user = table_user[user_ids['bob']]
+        user_chooser = [A('→ logout', _href=URL(args=request.args)), SPAN('login')]
+    else:
+        auth.user = None
+        user_chooser = [SPAN('logout'), A('→ login', _href=URL(args=request.args, vars=dict(login=1)))]
+    user_chooser = DIV(XML(' '.join([r.xml() for r in user_chooser])), _style='font-weight:bold')
+        
+    action = request.args(0)
+    if not action:
         if request.post_vars.product:
             product = catalog.get_product(request.post_vars.product)
-            render_product(product)
+            render_product_block(product)
         
-        cart = render_cart()
+        cart = render_cart_block(cart_url=url(args='cart'))
         
         products = catalog.get_products_by_query(table_product.id>0)
         
-        return dict(cart=cart,
-                    products=DIV(*[render_product(product) for product in products]),
+        return dict(LOGIN=user_chooser,
+                    cart=cart,
+                    products=DIV(*[render_product_block(product) for product in products]),
                     unit_tests=[A('basic test', _href=URL('test'))])
                
-    elif request.args(0) == 'cart':
-        if request.args(1) == 'remove':
-            variant_id = request.args(2)
-            variant = catalog.get_variant(variant_id, load_product=False)
-            checkout.remove_from_cart(variant_id, variant.price)
-            session.flash = T('Removed from Cart')
-            redirect(URL(args='cart'))
-    
+    elif action == 'cart':
+        
         line_items, _total_price = checkout.get_cart()
         variants = dict((variant_id, catalog.get_variant(variant_id)) 
                             for variant_id in line_items.keys())
@@ -179,7 +198,7 @@ def index():
                     if variant_id in variants:
                         checkout.add_to_cart(variant_id, variants[variant_id].price, quantity)
             session.flash = T('Updated')
-            redirect(URL(args=request.args))
+            redirect(url(args='cart'))
  
         items_inner = [form.custom.begin]
         sub_total_price = 0
@@ -193,25 +212,48 @@ def index():
                 option_set = ''
             items_inner.append(DIV(H4(variant.product.name + option_set), 
                   DIV(INPUT(_type='button', _value=T('Remove'), 
-                            _onclick='location.href="%s"' % URL(args=['cart', 'remove', variant_id]))),
+                            _onclick='location.href="%s"' % 
+                                     url(args=['remove_cart', variant_id]))),
                   DIV(T('Unit Price'), ' : $%s' % variant.price),
                   DIV(T('Quantity'), form.custom.widget['quantity_%s' % variant_id]),
                   ))
         items_inner.append(form.custom.submit)
         items_inner.append(form.custom.end)
         
-        return dict(back=A('back', _href=URL('index')),
+        return dict(LOGIN=user_chooser, back=A('back', _href=url()),
                     line_items=DIV(*items_inner) ,
                     total_price='$%s' % sub_total_price, 
                   **{'→': DIV(INPUT(_type='button', _value='Continue Shopping',
-                                    _onclick='location.href="%s"' % URL()), ' ',
+                                    _onclick='location.href="%s"' % url()), ' ',
                               INPUT(_type='button', _value='Go to Checkout',
-                                    _onclick='location.href="%s"' % URL(args='checkout')))})
-                    
-    elif request.args(0) == 'checkout':
+                                    _onclick='location.href="%s"' % 
+                                        (url(args='addresses') if auth.user else
+                                         url(args='login'))
+                                    ))})
+                                    
+    elif action == 'remove_cart':
+        variant_id = request.args(1)
+        variant = catalog.get_variant(variant_id, load_product=False)
+        checkout.remove_from_cart(variant_id, variant.price)
+        session.flash = T('Removed from Cart')
+        redirect(url(args='cart'))
         
-        return dict(back=A('back', _href=URL(args='cart')),
-                    bill_address=DIV('bill_address'),
+    elif action == 'login':
+        return dict(back=A('back', _href=url()),
+                    registered=INPUT(_type='button', _value='login', _disabled=True),
+                    unregistered=DIV(INPUT(_type='button', _value='register', _disabled=True), ' ',
+                                     INPUT(_type='button', _value='Go to Checkout',
+                                           _onclick='location.href="%s"' % url(args='addresses')))
+                   )
+
+    elif action == 'addresses':
+        if not auth.user:
+            billing_form = SQLFORM(table_user)
+        else:
+            billing_form = SQLFORM(table_user, auth.user, readonly=True)
+        
+        return dict(back=A('back', _href=url(args='cart')),
+                    bill_address=billing_form,
                     ship_address=DIV('ship_address'))
         
           
