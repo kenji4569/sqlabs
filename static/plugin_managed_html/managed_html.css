@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- */
-div.managed_html_content {
+div.managed_html_contents {
   -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 15px rgba(236, 82, 168, 0.6);
   -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 15px rgba(236, 82, 168, 0.6);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 15px rgba(236, 82, 168, 0.6);
@@ -7,19 +7,19 @@ div.managed_html_content {
   height: 100%;
   position: relative;
 }
-div.managed_html_content:hover {
+div.managed_html_contents:hover {
   -webkit-box-shadow: 0 0 0px rgba(236, 82, 168, 1.0);
   -moz-box-shadow: 0 0 0px rgba(236, 82, 168, 1.0);
   box-shadow: 0 0 0px rgba(236, 82, 168, 1.0);
   cursor: pointer;
 }
 
-div.managed_html_content_inner {
+div.managed_html_contents_inner {
   width: 100%;
   height: 100%;
 }
 
-div.managed_html_content_inner:hover {
+div.managed_html_contents_inner:hover {
   filter: alpha(opacity=60);
   -khtml-opacity: 0.6;
   -moz-opacity: 0.6;
@@ -27,7 +27,7 @@ div.managed_html_content_inner:hover {
 }
 
 /* -------------------------------------------------------------------------- */
-div.managed_html_tabs {
+div.managed_html_contents_ctrl {
   display: none;
   height: 40px;
   position: absolute;
@@ -39,7 +39,7 @@ div.managed_html_tabs {
   width: 100%;
 }
 
-div.managed_html_tabs div {
+div.managed_html_contents_ctrl div {
 
 background-color: whiteSmoke;
 border: 1px solid #DDD;

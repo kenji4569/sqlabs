@@ -3,6 +3,7 @@
 # Authors: Kenji Hosoda <hosoda@s-cubism.jp>
 from gluon import *
 from gluon.storage import Storage, Messages
+import gluon.contrib.simplejson as json
 
 LIVE_MODE = 'live'
 EDIT_MODE = 'edit'
@@ -16,9 +17,9 @@ HTML_TYPE = 'html'
 
 class ManagedHTML(object):
 
-    def __init__(self, db):
-        self.db = db
-        
+    def __init__(self, db, keyword='_managed_html'):
+        self.db, self.keyword = db, keyword
+    
         settings = self.settings = Storage()
         
         settings.extra_fields = {}
@@ -34,8 +35,6 @@ class ManagedHTML(object):
         messages = self.messages = Messages(current.T)
         
         self.switch_to_live_mode()
-        
-        
         
     def define_tables(self, migrate=True, fake_migrate=False):
         db, settings = self.db, self.settings
@@ -74,32 +73,49 @@ class ManagedHTML(object):
             dataset = dataset(table_content.active==active)
         return dataset.select()
         
-    def __call__(self, name=None, wrapper=None, default=None):
+    def _post_contents_js(self, name, data, target):
+        url = URL(args=current.request.args, vars=current.request.get_vars)
+        data[self.keyword] = name
+        return """
+$('.flash').hide().html(''); web2py_ajax_page('post', '%(url)s', %(data)s, '%(target)s');
+""" % dict(url=url, data=json.dumps(data), target=target)
+        
+    def __call__(self, name, wrapper=None, default=None):
         # TODO db access, setting element ids, setting class
+        if self.keyword in current.request.vars and current.request.vars[self.keyword] == name:
+            raise HTTP(200, self._process(name, wrapper, default))
+        else:
+            return self._process(name, wrapper, default)
+        
+    def _process(self, name, wrapper, default):
+        
         settings = self.settings
         contents = None
-        if name:
-            active = (self.view_mode == LIVE_MODE) or None
-            contents = self._get_contents(name, active)
-            
-            if self.view_mode == EDIT_MODE:
-                pass
-                #contents =
-                #contents = DIV()
-            elif self.view_mode == PREVIEW_MODE:
-                pass
-                #contents = DIV()
+        
+        active = (self.view_mode == LIVE_MODE) or None
+        contents = self._get_contents(name, active)
+        
+        if self.view_mode == EDIT_MODE:
+            pass
+            #contents =
+            #contents = DIV()
+        elif self.view_mode == PREVIEW_MODE:
+            pass
+            #contents = DIV()
           
         if not contents and default is not None:
             contents = [default]
             
         if contents:
+            el_id = 'managed_html_contents_%s' % name
             contents = DIV(
                 DIV(DIV(
-                    INPUT(_value='Add', _type='button', _class='managed_html_btn')),
-                   _class='managed_html_tabs'),
-                DIV(_class='managed_html_content_inner', *[c for c in contents]),
-                _class='managed_html_content')
+                    INPUT(_value=current.T('Add'), _type='button', 
+                          _onclick=self._post_contents_js(name, dict(action='add_content'), el_id),
+                          _class='managed_html_btn')),
+                   _class='managed_html_contents_ctrl'),
+                DIV(_class='managed_html_contents_inner', *[c for c in contents]),
+                _class='managed_html_contents', _id=el_id)
         
             if wrapper:
                 contents = wrapper(contents)

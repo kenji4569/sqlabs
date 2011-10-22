@@ -1,11 +1,9 @@
 (function($) {
 $(function(){
-  $('.managed_html_content').hover(function(){
-    $(this).children('.managed_html_tabs').show();
+  $('.managed_html_contents').hover(function(){
+    $(this).children('.managed_html_contents_ctrl').show();
   }, function() {
-    $(this).children('.managed_html_tabs').hide();
+    $(this).children('.managed_html_contents_ctrl').hide();
   });
 })
-
-
 })(jQuery);
