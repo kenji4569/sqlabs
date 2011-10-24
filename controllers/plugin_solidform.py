@@ -34,7 +34,14 @@ def index():
         fields = [['name','category'],
                   [None,'code'],
                   [None,'keywords']]
-                  
+    elif request_fields == 'fields_4':
+        fields = [['id','name'],
+                  ['category','code'],
+                  [None,'keywords']]
+    elif request_fields == 'fields_5':
+        fields = [['name','category'],
+                  ['id','code'],
+                  [None,'keywords']]           
     # Standard usage
     form = SOLIDFORM(db.product, fields=fields)
     # Factory usage
@@ -42,6 +49,8 @@ def index():
     # Readonly usage
     product = db(db.product.id>0).select().first()
     form_readonly = SOLIDFORM(db.product, product, fields=fields, showid=False, readonly=True)
+    # edit form
+    form_edit = SOLIDFORM(db.product, product, fields=fields)
 ################################################################################
 
     if form.accepts(request.vars, session):
@@ -54,8 +63,11 @@ def index():
     style = STYLE("""input[type="text"], textarea {width:100%; max-height: 50px;} 
                      .w2p_fw {padding-right: 20px; max-width:200px;}
                      .w2p_fl {background: #eee;}""")
-    return dict(form=DIV(style, form), form__factory=form_factory, form__readonly=form_readonly,
+    return dict(form=DIV(style, form), 
+                form__factory=form_factory, form__readonly=form_readonly, form__edit=form_edit,
                 form_args=DIV(A('fields=default', _href=URL(vars={'fields':'default'})), ' ',
                               A('fields=fields_2', _href=URL(vars={'fields':'fields_2'})), ' ',
                               A('fields=fields_3', _href=URL(vars={'fields':'fields_3'})), ' ',
+                              A('fields=fields_4', _href=URL(vars={'fields':'fields_4'})), ' ',
+                              A('fields=fields_5', _href=URL(vars={'fields':'fields_5'})), ' ',
                                ))

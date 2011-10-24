@@ -8,6 +8,7 @@ class SOLIDFORM(SQLFORM):
 
     def __init__(self, *args, **kwds):
         self.structured_fields = kwds.get('fields')
+        self.include_id = False
         
         _precedent_row_len = 1
         if self.structured_fields:
@@ -18,10 +19,14 @@ class SOLIDFORM(SQLFORM):
                     for field in inner:
                         if field:
                             flat_fields.append(field)
+                            if field == 'id':
+                                self.include_id = True
                     max_row_lines = max(len(inner), max_row_lines)
                     _precedent_row_len = len(inner)
                 elif inner:
                     flat_fields.append(inner)
+                    if inner == 'id':
+                        self.include_id = True
                 else:
                     self.structured_fields[i] = [inner for i in range(_precedent_row_len)]
             
@@ -60,15 +65,32 @@ class SOLIDFORM(SQLFORM):
             self.flat_fields = flat_fields
             self.row_lines = row_lines
             kwds['fields'] = copy.copy(flat_fields)
+            
+        if self.include_id:
+            kwds['showid'] = True
+        self.showid = kwds.get('showid', True)
+        print self.showid
+        self.ignore_first = False if flat_fields[0] == 'id' else self.include_id
         
+        self.readonly = kwds.get('readonly', False)
+            
         SQLFORM.__init__(self, *args, **kwds)
         
     def createform(self, xfields):
         if not self.structured_fields:
             return SQLFORM.createform(self, xfields)
-        
+           
         table = TABLE()
         
+        if self.showid and self.record and (not self.readonly or self.ignore_first):
+            if not self.ignore_first:
+                id, a, b, c = xfields[0]
+                tr_inner =[]
+                tr_inner.append(TD(a,_class='w2p_fl'))
+                tr_inner.append(TD(b, _class='w2p_fw', _colspan=(2*self.max_row_lines)-1))
+                table.append(TR(*tr_inner))
+            xfields = xfields[1:]
+         
         n = len(self.flat_fields)
         xfield_dict = dict([(x, y) for x, y in zip(self.flat_fields, xfields[:n])])
         
@@ -96,13 +118,13 @@ class SOLIDFORM(SQLFORM):
                         tr_inner += self.create_td(xfield_dict[field], row_span, col_span)
             table.append(TR(*tr_inner))
             
-        tr_inner =[]
-        for id,a,b,c in xfields[n:]:
-            td_b = self.field_parent[id] = TD(b,_class='w2p_fw')
+        for id, a, b, c in xfields[n:]:
+            td_b = self.field_parent[id] = TD(b, _class='w2p_fw', 
+                                              _colspan=(2*self.max_row_lines)-1)
+            tr_inner =[]
             tr_inner.append(TD(a,_class='w2p_fl'))
             tr_inner.append(td_b)
-            tr_inner.append(TD(c,_class='w2p_fc'))
-        table.append(TR(*tr_inner))
+            table.append(TR(*tr_inner))
         
         return table
         
