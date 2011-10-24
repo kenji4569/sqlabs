@@ -69,8 +69,10 @@ class SOLIDFORM(SQLFORM):
         if self.include_id:
             kwds['showid'] = True
         self.showid = kwds.get('showid', True)
-        
-        self.ignore_first = False if flat_fields[0] == 'id' else self.include_id
+        if not self.structured_fields or flat_fields[0] == 'id':
+            self.ignore_first = False  
+        else:
+            self.ignore_first = self.include_id
         
         self.readonly = kwds.get('readonly', False)
             
