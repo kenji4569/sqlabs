@@ -51,6 +51,15 @@ class ManagedHTML(object):
             table.name.requires = IS_NOT_IN_DB(db, table.name)
         settings.table_content = db[settings.table_content_name]
         
+        if not settings.table_response_name in db.tables:
+            table = db.define_table(
+                settings.table_response_name,
+                Field('name'),
+                migrate=migrate, fake_migrate=fake_migrate,
+                *settings.extra_fields.get(settings.table_response_name, []))
+            table.name.requires = IS_NOT_IN_DB(db, table.name)
+        settings.table_response = db[settings.table_response_name]
+        
     def switch_to_live_mode(self):
         self.view_mode = LIVE_MODE
         
@@ -91,10 +100,18 @@ managed_html_ajax_page('%(url)s', %(data)s, '%(target)s');
         contents_el_id = 'managed_html_contents_%s' % name
         
         if self.keyword in current.request.vars and current.request.vars[self.keyword] == name:
-            # TODO db access, setting element ids, setting class
             settings = self.settings
-            settings.table_content.insert(name=name)
-            raise HTTP(200, self._render_contents(name, wrapper, default, contents_el_id))
+            action = current.request.vars.get('action')
+            if action == 'add_content':
+                settings.table_content.insert(name=name)
+                raise HTTP(200, self._render_contents(name, wrapper, default, contents_el_id))
+            elif action == 'edit_content':
+                content_id = current.request.vars.get('content')
+                content = settings.table_content(content_id)
+                form = SQLFORM(settings.table_content, content)
+                raise HTTP(200, form)
+            else:
+                raise HTTP(404)
         else:
             contents_el = self._render_contents(name, wrapper, default, contents_el_id)
             if not contents_el:
@@ -114,7 +131,7 @@ managed_html_ajax_page('%(url)s', %(data)s, '%(target)s');
             return el
         
     def _render_content(self, name, content, content_el_id):
-        return DIV('hoge')
+        return DIV('hoge', _id=content_el_id)
         
     def _render_contents(self, name, wrapper, default, el_id):
         active = (self.view_mode == LIVE_MODE) or None
@@ -126,11 +143,11 @@ managed_html_ajax_page('%(url)s', %(data)s, '%(target)s');
             default = default or XML('&nbsp;')
             for content in contents:
                 content_el_id = 'managed_html_content_%s' % content.id
-                inner.append(DIV(
-                    self._render_content(name, content, content_el_id),
-                    _onclick=self._post_contents_js(
-                            name, dict(action='edit_content'), '123'),
-                    _class='managed_html_content'))
+                content_el = self._render_content(name, content, content_el_id)
+                content_el.attributes['_onclick'] = self._post_contents_js(
+                            name, dict(action='edit_content',
+                                       content=content.id), content_el_id)
+                inner.append(DIV(content_el, _class='managed_html_content'))
         else:
             for content in contents:
                 content_el_id = 'managed_html_content_%s' % content.id
