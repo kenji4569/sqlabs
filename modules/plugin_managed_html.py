@@ -42,9 +42,9 @@ class ManagedHTML(object):
         if not settings.table_content_name in db.tables:
             table = db.define_table(
                 settings.table_content_name,
-                Field('name', unique=True),
-                Field('data_type'), 
-                Field('data', 'text'), 
+                Field('name'),
+                Field('data_type', default=HTML_TYPE), 
+                Field('data', 'text', default=''), 
                 Field('active', 'boolean', default=False), 
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_content_name, []))
@@ -77,53 +77,73 @@ class ManagedHTML(object):
         url = URL(args=current.request.args, vars=current.request.get_vars)
         data[self.keyword] = name
         return """
-$('.flash').hide().html(''); web2py_ajax_page('post', '%(url)s', %(data)s, '%(target)s');
+managed_html_ajax_page('%(url)s', %(data)s, '%(target)s');
 """ % dict(url=url, data=json.dumps(data), target=target)
+
+    def _render_edit_ctrl(self, name, contents_el_id):
+        return DIV(INPUT(_value=current.T('Add'), _type='button', 
+                  _onclick=self._post_contents_js(
+                            name, dict(action='add_content'), contents_el_id),
+                  _class='managed_html_btn'))
         
     def __call__(self, name, wrapper=None, default=None):
-        # TODO db access, setting element ids, setting class
+        el_id = 'managed_html_block_%s' % name
+        contents_el_id = 'managed_html_contents_%s' % name
+        
         if self.keyword in current.request.vars and current.request.vars[self.keyword] == name:
-            raise HTTP(200, self._process(name, wrapper, default))
+            # TODO db access, setting element ids, setting class
+            settings = self.settings
+            settings.table_content.insert(name=name)
+            raise HTTP(200, self._render_contents(name, wrapper, default, contents_el_id))
         else:
-            return self._process(name, wrapper, default)
+            contents_el = self._render_contents(name, wrapper, default, contents_el_id)
+            if not contents_el:
+                return ''
+            contents_el.attributes['_id'] = contents_el_id
+            
+            inner = [contents_el]
+            if self.view_mode == EDIT_MODE:
+                el = DIV(contents_el,
+                         DIV(self._render_edit_ctrl(name, contents_el_id),
+                            _class='managed_html_contents_ctrl'),
+                         _class=' managed_html_block', _id=el_id)
+            else:
+                el = contents_el
+            if wrapper:
+                el = wrapper(el)
+            return el
         
-    def _process(self, name, wrapper, default):
+    def _render_content(self, name, content, content_el_id):
+        return DIV('hoge')
         
-        settings = self.settings
-        contents = None
-        
+    def _render_contents(self, name, wrapper, default, el_id):
         active = (self.view_mode == LIVE_MODE) or None
+        
         contents = self._get_contents(name, active)
         
+        inner = []
         if self.view_mode == EDIT_MODE:
-            pass
-            #contents =
-            #contents = DIV()
-        elif self.view_mode == PREVIEW_MODE:
-            pass
-            #contents = DIV()
-          
-        if not contents and default is not None:
-            contents = [default]
-            
-        if contents:
-            el_id = 'managed_html_contents_%s' % name
-            contents = DIV(
-                DIV(DIV(
-                    INPUT(_value=current.T('Add'), _type='button', 
-                          _onclick=self._post_contents_js(name, dict(action='add_content'), el_id),
-                          _class='managed_html_btn')),
-                   _class='managed_html_contents_ctrl'),
-                DIV(_class='managed_html_contents_inner', *[c for c in contents]),
-                _class='managed_html_contents', _id=el_id)
-        
-            if wrapper:
-                contents = wrapper(contents)
+            default = default or XML('&nbsp;')
+            for content in contents:
+                content_el_id = 'managed_html_content_%s' % content.id
+                inner.append(DIV(
+                    self._render_content(name, content, content_el_id),
+                    _onclick=self._post_contents_js(
+                            name, dict(action='edit_content'), '123'),
+                    _class='managed_html_content'))
         else:
-            contents = ''
-            
-        return contents
+            for content in contents:
+                content_el_id = 'managed_html_content_%s' % content.id
+                inner.append(self._render_content(name, content, content_el_id))
         
+        if not inner and default is not None:
+            inner.append(default)
+        
+        if not inner:
+            return ''
+        else:
+            return DIV(_class='managed_html_contents_inner', *[c for c in inner])
+            
     def response(self, name):
         # TODO
         response = current.response

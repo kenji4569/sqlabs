@@ -42,7 +42,7 @@
 'A table column composed of checkboxes': 'チェックボックスからなるテーブルカラム',
 'A user-friendly multiple options widget': '使い勝手のよい複数オプションウィジェット',
 'Active': '有効',
-'Add': '作成',
+'Add': '追加',
 'Add friend': '友だちになる',
 'Add not-empty markers to field labels': 'フィールドラベルに必須マークを付与します',
 'Add to Cart': 'カゴに入れる',

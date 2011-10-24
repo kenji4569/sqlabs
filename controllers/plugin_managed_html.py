@@ -43,13 +43,12 @@ def page1():
     
     view = DIV(
         managed_html.response('page1'), # execute before head rendering in view
-        DIV(managed_html('header', default='header'), 
-            _style='width:500px;height:30px;background:silver;'),
+        DIV(managed_html('header', default='header')),
         H1(response.title or ''),
-        DIV(managed_html('product_%s' %  product.id, default='main'), 
-            _style='width:500px;height:300px;background:silver;'), HR(),
-        DIV(managed_html('footer', default='footer'), 
-            _style='width:500px;height:30px;background:silver;'),
+        DIV(managed_html('product_%s' %  product.id, 
+                         wrapper=lambda c: DIV(H4(product.name), c))), 
+        HR(),
+        DIV(managed_html('footer', default='footer')),
     )
     
     return dict(back=A('back', _href=URL('index')),
