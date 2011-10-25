@@ -57,7 +57,7 @@ class SOLIDTABLE(SQLTABLE):
         headers = self._convert_headers(show_header and headers or {}, columns)
         if extracolumns:#new implement dict
             _extracolumns = dict([(str(ec), ec) for ec in extracolumns])
-            columns.extend([c for c in [str(ec) for ec in extracolumns] if c not in flat_columns])
+            columns.extend([c for c in _extracolumns.keys() if c not in flat_columns])
             headers.update(_extracolumns.items())
             
         col_lines = self._make_multine_columns(columns, headers, max_col_lines)
@@ -73,42 +73,51 @@ class SOLIDTABLE(SQLTABLE):
                 current.response.files.append(_url)
         
     def _convert_headers(self, headers, columns):
-        def _get_field_label(column):
+        def _get_field(column):
             field = None
             if type(column) == str and column[0] != '(':
                 parts = column.split('.')
                 if len(parts) == 2:
                     (t,f) = parts
                     field = self.sqlrows.db[t][f]
-            return (field and field.label) or column
-            
+            return field
+    
         if headers=='fieldname:capitalize':
             headers = {}
-            def _set_label(c):
+            def _set_header(c):
                 if type(c) == str:
                     headers[c] = {'label': ' '.join([w.capitalize() 
                                     for w in c.split('.')[-1].split('_')])}
                 elif c:
-                    headers[c] = {'label': _get_field_label(c)}
+                    field = _get_field(c)
+                    headers[c] = {'label': (field and field.label) or c,
+                                  'class': field and field.type or ''}
                     
         elif headers=='labels':
             headers = {}
-            def _set_label(c):
+            def _set_header(c):
                 if c:
-                    headers[c] = {'label': _get_field_label(c)}
+                    field = _get_field(c)
+                    headers[c] = {'label': (field and field.label) or c,
+                                  'class': field and field.type or ''}
         else:
-            def _set_label(c):
-                if c:
+            def _set_header(c):
+                if c:   
+                    field = _get_field(c)
+                    label = (field and field.label) or c
+                    class_ = field and field.type or ''
                     if c not in headers:
-                        headers[c] = {'label': _get_field_label(c)}
+                        headers[c] = {'label': label, 'class': class_}
                     elif 'label' not in headers[c]:
-                        headers[c]['label'] = _get_field_label(c)
+                        headers[c]['label'] = label
+                        headers[c]['class'] = class_
+                    
         for inner in columns or self.sqlrows.colnames:
             if type(inner) in (list, tuple):
                 for col in inner:
-                    _set_label(col)
+                    _set_header(col)
             else:
-                _set_label(inner) 
+                _set_header(inner) 
                     
         return headers
         
