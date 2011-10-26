@@ -102,31 +102,30 @@ class Catalog(object):
         self.db(self.settings.table_variant.product==product_id).delete()
         return self.db(self.settings.table_product.id==product_id).delete()
         
-    def get_options(self, option_ids, *fields, **attributes):
+    def get_options(self, option_ids):
         return self._get_records(self.settings.table_option, 
-                                 option_ids, self._option_pool,
-                                 *fields, **attributes)
+                                 option_ids, self._option_pool)
                                  
-    def get_option_groups(self, option_group_ids, *fields, **attributes):
+    def get_option_groups(self, option_group_ids):
         return self._get_records(self.settings.table_option_group, 
-                                 option_group_ids, self._option_group_pool,
-                                 *fields, **attributes)
+                                 option_group_ids, self._option_group_pool)
         
-    def _get_records(self, table, ids, pool, *fields, **attributes):
+    def _get_records(self, table, ids, pool):
         if not ids:
             return []
         _ids = [e for e in ids if e not in pool]
         if _ids:
-            records = self.db(table.id.belongs(set(_ids))).select(*fields, **attributes)
-            pool.update(**dict([(r.id, r) for r in records]))
+            records = self.db(table.id.belongs(set(_ids))).select()
+            tablename = str(table)
+            pool.update(**dict([(r[tablename].id if tablename in r else r.id, r) for r in records]))
         return [pool[id] for id in ids]
     
     def get_product(self, product_id, load_variants=True, 
                     load_options=True, load_option_groups=True, 
                     variant_fields=[], variant_attributes={},
-                    *fields, **attributes):
+                    fields=[]):
         settings = self.settings
-        product = self.db(settings.table_product.id==product_id).select(*fields, **attributes).first()
+        product = self.db(settings.table_product.id==product_id).select(*fields).first()
         if not product:
             return None
             
@@ -144,61 +143,84 @@ class Catalog(object):
             
         return product
         
-    def get_products_by_query(self, query, load_variants=True, 
+    def products_from_query(self, query, load_variants=True, 
                               load_options=True, load_option_groups=True, 
-                              variant_fields=[], variant_attributes={},
-                              *fields, **attributes):
-        db, settings = self.db, self.settings
-        table_variant = settings.table_variant
+                              variant_fields=[], variant_attributes={}):
+        db, settings, get_options, get_option_groups = self.db, self.settings, self.get_options, self.get_option_groups
         
-        products = db(query).select(*fields, **attributes)
+        class _VirtualSet(object):
         
-        if not products or not load_variants:
-            return products
-            
-        from itertools import groupby
-        variants = db(table_variant.product.belongs([r.id for r in products])
-                      ).select(orderby=table_variant.product|settings.table_variant_orderby,
-                               *variant_fields, **variant_attributes)
-        _variants = {}
-        for k, g in groupby(variants, key=lambda r: r.product):
-            _variants[k] = list(g)
-           
-        for product in products:
-            product.variants = _variants.get(product.id, [])
-            
-        if not load_options:
-            return products
-            
-        bulk_loader = _BulkLoader()        
-        for product in products:
-            for variant in product.variants:
-                bulk_loader.register(variant.options or [])
-        bulk_loader.load(self.get_options)
-        for product in products:
-            for variant in product.variants:
-                variant.options = bulk_loader.retrieve()
-        
-        if load_option_groups:        
-            bulk_loader = _BulkLoader()
-        for product in products:
-            product.option_groups = [option.option_group for option 
-                    in product.variants and product.variants[0].options or []]
-            if load_option_groups:
-                bulk_loader.register(product.option_groups)
-        if load_option_groups:
-            bulk_loader.load(self.get_option_groups)
-            for product in products:
-                product.option_groups = bulk_loader.retrieve()
+            def count(self):
+                return db(query).count()
+                
+            def select(self, *fields, **attributes):
+                
+                table_variant = settings.table_variant
+                products = db(query).select(*fields, **attributes)
+                
+                if not products or not load_variants:
+                    return products
+                tablename = settings.table_product_name
+                joined = (tablename in products[0])
                     
-        return products
+                product_ids = [r[tablename].id if joined else r.id for r in products]
+                                 
+                from itertools import groupby                               
+                variants = db(table_variant.product.belongs(product_ids)
+                              ).select(orderby=table_variant.product|settings.table_variant_orderby,
+                                       *variant_fields, **variant_attributes)
+                _variants = {}
+                for k, g in groupby(variants, key=lambda r: r.product):
+                    _variants[k] = list(g)
+                   
+                for r in products:
+                    if joined:
+                        r[tablename].variants = _variants.get(r[tablename].id, [])
+                    else:
+                        r.variants = _variants.get(r.id, []) 
+                    
+                if not load_options:
+                    return products
+                    
+                bulk_loader = _BulkLoader()        
+                for r in products:
+                    for variant in r[tablename].variants if joined else r.variants:
+                        bulk_loader.register(variant.options or [])
+                bulk_loader.load(get_options)
+                for r in products:
+                    for variant in r[tablename].variants if joined else r.variants:
+                        variant.options = bulk_loader.retrieve()
+                
+                if load_option_groups:        
+                    bulk_loader = _BulkLoader()
+                for r in products:
+                    if joined:
+                        r[tablename].option_groups = [option.option_group for option 
+                                in r[tablename].variants and r[tablename].variants[0].options or []]
+                    else:
+                        r.option_groups = [option.option_group for option 
+                                in r.variants and r.variants[0].options or []]
+                    if load_option_groups:
+                        bulk_loader.register(r[tablename].option_groups if joined else r.option_groups)
+                
+                if load_option_groups:
+                    bulk_loader.load(get_option_groups)
+                    for r in products:
+                        if joined:
+                            r[tablename].option_groups = bulk_loader.retrieve()
+                        else:
+                            r.option_groups = bulk_loader.retrieve()
+                            
+                return products
+                
+        return _VirtualSet()
         
     def get_variant(self, variant_id, load_product=True, 
                     load_options=True, load_option_groups=True, 
                     product_fields=[], product_attributes={},
-                    *fields, **attributes):
+                    fields=[]):
         settings = self.settings
-        variant = self.db(settings.table_variant.id==variant_id).select(*fields, **attributes).first()
+        variant = self.db(settings.table_variant.id==variant_id).select(*fields).first()
         if not variant:
             return None
            

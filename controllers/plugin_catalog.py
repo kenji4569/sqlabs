@@ -21,9 +21,7 @@ catalog.settings.table_option_name = 'plugin_catalog_option'
 catalog.settings.extra_fields = {
     'plugin_catalog_product': [
         Field('name', label=T('Name')),
-        Field('active', 'boolean', default=False, 
-              label=T('Active'),
-              widget=SQLFORM.widgets.boolean.widget), # not properly working without it? 
+        Field('active', 'boolean', default=False, label=T('Active')),  
         Field('description', 'text', label=T('Description')),
         Field('image', 'upload', label=T('Image'), autodelete=True, 
               uploadfolder=os.path.join(request.folder, 'uploads'),
@@ -51,11 +49,11 @@ catalog.settings.extra_fields = {
         # Field('weight', 'integer'),
         # Field('taxable', 'boolean'),
     ],
-    'plugin_catalog_option': [
-        Field('name', label=T('name')),
-    ],
     'plugin_catalog_option_group': [
-        Field('name', label=T('name')),
+        Field('name', label=T('Name')),
+    ],
+    'plugin_catalog_option': [
+        Field('name', label=T('Name')),
     ],
 }
 
@@ -63,22 +61,23 @@ catalog.settings.extra_fields = {
 catalog.define_tables()
 table_product = catalog.settings.table_product
 table_product.name.requires = IS_NOT_EMPTY()
-table_product.image.requires=IS_NULL_OR(IS_LENGTH(10240))
+table_product.active.widget = SQLFORM.widgets.boolean.widget # not properly working without it?
+table_product.image.requires = IS_NULL_OR(IS_LENGTH(10240))
 
 table_variant = catalog.settings.table_variant
 catalog.settings.table_variant_orderby = table_variant.sort_order
 table_variant.sku.requires = IS_NOT_EMPTY()
 table_variant.price.requires = IS_INT_IN_RANGE(0, 1000000)
 table_variant.price.widget = tight_input_widget
+table_variant.quantity.requires = IS_EMPTY_OR(IS_INT_IN_RANGE(0, 1000000))
+table_variant.quantity.widget = tight_input_widget
 
 table_option_group = catalog.settings.table_option_group
 table_option_group.name.requires = IS_NOT_EMPTY()
 
 table_option = catalog.settings.table_option
-table_option_group.name.requires = IS_NOT_EMPTY()
+table_option.name.requires = IS_NOT_EMPTY()
 
-table_variant.quantity.requires = IS_EMPTY_OR(IS_INT_IN_RANGE(0, 1000000))
-table_variant.quantity.widget = tight_input_widget
                     
 ### populate records ###########################################################
 import datetime
@@ -108,14 +107,14 @@ def option_groups_widget(field, value, **attributes):
 jQuery(document).ready(function() {
     var buttons = jQuery('#%(id)s input[type=button]');
     buttons.click(function(e){
-        var options = jQuery(%(select_el_id)s).children();
+        var options = jQuery('#%(select_el_id)s').children();
         if (options.length > %(max_options)s) {
             alert('! Number of options should be less than or equal to ' + %(max_options)s);
         } else if (options.length == %(max_options)s) {
-            jQuery(%(unselected_el_id)s).prop('disabled', true);
+            jQuery('#%(unselected_el_id)s').prop('disabled', true);
             jQuery(buttons[0]).prop('disabled', true);
         } else {
-            jQuery(%(unselected_el_id)s).prop('disabled', false);
+            jQuery('#%(unselected_el_id)s').prop('disabled', false);
             jQuery(buttons[0]).prop('disabled', false);
         }
         if (options.length <= %(max_options)s) {
@@ -374,7 +373,7 @@ def index():
                          'content':lambda row, rc: A('Delete', _href=URL('index', args=['delete', row.id]))},
                     ]
         
-        products = catalog.get_products_by_query(table_product.id>0, orderby=~table_product.id)
+        products = catalog.products_from_query(table_product.id>0).select(orderby=~table_product.id)
         products = SOLIDTABLE(products, 
                               headers='labels', extracolumns=extracolumns)
         return dict(product_form=form, 
