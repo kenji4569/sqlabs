@@ -57,7 +57,7 @@ class SOLIDTABLE(SQLTABLE):
         headers = self._convert_headers(show_header and headers or {}, columns)
         if extracolumns:#new implement dict
             _extracolumns = dict([(str(ec), ec) for ec in extracolumns])
-            columns.extend([c for c in _extracolumns.keys() if c not in flat_columns])
+            columns.extend([c for c in [str(ec) for ec in extracolumns] if c not in flat_columns])
             headers.update(_extracolumns.items())
             
         col_lines = self._make_multine_columns(columns, headers, max_col_lines)
