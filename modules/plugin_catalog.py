@@ -40,7 +40,6 @@ class Catalog(object):
         
         settings.table_option_name = 'catalog_option'
         settings.table_option = None
-        
         self.init_record_pool()
         
     def init_record_pool(self):
@@ -53,7 +52,6 @@ class Catalog(object):
         if not settings.table_product_name in db.tables:
             table = db.define_table(
                 settings.table_product_name,
-                migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_product_name, []))
         settings.table_product = db[settings.table_product_name]
                 

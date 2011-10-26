@@ -72,14 +72,13 @@ class CommentCascade(object):
         settings = self.settings
         _id = 'plugin_comment_cascade__%s__%s' % (user_id, target_id)
             
-        settings.select_attributes.update(
-            limitby=None if view_all else (0, settings.limit+1),
-            orderby=~settings.table_comment.id)
         records = self.comments_from_target(target_id).select(
+            limitby=None if view_all else (0, settings.limit+1),
+            orderby=~settings.table_comment.id,
             *settings.select_fields, **settings.select_attributes
         )
+
         elements = []
-        
         elements[:0] = settings.headers
             
         if not view_all and len(records) > settings.limit:

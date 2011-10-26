@@ -229,6 +229,14 @@ This plugin a form object which makes table rows permutable using %s, and submit
         long_description="""A minimum set of checkout models for shopping (Now Developping)""",
         status='under-construction',
     ),
+    
+    plugin_managed_html=dict(
+        label='Managed HTML',
+        show_image=False,
+        short_description='TODO',
+        long_description="""TODO""",
+        status='under-construction',
+    ),
 )
 
 if request.controller.startswith('plugin_'):
