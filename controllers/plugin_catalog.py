@@ -20,10 +20,14 @@ catalog.settings.table_option_group_name = 'plugin_catalog_option_group'
 catalog.settings.table_option_name = 'plugin_catalog_option'
 catalog.settings.extra_fields = {
     'plugin_catalog_product': [
+        Field('name', label=T('Name')),
+        Field('available', 'boolean', default=False, 
+              label=T('Available'),
+              widget=SQLFORM.widgets.boolean.widget), # not properly working without it? 
         Field('description', 'text', label=T('Description')),
         Field('image', 'upload', label=T('Image'), autodelete=True, 
               uploadfolder=os.path.join(request.folder, 'uploads'),
-              requires=IS_NULL_OR(IS_LENGTH(10240)), comment='size < 10k'),
+              comment='size < 10k'),
         Field('created_on', 'datetime', default=request.now, label=T('Created on'),
               readable=False, writable=False),
         # --- Other possible fields ---
@@ -37,25 +41,41 @@ catalog.settings.extra_fields = {
         # Field('reward_point_rate'),
         # Field('keywords'),
     ],
-    # 'plugin_catalog_variant': [
+    'plugin_catalog_variant': [
+        Field('sku', unique=True, label=T('SKU')),
+        Field('price', 'integer', label=T('Sale price')),
+        Field('quantity', 'integer', label=T('Inventory quantity')),
+        Field('sort_order', 'integer'),
         # Field('retail_price', 'integer'),
         # Field('inventory_level', 'integer'),
         # Field('weight', 'integer'),
         # Field('taxable', 'boolean'),
-    # ],
-    # 'plugin_catalog_option': [
-        # Field('price_charge'),],
+    ],
+    'plugin_catalog_option': [
+        Field('name', label=T('name')),
+    ],
+    'plugin_catalog_option_group': [
+        Field('name', label=T('name')),
+    ],
 }
 
 ### define tables ##############################################################
 catalog.define_tables()
 table_product = catalog.settings.table_product
-table_variant = catalog.settings.table_variant
-table_option_group = catalog.settings.table_option_group
-table_option = catalog.settings.table_option
+table_product.name.requires = IS_NOT_EMPTY()
+table_product.image.requires=IS_NULL_OR(IS_LENGTH(10240))
 
+table_variant = catalog.settings.table_variant
+catalog.settings.table_variant_orderby = table_variant.sort_order
+table_variant.sku.requires = IS_NOT_EMPTY()
 table_variant.price.requires = IS_INT_IN_RANGE(0, 1000000)
 table_variant.price.widget = tight_input_widget
+
+table_option_group = catalog.settings.table_option_group
+table_option_group.name.requires = IS_NOT_EMPTY()
+
+table_option = catalog.settings.table_option
+table_option_group.name.requires = IS_NOT_EMPTY()
 
 table_variant.quantity.requires = IS_EMPTY_OR(IS_INT_IN_RANGE(0, 1000000))
 table_variant.quantity.widget = tight_input_widget

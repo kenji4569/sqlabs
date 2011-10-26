@@ -189,6 +189,7 @@
 'enter from %(min)g to %(max)g characters': '%(min)g ～ %(max)g 文字を入力してください',
 'invalid image': '不正な画像です',
 'language': '言語',
+'name': 'name',
 'register': '登録',
 'this discussion': 'この議論',
 'under construction': '準備中',

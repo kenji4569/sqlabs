@@ -2,7 +2,7 @@
 # This plugins is licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 # Authors: Kenji Hosoda <hosoda@s-cubism.jp>
 from gluon import *
-from gluon.storage import Storage, Messages
+from gluon.storage import Storage
 
 class _BulkLoader(object):
     def __init__(self):
@@ -33,22 +33,13 @@ class Catalog(object):
         
         settings.table_variant_name = 'catalog_variant'
         settings.table_variant = None
+        settings.table_variant_orderby = None
         
         settings.table_option_group_name = 'catalog_option_group'
         settings.table_option_group = None
         
         settings.table_option_name = 'catalog_option'
         settings.table_option = None
-        
-        settings.price_type = 'integer'
-        
-        messages = self.messages = Messages(current.T)
-        messages.label_name = 'Name'
-        messages.label_available = 'Available'
-        messages.label_sku = 'SKU'
-        
-        messages.label_price = 'Sale price'
-        messages.label_quantity = 'Inventory quantity'
         
         self.init_record_pool()
         
@@ -62,13 +53,8 @@ class Catalog(object):
         if not settings.table_product_name in db.tables:
             table = db.define_table(
                 settings.table_product_name,
-                Field('name', label=self.messages.label_name),
-                Field('available', 'boolean', default=False, 
-                      label=self.messages.label_available,
-                      widget=SQLFORM.widgets.boolean.widget), # not properly working without it? 
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_product_name, []))
-            table.name.requires = IS_NOT_EMPTY()
         settings.table_product = db[settings.table_product_name]
                 
         if not settings.table_variant_name in db.tables:
@@ -76,24 +62,18 @@ class Catalog(object):
                 settings.table_variant_name,
                 Field('product', 'reference %s' % settings.table_product_name,
                       readable=False, writable=False),
-                Field('sku', unique=True, label=self.messages.label_sku),
                 Field('options', 'list:reference %s' % settings.table_option_name,
                       readable=False, writable=False),
-                Field('sort_order', 'integer'),
-                Field('price', settings.price_type, label=self.messages.label_price),
-                Field('quantity', 'integer', label=self.messages.label_quantity),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_variant_name, []))
-            table.sku.requires = IS_NOT_EMPTY()
+            settings.table_variant_orderby = table.id
         settings.table_variant = db[settings.table_variant_name]
                 
         if not settings.table_option_group_name in db.tables:
             table = db.define_table(
                 settings.table_option_group_name,
-                Field('name', label=self.messages.label_name),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_option_group_name, []))
-            table.name.requires = IS_NOT_EMPTY()
         settings.table_option_group = db[settings.table_option_group_name]
         
         if not settings.table_option_name in db.tables:
@@ -101,10 +81,8 @@ class Catalog(object):
                 settings.table_option_name,
                 Field('option_group', 'reference %s' % settings.table_option_group_name,
                       readable=False, writable=False),
-                Field('name', label=self.messages.label_name),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_option_name, []))
-            table.name.requires = IS_NOT_EMPTY()
         settings.table_option = db[settings.table_option_name]
                 
     def add_product(self, product_vars, variant_vars_list):
@@ -156,7 +134,7 @@ class Catalog(object):
             
         if load_variants:
             product.variants = self.variants_from_product(product_id
-                    ).select(orderby=settings.table_variant.sort_order, 
+                    ).select(orderby=settings.table_variant_orderby, 
                              *variant_fields, **variant_attributes)
             if load_options:
                 for variant in product.variants:
@@ -172,8 +150,8 @@ class Catalog(object):
                               load_options=True, load_option_groups=True, 
                               variant_fields=[], variant_attributes={},
                               *fields, **attributes):
-        db = self.db
-        table_variant = self.settings.table_variant
+        db, settings = self.db, self.settings
+        table_variant = settings.table_variant
         
         products = db(query).select(*fields, **attributes)
         
@@ -182,7 +160,7 @@ class Catalog(object):
             
         from itertools import groupby
         variants = db(table_variant.product.belongs([r.id for r in products])
-                      ).select(orderby=table_variant.product|table_variant.sort_order,
+                      ).select(orderby=table_variant.product|settings.table_variant_orderby,
                                *variant_fields, **variant_attributes)
         _variants = {}
         for k, g in groupby(variants, key=lambda r: r.product):
