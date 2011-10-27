@@ -103,21 +103,21 @@ class MPTTModel(object):
     
     def is_root_node(self, node_or_node_id):
         db, table_node = self.db, self.settings.table_node
-        if hasattr(node_or_node_id, 'left'):
+        if isinstance(node_or_node_id, Row):
             return node_or_node_id.left == 1
         else:
             return bool(db(table_node.id == node_or_node_id)(table_node.left == 1).count())
             
     def is_child_node(self, node_or_node_id):
         db, table_node = self.db, self.settings.table_node
-        if hasattr(node_or_node_id, 'left'):
+        if isinstance(node_or_node_id, Row):
             return node_or_node_id.left > 1
         else:
             return bool(db(table_node.id == node_or_node_id)(table_node.left > 1).count())
         
     def is_leaf_node(self, node_or_node_id):
         db, table_node = self.db, self.settings.table_node
-        if hasattr(node_or_node_id, 'left'):
+        if isinstance(node_or_node_id, Row):
             return node_or_node_id.right == node_or_node_id.left+1
         else:
             return bool(db(table_node.id == node_or_node_id)(
