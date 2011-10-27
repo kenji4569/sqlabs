@@ -56,17 +56,17 @@ class TreeTestMixin():
         return db(table_node.id == node_id).select().first()
         
     def build_tree1(self):
-        self.node1 = mptt.insert_node(target_id=None, name='node1')
-        self.node2 = mptt.insert_node(target_id=self.node1, name='node2')
-        self.node3 = mptt.insert_node(target_id=self.node2, name='node3')
-        self.node4 = mptt.insert_node(target_id=self.node2, name='node4')
-        self.node5 = mptt.insert_node(target_id=self.node2, name='node5')
-        self.node6 = mptt.insert_node(target_id=self.node1, name='node6')
-        self.node7 = mptt.insert_node(target_id=self.node6, name='node7')
-        self.node8 = mptt.insert_node(target_id=self.node6, name='node8')
-        self.node9 = mptt.insert_node(target_id=None, name='node9')
-        self.node10 = mptt.insert_node(target_id=self.node9, name='node10')
-        self.node11 = mptt.insert_node(target_id=self.node9, name='node11')
+        self.node1 = mptt.insert_node(None, name='node1')
+        self.node2 = mptt.insert_node(self.node1, name='node2')
+        self.node3 = mptt.insert_node(self.node2, name='node3')
+        self.node4 = mptt.insert_node(self.node2, name='node4')
+        self.node5 = mptt.insert_node(self.node2, name='node5')
+        self.node6 = mptt.insert_node(self.node1, name='node6')
+        self.node7 = mptt.insert_node(self.node6, name='node7')
+        self.node8 = mptt.insert_node(self.node6, name='node8')
+        self.node9 = mptt.insert_node(None, name='node9')
+        self.node10 = mptt.insert_node(self.node9, name='node10')
+        self.node11 = mptt.insert_node(self.node9, name='node11')
         
         # name, parent, tree_id, level, left, right,   structure
         # node1 -      1 0 1 16   node1
@@ -82,16 +82,16 @@ class TreeTestMixin():
         # node11 node9 2 1 4 5    +-- node11
         
     def build_tree2(self):
-        self.node1 = mptt.insert_node(target_id=None, name='node1')
-        self.node2 = mptt.insert_node(target_id=self.node1, name='node2')
-        self.node3 = mptt.insert_node(target_id=self.node2, name='node3')
-        self.node4 = mptt.insert_node(target_id=self.node2, name='node4')
-        self.node5 = mptt.insert_node(target_id=self.node1, name='node5')
-        self.node6 = mptt.insert_node(target_id=self.node5, name='node6')
-        self.node7 = mptt.insert_node(target_id=self.node5, name='node7')
-        self.node8 = mptt.insert_node(target_id=self.node1, name='node8')
-        self.node9 = mptt.insert_node(target_id=self.node8, name='node9')
-        self.node10 = mptt.insert_node(target_id=self.node8, name='node10')
+        self.node1 = mptt.insert_node(None, name='node1')
+        self.node2 = mptt.insert_node(self.node1, name='node2')
+        self.node3 = mptt.insert_node(self.node2, name='node3')
+        self.node4 = mptt.insert_node(self.node2, name='node4')
+        self.node5 = mptt.insert_node(self.node1, name='node5')
+        self.node6 = mptt.insert_node(self.node5, name='node6')
+        self.node7 = mptt.insert_node(self.node5, name='node7')
+        self.node8 = mptt.insert_node(self.node1, name='node8')
+        self.node9 = mptt.insert_node(self.node8, name='node9')
+        self.node10 = mptt.insert_node(self.node8, name='node10')
         
         # name, parent, tree_id, level, left, right,   structure
         # node1 -      1 0 1 20    node1
@@ -307,8 +307,8 @@ class DeletionTestCase(unittest.TestCase, TreeTestMixin):
         self.build_tree2()
         
     def test_delete_root_node(self):
-        mptt.insert_node(target_id=self.node1, position='left', name='node11')
-        mptt.insert_node(target_id=self.node1, position='right', name='node12')
+        mptt.insert_node(self.node1, position='left', name='node11')
+        mptt.insert_node(self.node1, position='right', name='node12')
         self.asserTree(self.get_all_nodes(),
                       """node11 None 1 0 1 2
                          node1 None 2 0 1 20
