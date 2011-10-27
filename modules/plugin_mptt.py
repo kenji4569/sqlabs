@@ -33,7 +33,15 @@ class MPTTModel(object):
                 *settings.extra_fields.get(settings.table_node_name, []))
         settings.table_node = db[settings.table_node_name]
         
-    def get_ancestors(self, node_id, ascending=False, include_self=False, *fields, **attributes):
+    @property
+    def asc(self):
+        return ~self.settings.table_node.left
+    
+    @property
+    def desc(self):
+        return self.settings.table_node.left
+        
+    def ancestors_from_node(self, node_id, include_self=False):
         db, table_node = self.db, self.settings.table_node
         node = db(table_node.id == node_id
                  ).select(table_node.left, table_node.right, table_node.tree_id).first()
@@ -45,14 +53,8 @@ class MPTTModel(object):
             left += 1
             right -= 1
             
-        if ascending:
-            attributes['orderby'] = ~table_node.left
-        else:
-            attributes['orderby'] = table_node.left
-            
         return db(table_node.left < left)(table_node.right > right)(
-                  table_node.tree_id == node.tree_id
-                  ).select(*fields, **attributes)
+                  table_node.tree_id == node.tree_id)
     
     def descendants_from_node(self, node_id):
         db, table_node = self.db, self.settings.table_node
@@ -64,7 +66,7 @@ class MPTTModel(object):
         return db(table_node.left > node.left)(table_node.right < node.right)(
                   table_node.tree_id == node.tree_id)
     
-    def get_descendant_count(self, node_id):
+    def count_descendants_from_node(self, node_id):
         db, table_node = self.db, self.settings.table_node
         node = db(table_node.id == node_id).select().first()
         if not node:
@@ -97,10 +99,9 @@ class MPTTModel(object):
             previous_sib = db(table_node.right == node.left - 1)(table_node.tree_id == node.tree_id).select(table_node.id)
         return previous_sib.id
     
-    def get_roots(self, *fields, **attributes):
+    def roots(self):
         db, table_node = self.db, self.settings.table_node
-        attributes['orderby'] = table_node.tree_id
-        return db(table_node.left == 1).select(*fields, **attributes)
+        return db(table_node.left == 1)
     
     def is_root_node(self, node_or_node_id):
         db, table_node = self.db, self.settings.table_node
@@ -121,7 +122,8 @@ class MPTTModel(object):
         if hasattr(node_or_node_id, 'left'):
             return node_or_node_id.right == node_or_node_id.left+1
         else:
-            return bool(db(table_node.id == node_id)(table_node.right == table_node.left+1).count())
+            return bool(db(table_node.id == node_or_node_id)(
+                           table_node.right == table_node.left+1).count())
         
     def is_ancestor_of(self, node1_or_node1_id, node2_or_node2_id):
         db, table_node = self.db, self.settings.table_node
@@ -132,11 +134,11 @@ class MPTTModel(object):
         if hasattr(node2_or_node2_id, 'left'):
             node2 = node2_or_node2_id
         else:
-            node2 = db(table_node.id == node2_id).select().first()
+            node2 = db(table_node.id == node2_or_node2_id).select().first()
         
         return (node1.left < node2.left) and (node1.right > node2.right)
         
-    def is_descendant_of(self, node1_id, node2_id):
+    def is_descendant_of(self, node1_or_node1_id, node2_or_node2_id):
         db, table_node = self.db, self.settings.table_node
         if hasattr(node1_or_node1_id, 'left'):
             node1 = node1_or_node1_id
@@ -145,12 +147,16 @@ class MPTTModel(object):
         if hasattr(node2_or_node2_id, 'left'):
             node2 = node2_or_node2_id
         else:
-            node2 = db(table_node.id == node2_id).select().first()
+            node2 = db(table_node.id == node2_or_node2_id).select().first()
         return (node1.left > node2.left) and (node1.right < node2.right)
         
-    def delete_node(self, node_id):
+    def delete_node(self, node_or_node_id):
         db, table_node = self.db, self.settings.table_node
-        node = db(table_node.id == node_id).select().first()
+        if hasattr(node_or_node_id, 'left'):
+            node = node_or_node_id
+        else:
+            node = db(table_node.id == node_or_node_id).select().first()
+        
         if not node:
             raise ValueError
 
@@ -201,7 +207,7 @@ class MPTTModel(object):
         
         right_shift = 0
         if parent:
-            right_shift = 2 * (int(self.get_descendant_count(node_id)) + 1)
+            right_shift = 2 * (int(self.count_descendants_from_node(node_id)) + 1)
         
         return space_target, level_change, left_right_change, parent, right_shift
 

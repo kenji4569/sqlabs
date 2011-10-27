@@ -111,9 +111,11 @@ class ReadingTestCase(unittest.TestCase, TreeTestMixin):
         mptt.settings.table_node.truncate()
         self.build_tree1()
         
-    def test_get_ancestors(self):
-        def _get_ancestors(node_id, **kwds):
-            return [node.name for node in mptt.get_ancestors(node_id, **kwds)]
+    def test_ancestors_from_node(self):
+        def _get_ancestors(node_id, include_self=False, ascending=False):
+            return [node.name for node in 
+                        mptt.ancestors_from_node(node_id, include_self
+                             ).select(orderby=mptt.asc if ascending else mptt.desc)]
         self.assertEqual(_get_ancestors(self.node1), [])
         self.assertEqual(_get_ancestors(self.node2), ['node1'])
         self.assertEqual(_get_ancestors(self.node3), ['node1', 'node2'])
@@ -142,24 +144,24 @@ class ReadingTestCase(unittest.TestCase, TreeTestMixin):
         self.assertEqual(_get_descendants(self.node3), [])
         self.assertEqual(_get_descendants(self.node6), ['node7', 'node8'])
         
-    def test_get_descendant_count(self):
-        self.assertEqual(mptt.get_descendant_count(self.node1), 7)
-        self.assertEqual(mptt.get_descendant_count(self.node2), 3)
-        self.assertEqual(mptt.get_descendant_count(self.node3), 0)
-        self.assertEqual(mptt.get_descendant_count(self.node4), 0)
-        self.assertEqual(mptt.get_descendant_count(self.node5), 0)
-        self.assertEqual(mptt.get_descendant_count(self.node6), 2)
-        self.assertEqual(mptt.get_descendant_count(self.node7), 0)
-        self.assertEqual(mptt.get_descendant_count(self.node8), 0)
-        self.assertEqual(mptt.get_descendant_count(self.node9), 2)
-        self.assertEqual(mptt.get_descendant_count(self.node10), 0)
+    def test_count_descendants_from_node(self):
+        self.assertEqual(mptt.count_descendants_from_node(self.node1), 7)
+        self.assertEqual(mptt.count_descendants_from_node(self.node2), 3)
+        self.assertEqual(mptt.count_descendants_from_node(self.node3), 0)
+        self.assertEqual(mptt.count_descendants_from_node(self.node4), 0)
+        self.assertEqual(mptt.count_descendants_from_node(self.node5), 0)
+        self.assertEqual(mptt.count_descendants_from_node(self.node6), 2)
+        self.assertEqual(mptt.count_descendants_from_node(self.node7), 0)
+        self.assertEqual(mptt.count_descendants_from_node(self.node8), 0)
+        self.assertEqual(mptt.count_descendants_from_node(self.node9), 2)
+        self.assertEqual(mptt.count_descendants_from_node(self.node10), 0)
     
     def test_leafnodes(self):
         self.assertEqual([node.name for node in mptt.leafnodes().select(orderby=table_node.tree_id|table_node.left)],
                          ['node3', 'node4', 'node5', 'node7', 'node8', 'node10', 'node11'])
     
-    def test_get_roots(self):
-        self.assertEqual([node.name for node in mptt.get_roots()],
+    def test_roots(self):
+        self.assertEqual([node.name for node in mptt.roots().select()],
                          ['node1', 'node9'])
       
     def test_is_root_node(self):
