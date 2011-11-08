@@ -1,0 +1,11 @@
+.ui-icon {
+width: 16px;
+height: 16px;
+background-image: url(../images/ui-icons_222222_256x240.png);
+display: block;
+text-indent: -99999px;
+overflow: hidden;
+background-repeat: no-repeat;
+position: absolute;
+margin-top: 1px;
+}

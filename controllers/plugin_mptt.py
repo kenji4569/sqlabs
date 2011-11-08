@@ -1,37 +1,14 @@
 # -*- coding: utf-8 -*-
-from plugin_mptt import MPTTModel
-import unittest
-import re
-import datetime
-
-if request.function == 'test':
-    db = DAL('sqlite:memory:')
-
-### setup core objects #########################################################
-mptt = MPTTModel(db)
-mptt.settings.table_node_name = 'plugin_mptt_node'
-mptt.settings.extra_fields = {
-    'plugin_mptt_node': 
-        [Field('name'),
-         Field('created_on', 'datetime', default=request.now)],
-}
-
-### define tables ##############################################################'
-mptt.define_tables()
-table_node = mptt.settings.table_node
-NodeParent = table_node.with_alias('node_parent')
-parent_left = NodeParent.on(NodeParent.id==table_node.parent)
-
-### populate records ###########################################################
-deleted = db(table_node.created_on<request.now-datetime.timedelta(minutes=30)).delete()
-if deleted:
-    table_node.truncate()
-    session.flash = 'the database has been refreshed'
-    redirect(URL('index'))
 
 ### demo functions #############################################################
 def index():
-    return dict(unit_tests=[A('test all', _href=URL('test')),
+    # TODO
+    # response.files = ..
+    response.files.append(URL('static', 'plugin_mptt/jstree/jquery.hotkeys.js'))
+    response.files.append(URL('static', 'plugin_mptt/jstree/jquery.jstree.js'))
+    
+    return dict(output=XML(response.render('plugin_mptt/index.html', dict(AAA='1123'))),
+                unit_tests=[A('test all', _href=URL('test')),
                             A('test reading', _href=URL('test', args='reading')),
                             A('test reparenting', _href=URL('test', args='reparenting')),
                             A('test deletion', _href=URL('test', args='deletion'))])
