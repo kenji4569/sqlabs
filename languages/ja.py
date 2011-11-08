@@ -72,6 +72,7 @@
 'Confirmed': '承認済み',
 'Contact': 'お問い合わせ',
 'Contact us': 'お問い合わせ',
+'Create': 'Create',
 'Created on': '作成日時',
 'Day': '日',
 'Dec': '12月',

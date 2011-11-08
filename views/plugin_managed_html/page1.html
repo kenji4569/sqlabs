@@ -1,0 +1,32 @@
+{{extend 'layout.html'}}
+{{@managed_html.sortable('myblocks')
+  def block1():}}
+  <div>block1</div>
+{{pass}}
+{{@managed_html.sortable('myblocks')
+  def block2():}}
+  <div>block2</div>
+{{pass}}
+{{@managed_html.sortable('myblocks')
+  def block3():}}
+  <div>block3</div>
+{{pass}}
+
+<p class="backto">{{=back}}</p>
+<div>
+  <h1>{{=response.title or ''}}</h1>
+  <br/>
+  <div>{{=managed_html.html('header', default='header')}}</div>
+  <br/>
+  body
+  <div style="border: 1px solid whiteSmoke;">
+    {{block1()}}
+    {{block2()}}
+    <div style="margin:10px;">
+      <div>inner</div>
+      {{block3()}}
+    </div>
+  </div>
+</div>
+
+
