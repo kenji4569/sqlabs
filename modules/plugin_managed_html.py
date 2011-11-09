@@ -38,7 +38,7 @@ class ManagedHTML(object):
         
         self.switch_to_live_mode()
         
-        self._sortables = defaultdict(list)
+        self._draggables = defaultdict(list)
         
     def define_tables(self, migrate=True, fake_migrate=False):
         db, settings = self.db, self.settings
@@ -73,6 +73,8 @@ class ManagedHTML(object):
     def _show_navbar(self):
         current.response.files.append(URL('static', 'plugin_managed_html/managed_html.css'))
         current.response.files.append(URL('static', 'plugin_managed_html/managed_html.js'))
+        
+        current.response.files.append(URL('static', 'plugin_managed_html/jquery-ui-1.8.16.custom.min.js'))
         
     def _post_js(self, name, action, target):
         data = {self.keyword:name, '_action':action}
@@ -194,7 +196,7 @@ class ManagedHTML(object):
                           _style='display:none;'),
                         SPAN(SPAN(fields[0].comment, _style='white-space:nowrap;margin-right:10px;'),
                            _class='managed_html_main_comment',
-                           _style='display:none;') if len(fields) == 1 and fields[0].comment else '',
+                           _style='display:none;') if self._is_simple_form(fields) and fields[0].comment else '',
                         SPAN(INPUT(_value=T('Edit'), _type='button', 
                               _onclick=self._post_js(name, 'edit', _inner_el_id),
                               _class='managed_html_btn'),
@@ -210,13 +212,25 @@ class ManagedHTML(object):
             return wrapper
         return _render
         
-    def sortable(self, name):
-        def _sortable(func):
-            self._sortables[name].append(func)
+    def draggable(self, name):
+        request, response, session, T, settings = (
+            current.request, current.response, current.session, current.T, self.settings)
+        el_id = 'managed_html_block_%s' % name
+        _inner_el_id = 'managed_html_inner_%s' % name
+        
+        def _draggable(func):
+            self._draggables[name].append(func)
             def wrapper(*args, **kwds):
-                self._sortables[name].pop()(*args, **kwds)
+                if self.view_mode == EDIT_MODE:
+                    response.write(XML("""
+<div id="%s" class="managed_html_block managed_html_draggable managed_html_name_%s">""" % (el_id, name)))
+                    self._draggables[name].pop()(*args, **kwds)
+                    response.write(XML('</div>'))
+                else:
+                    self._draggables[name].pop()(*args, **kwds)
+                
             return wrapper
-        return _sortable
+        return _draggable
             
     
     # def response(self, name):

@@ -11,6 +11,25 @@ $(function(){
   }, function() {
     $(this).removeClass('managed_html_editing');
   });
+  
+  $( ".managed_html_name_block_type1")
+  .draggable({opacity:0.5, cursor:"move", revert: 'invalid'})
+  .droppable({
+    accept: ".managed_html_name_block_type1",
+    activeClass: "managed_html_draggable_hover",
+    hoverClass: "managed_html_draggable_active",
+    drop: function() { alert('dropped'); }
+  });
+  
+  $( ".managed_html_name_block_type2")
+  .draggable({opacity:0.5, cursor:"move", revert: 'invalid'})
+  .droppable({
+    accept: ".managed_html_name_block_type2",
+    activeClass: "managed_html_draggable_hover",
+    hoverClass: "managed_html_draggable_active",
+    drop: function() { alert('dropped'); }
+  });
+  
 })
 })(jQuery);
 

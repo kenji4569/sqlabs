@@ -1,17 +1,4 @@
 {{extend 'layout.html'}}
-{{@managed_html.sortable('slot1')
-  def block_a():}}
-  <div>block a</div>
-{{pass}}
-{{@managed_html.sortable('slot1')
-  def block_b():}}
-  <div>block b</div>
-{{pass}}
-{{@managed_html.sortable('slot1')
-  def block_c():}}
-  <div>block c</div>
-{{pass}}
-
 <p class="backto">{{=back}}</p>
 <div>
   <h1>{{=response.title or ''}}</h1>
@@ -47,8 +34,20 @@
   <br/>
   
   <hr/>
-  body
-  <div style="border: 1px solid whiteSmoke;">
+  drag us!
+  <div style="border: 1px solid whiteSmoke; width:200px;">
+    {{@managed_html.draggable('block_type1')
+      def block_a():}}
+      <div style="height:100px;">block a</div>
+    {{pass}}
+    {{@managed_html.draggable('block_type1')
+      def block_b():}}
+      <div style="height:100px;">block b</div>
+    {{pass}}
+    {{@managed_html.draggable('block_type1')
+      def block_c():}}
+      <div style="height:100px;">block c</div>
+    {{pass}}
     {{block_a()}}
     {{block_b()}}
     <div style="margin:10px;">
@@ -56,6 +55,22 @@
       {{block_c()}}
     </div>
   </div>
+  
+  <hr/>
+  drag us!
+  <div>
+    {{@managed_html.draggable('block_type2')
+      def block_a():}}
+      <div  style="height:100px;">block a</div>
+    {{pass}}
+    {{@managed_html.draggable('block_type2')
+      def block_b():}}
+      <div style="height:100px;">block b</div>
+    {{pass}}
+    {{block_a()}}
+    {{block_b()}}
+  </div>
+  
 </div>
 
 
