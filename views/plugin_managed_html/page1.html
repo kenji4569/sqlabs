@@ -1,30 +1,59 @@
 {{extend 'layout.html'}}
-{{@managed_html.sortable('myblocks')
-  def block1():}}
-  <div>block1</div>
+{{@managed_html.sortable('slot1')
+  def block_a():}}
+  <div>block a</div>
 {{pass}}
-{{@managed_html.sortable('myblocks')
-  def block2():}}
-  <div>block2</div>
+{{@managed_html.sortable('slot1')
+  def block_b():}}
+  <div>block b</div>
 {{pass}}
-{{@managed_html.sortable('myblocks')
-  def block3():}}
-  <div>block3</div>
+{{@managed_html.sortable('slot1')
+  def block_c():}}
+  <div>block c</div>
 {{pass}}
 
 <p class="backto">{{=back}}</p>
 <div>
   <h1>{{=response.title or ''}}</h1>
+  <hr/>
+  <div>
+    {{@managed_html.render('block1', Field('text', 'text', comment='Input Text'))
+      def _block(content):}}
+      {{=content.text or ''}}
+    {{pass}}
+    {{_block()}}
+  </div>
   <br/>
-  <div>{{=managed_html.html('header', default='header')}}</div>
+  <div style="width:100px;">
+    {{@managed_html.render('block2', Field('text', comment='Input Text'))
+      def _block(content):}}
+      {{=content.text or 'default'}}
+    {{pass}}
+    {{_block()}}
+  </div>
   <br/>
+  
+  <div style="width:300px;">
+    {{@managed_html.render('block3', Field('image', 'upload', comment='Upload Image'))
+      def _block(content):}}
+      {{if content.image:}}
+        <img src="{{=URL('download', args=content.image)}}"/>
+      {{else:}}
+        no-image
+      {{pass}}
+    {{pass}}
+    {{_block()}}
+  </div>
+  <br/>
+  
+  <hr/>
   body
   <div style="border: 1px solid whiteSmoke;">
-    {{block1()}}
-    {{block2()}}
+    {{block_a()}}
+    {{block_b()}}
     <div style="margin:10px;">
       <div>inner</div>
-      {{block3()}}
+      {{block_c()}}
     </div>
   </div>
 </div>

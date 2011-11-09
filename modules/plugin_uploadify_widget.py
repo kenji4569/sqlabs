@@ -5,6 +5,7 @@ from gluon import *
 from gluon.validators import translate
 from gluon.sqlhtml import UploadWidget
 from gluon.storage import Storage
+from gluon.contrib import simplejson as json
 
 FILES = ( URL('static', 'plugin_uploadify_widget/uploadify.css'),
           URL('static', 'plugin_uploadify_widget/swfobject.js'),
@@ -142,6 +143,12 @@ function cancel() {
         uploadify_uploaded.push(undefined);
     }
 }
+var scriptData = {'name': el.attr('name')};
+var extraVars = %(extra_vars)s
+for (key in extraVars) {
+    scriptData[key] = extraVars[key];
+}
+
 file_el.uploadify({
     'buttonText': '%(button_text)s',
     'uploader'  : '%(uploader)s',
@@ -163,13 +170,14 @@ file_el.uploadify({
     'fileExt'   : '%(fileext)s',
     'fileDesc'  : '%(fileext)s',
     'sizeLimit' : %(size_limit)i,
-    'scriptData': {'name': el.attr('name')}
+    'scriptData': scriptData
 });
 })()) {setTimeout(run, t); t = 2*t;}})();});
 """ % dict(id=_id, file_id=_file_id, 
            button_text=BUTTON_TEXT,
            uploader=URL('static', 'plugin_uploadify_widget/uploadify.swf'),
-           script=URL(args=current.request.args, vars=current.request.vars),
+           script=URL(args=current.request.args),
+           extra_vars=json.dumps(attributes.get('extra_vars', {})),
            cancel_img=URL('static', 'plugin_uploadify_widget/cancel.png'),
            fileext=fileext,
            size_limit=size_limit,

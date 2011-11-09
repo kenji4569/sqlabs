@@ -83,6 +83,7 @@
 'Download Plugin': 'プラグインをダウンロード',
 'E-mail': 'E-mail',
 'Edit': '編集',
+'Edited': 'Edited',
 'Email': 'メールアドレス',
 'Errors in form, please check it out.': 'フォームにエラーがあります。ご確認ください。',
 'Feb': '2月',

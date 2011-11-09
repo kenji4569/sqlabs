@@ -6,8 +6,12 @@ from gluon.storage import Storage
 ### setup core objects #########################################################
 managed_html = ManagedHTML(db)
 managed_html.settings.table_content_name = 'plugin_managed_html_content'
+managed_html.settings.table_file_name = 'plugin_managed_html_file'
 managed_html.settings.extra_fields = {
     'plugin_managed_html_content': [
+        Field('created_on', 'datetime', default=request.now, 
+              readable=False, writable=False)],
+    'plugin_managed_html_file': [
         Field('created_on', 'datetime', default=request.now, 
               readable=False, writable=False)],
 }
@@ -15,11 +19,13 @@ managed_html.settings.extra_fields = {
 ### define tables ##############################################################
 managed_html.define_tables()
 table_content = managed_html.settings.table_content
+table_file = managed_html.settings.table_file
 
 ### populate records ###########################################################
 import datetime
 if db(table_content.created_on<request.now-datetime.timedelta(minutes=60)).count():
     table_content.truncate()
+    table_file.truncate()
     session.flash = 'the database has been refreshed'
     redirect(URL('index'))
 
@@ -31,7 +37,6 @@ def index():
                 preview=A('page1', _href=URL('page1', vars=dict(_managed_html_view_mode='preview'))))
     
 def page1():
-    
     response.view = 'plugin_managed_html/page1.html'
     if request.get_vars._managed_html_view_mode == 'edit':
         managed_html.switch_to_edit_mode()
@@ -45,4 +50,7 @@ def page1():
     return dict(back=A('back', _href=URL('index')),
                 managed_html=managed_html)
     
+def download():
+    return response.download(request, db)
+
     

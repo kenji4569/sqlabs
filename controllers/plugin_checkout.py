@@ -83,10 +83,10 @@ if not db(table_product.id>0).count():
         _option_id = table_option.insert(option_group=id, name=option_name)
         option_ids[option_name] = _option_id
             
-    catalog.add_product(dict(name='product_1', available=True),
+    catalog.add_product(dict(name='product_1', active=True),
                         [dict(sku='product_1_master', price=100, quantity=10,
                               options=[])])
-    catalog.add_product(dict(name='product_2', available=True),
+    catalog.add_product(dict(name='product_2', active=True),
                         [dict(sku='product_2_small', price=1000, quantity=3, 
                               options=[option_ids['small']]),
                          dict(sku='product_2_large', price=2000, quantity=1, 
@@ -190,7 +190,7 @@ def index():
         
         cart = render_cart_block(cart_url=url(args='cart'))
         
-        products = catalog.get_products_by_query(table_product.id>0)
+        products = catalog.products_from_query(table_product.id>0).select()
         
         return dict(LOGIN=user_chooser,
                     cart=cart,
