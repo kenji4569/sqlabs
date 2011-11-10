@@ -102,13 +102,13 @@ input[type="button"].managed_html_primary_btn {
 }
 
 /* -------------------------------------------------------------------------- */
-.managed_html_draggable {
+.managed_html_movable {
   cursor: move;
 }
-.managed_html_draggable_hover {
+.managed_html_movable_hover {
   border: 2px solid #D6F;
 }
-.managed_html_draggable_active {
+.managed_html_movable_active {
   border: 2px solid #03F;
 }
 

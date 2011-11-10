@@ -188,7 +188,7 @@ file_el.uploadify({
         filename = current.request.vars[field.name]
         if filename:
             current.request.vars[field.name] = Storage(file=None, filename=filename) # TODO file
-            field.store = lambda source_file, original_filename: original_filename
+            field.store = lambda source_file, original_filename, path: original_filename
         
     inp = SPAN(input_el, file_input_el)
     

@@ -4,7 +4,6 @@
 from gluon import *
 from gluon.storage import Storage, Messages
 import gluon.contrib.simplejson as json
-from collections import defaultdict
 import os
 from plugin_uploadify_widget import (
     uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_LENGTH
@@ -37,8 +36,6 @@ class ManagedHTML(object):
         messages = self.messages = Messages(current.T)
         
         self.switch_to_live_mode()
-        
-        self._draggables = defaultdict(list)
         
     def define_tables(self, migrate=True, fake_migrate=False):
         db, settings = self.db, self.settings
@@ -93,104 +90,106 @@ class ManagedHTML(object):
         request, response, session, T, settings = (
             current.request, current.response, current.session, current.T, self.settings)
         el_id = 'managed_html_block_%s' % name
-        _inner_el_id = 'managed_html_inner_%s' % name
+        inner_el_id = 'managed_html_inner_%s' % name
         
         def _render(func):
             def _func(content):
                 if self.view_mode == EDIT_MODE:
-                    response.write(XML("<div onclick='%s'>" % self._post_js(name, 'edit', _inner_el_id)))
+                    response.write(XML("<div onclick='%s'>" % self._post_js(name, 'edit', inner_el_id)))
                 
-                func(Storage(content and content.data and json.loads(content.data) or {}))
+                if content and content.data:
+                    func(Storage(content and content.data and json.loads(content.data) or {}))
                 
                 if self.view_mode == EDIT_MODE:
                     if not content or not content.data:
                         response.write(XML('<div style="height:15px;background:whiteSmoke;">&nbsp;</div>'))
                     response.write(XML('</div>'))
                     
-            def wrapper(*args, **kwds):
-                if (self.keyword in request.vars and 
-                        request.vars[self.keyword] == name):
-                        
-                    def _uploadify_widget(field, value, download_url=None, **attributes):
-                        attributes['extra_vars'] = {self.keyword:name, '_action':'edit'}
-                        
-                        def _custom_store(file,filename,path):
-                            return settings.table_file.name.store(file,filename,path)
-                        field.custom_store = _custom_store
-                        
-                        return uploadify_widget(field, value, download_url, **attributes)
-                        
-                    import cStringIO
-                    action = request.vars.get('_action')
-                    if action == 'edit':
+            if (self.keyword in request.vars and 
+                    request.vars[self.keyword] == name):
+                    
+                def _uploadify_widget(field, value, download_url=None, **attributes):
+                    attributes['extra_vars'] = {self.keyword:name, '_action':'edit'}
+                    
+                    def _custom_store(file,filename,path):
+                        return settings.table_file.name.store(file,filename,path)
+                    field.custom_store = _custom_store
+                    
+                    return uploadify_widget(field, value, download_url, **attributes)
+                    
+                import cStringIO
+                action = request.vars.get('_action')
+                if action == 'edit':
+                    content = self._get_content(name)
+                    if not content:
+                        settings.table_content.insert(name=name)
                         content = self._get_content(name)
-                        if not content:
-                            settings.table_content.insert(name=name)
-                            content = self._get_content(name)
-                        data = content.data and json.loads(content.data) or {}
-                        virtual_record = Storage(id=0)
+                    data = content.data and json.loads(content.data) or {}
+                    virtual_record = Storage(id=0)
+                    for field in fields:
+                        virtual_record[field.name] = data[field.name] if field.name in data else None
+                           
+                        if field.type == 'upload':
+                            field.uploadfolder = field.uploadfolder or settings.uploadfolder
+                            field.widget = _uploadify_widget
+                    form = SQLFORM(
+                        DAL(None).define_table('no_table', *fields),
+                        virtual_record,
+                        upload=settings.upload,
+                        showid=False,
+                    )
+                    if form.accepts(request.vars, session):
+                        data = {}
                         for field in fields:
-                            virtual_record[field.name] = data[field.name] if field.name in data else None
-                               
+                            filename = form.vars[field.name]
+                            filename.replace('no_table.image.', '%s.name.' % settings.table_file)
+                            
+                            data[field.name] = filename
                             if field.type == 'upload':
-                                field.uploadfolder = field.uploadfolder or settings.uploadfolder
-                                field.widget = _uploadify_widget
-                        form = SQLFORM(
-                            DAL(None).define_table('no_table', *fields),
-                            virtual_record,
-                            upload=settings.upload,
-                            showid=False,
-                        )
-                        if form.accepts(request.vars, session):
-                            data = {}
-                            for field in fields:
-                                filename = form.vars[field.name]
-                                filename.replace('no_table.image.', '%s.name.' % settings.table_file)
-                                
-                                data[field.name] = filename
-                                if field.type == 'upload':
-                                    settings.table_file.insert(name=filename)
-                        
-                            content.update_record(data=json.dumps(data))
-                            response.flash = T('Edited')
-                            response.js = 'managed_html_editing("%s", false);' % el_id
-                            
-                            response.body = cStringIO.StringIO()
-                            _func(content)
-                            raise HTTP(200, response.body.getvalue())
-                            
-                        if self._is_simple_form(fields):
-                            form.components = [form.custom.widget[fields[0].name]]
-                        form.components += [INPUT(_type='hidden', _name=self.keyword, _value=name),
-                                   INPUT(_type='hidden', _name='_action', _value='edit')]
-                        raise HTTP(200, form)
-                    elif action == 'back':
-                        content = self._get_content(name)
+                                settings.table_file.insert(name=filename)
+                    
+                        content.update_record(data=json.dumps(data))
+                        response.flash = T('Edited')
+                        response.js = 'managed_html_editing("%s", false);' % el_id
                         
                         response.body = cStringIO.StringIO()
                         _func(content)
                         raise HTTP(200, response.body.getvalue())
-                    else:
-                        raise RuntimeError
+                        
+                    if self._is_simple_form(fields):
+                        form.components = [form.custom.widget[fields[0].name]]
+                    form.components += [INPUT(_type='hidden', _name=self.keyword, _value=name),
+                               INPUT(_type='hidden', _name='_action', _value='edit')]
+                    raise HTTP(200, form)
+                elif action == 'back':
+                    content = self._get_content(name)
                     
+                    response.body = cStringIO.StringIO()
+                    _func(content)
+                    raise HTTP(200, response.body.getvalue())
+                else:
+                    raise RuntimeError
+                
+                    
+            def wrapper(*args, **kwds):
                 content = self._get_content(name)
                 
                 if self.view_mode == EDIT_MODE:
                     response.write(XML('<div id="%s" class="managed_html_block">' % el_id))
                     
                     response.write(XML("""
-<div id="%s" style="min-height:15px;" class="managed_html_content">""" % _inner_el_id))
+<div id="%s" style="min-height:15px;" class="managed_html_content">""" % inner_el_id))
                     _func(content)
                     response.write(XML('</div>'))
                     
                     response.write(XML(DIV(DIV(
                         SPAN(INPUT(_value=T('Back'), _type='button', 
-                              _onclick=self._post_js(name, 'back', _inner_el_id),
+                              _onclick=self._post_js(name, 'back', inner_el_id),
                               _class='managed_html_btn'),
                           _class='managed_html_back_btn',
                           _style='display:none;'),
                         SPAN(INPUT(_value=T('Submit'), _type='button', 
-                              _onclick='jQuery("#%s"+" form").submit()' % _inner_el_id,
+                              _onclick='jQuery("#%s"+" form").submit()' % inner_el_id,
                               _class='managed_html_btn managed_html_primary_btn'),
                           _class='managed_html_submit_btn',
                           _style='display:none;'),
@@ -198,7 +197,7 @@ class ManagedHTML(object):
                            _class='managed_html_main_comment',
                            _style='display:none;') if self._is_simple_form(fields) and fields[0].comment else '',
                         SPAN(INPUT(_value=T('Edit'), _type='button', 
-                              _onclick=self._post_js(name, 'edit', _inner_el_id),
+                              _onclick=self._post_js(name, 'edit', inner_el_id),
                               _class='managed_html_btn'),
                            _class='managed_html_edit_btn'),
                     ), _class='managed_html_contents_ctrl')))
@@ -212,25 +211,82 @@ class ManagedHTML(object):
             return wrapper
         return _render
         
-    def draggable(self, name):
+    def movable(self, name):
+        if not hasattr(self, '_movables'):
+            from collections import defaultdict
+            self._movables = defaultdict(list)
+            self._movable_indices = defaultdict(int)
+            self._movable_loaded = {}
+    
         request, response, session, T, settings = (
             current.request, current.response, current.session, current.T, self.settings)
-        el_id = 'managed_html_block_%s' % name
-        _inner_el_id = 'managed_html_inner_%s' % name
-        
-        def _draggable(func):
-            self._draggables[name].append(func)
+
+        if (self.keyword in request.vars and 
+                request.vars[self.keyword] == name):
+            action = request.vars.get('_action')
+            if action == 'permute':
+                content = self._get_content(name)
+                if not content:
+                    settings.table_content.insert(name=name)
+                    content = self._get_content(name)
+                    
+                indices = request.vars.get('indices[]', [])
+                from_idx = request.vars.get('from')
+                to_idx = request.vars.get('to')
+                arg_from = indices.index(from_idx)
+                arg_to = indices.index(to_idx)
+                indices[arg_from] = to_idx
+                indices[arg_to] = from_idx
+                print from_idx, to_idx
+                content.update_record(data=json.dumps(indices))
+                
+                raise HTTP(200, json.dumps(indices))
+            
+        def _movable(func):
+            self._movables[name].append((len(self._movables[name]), func))
+                
             def wrapper(*args, **kwds):
+                if not self._movable_loaded.get(name):
+                    content = self._get_content(name)
+                    if content and content.data:
+                        indices = json.loads(content.data)
+                        permutation = range(len(self._movables[name]))
+                        try:
+                            indices = map(int, indices)
+                            permutation[:len(indices)] = indices
+                        except ValueError:
+                            pass
+                        print permutation
+                        self._movables[name] = [self._movables[name][i] for i in permutation]
+                    
+                    if self.view_mode == EDIT_MODE:
+                        response.write(XML("""
+<script>jQuery(function(){managed_html_movable("%s", [%s], "%s", "%s")})</script>""" % 
+                            (name, ','.join([str(i) for i, f in self._movables[name]]),
+                             self.keyword, URL(args=current.request.args, vars=current.request.get_vars))))
+                    self._movable_loaded[name] = True
+                    
                 if self.view_mode == EDIT_MODE:
+                    _block_index, _func = self._movables[name].pop(0)
+                    
+                    el_id = 'managed_html_block_%s_%s' % (name, _block_index)
+                    inner_el_id = 'managed_html_inner_%s_%s' % (name, _block_index)
+                    
+                    response.write(XML('<div id="%s" class="managed_html_block">'% el_id))
+                    
                     response.write(XML("""
-<div id="%s" class="managed_html_block managed_html_draggable managed_html_name_%s">""" % (el_id, name)))
-                    self._draggables[name].pop()(*args, **kwds)
+<div id="%s" class="managed_html_movable managed_html_name_%s">""" % 
+                        (inner_el_id, name)))
+                    
+                    _func(*args, **kwds)
+                    
+                    response.write(XML('</div>'))
                     response.write(XML('</div>'))
                 else:
-                    self._draggables[name].pop()(*args, **kwds)
+                    self._movables[name].pop()(*args, **kwds)
                 
             return wrapper
-        return _draggable
+        return _movable
             
     
     # def response(self, name):

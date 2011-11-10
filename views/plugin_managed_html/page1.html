@@ -6,7 +6,7 @@
   <div>
     {{@managed_html.render('block1', Field('text', 'text', comment='Input Text'))
       def _block(content):}}
-      {{=content.text or ''}}
+      {{=content.text}}
     {{pass}}
     {{_block()}}
   </div>
@@ -14,7 +14,7 @@
   <div style="width:100px;">
     {{@managed_html.render('block2', Field('text', comment='Input Text'))
       def _block(content):}}
-      {{=content.text or 'default'}}
+      {{=content.text}}
     {{pass}}
     {{_block()}}
   </div>
@@ -36,17 +36,17 @@
   <hr/>
   drag us!
   <div style="border: 1px solid whiteSmoke; width:200px;">
-    {{@managed_html.draggable('block_type1')
+    {{@managed_html.movable('block_type1')
       def block_a():}}
-      <div style="height:100px;">block a</div>
+      <div style="height:100px;">AAAAAAAAAAAAAA AAAAAA AA</div>
     {{pass}}
-    {{@managed_html.draggable('block_type1')
+    {{@managed_html.movable('block_type1')
       def block_b():}}
-      <div style="height:100px;">block b</div>
+      <div style="height:100px;">BBBBBBBBB BBBBBBBB</div>
     {{pass}}
-    {{@managed_html.draggable('block_type1')
+    {{@managed_html.movable('block_type1')
       def block_c():}}
-      <div style="height:100px;">block c</div>
+      <div style="height:100px;">CCCCCCCCC CCCCCCCC CCCCCC</div>
     {{pass}}
     {{block_a()}}
     {{block_b()}}
@@ -59,11 +59,11 @@
   <hr/>
   drag us!
   <div>
-    {{@managed_html.draggable('block_type2')
+    {{@managed_html.movable('block_type2')
       def block_a():}}
       <div  style="height:100px;">block a</div>
     {{pass}}
-    {{@managed_html.draggable('block_type2')
+    {{@managed_html.movable('block_type2')
       def block_b():}}
       <div style="height:100px;">block b</div>
     {{pass}}
