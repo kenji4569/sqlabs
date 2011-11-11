@@ -16,6 +16,10 @@ managed_html.settings.extra_fields = {
               readable=False, writable=False)],
 }
 
+managed_html.settings.home_url = URL('web2py_plugins', 'index')
+managed_html.settings.home_label = 'Web2py plugins'
+managed_html.switch_mode()
+    
 ### define tables ##############################################################
 managed_html.define_tables()
 table_content = managed_html.settings.table_content
@@ -27,14 +31,8 @@ if db(table_content.created_on<request.now-datetime.timedelta(minutes=60)).count
     table_content.truncate()
     table_file.truncate()
     session.flash = 'the database has been refreshed'
-    redirect(URL('index'))
+    redirect(managed_html.edit_url('page1'))
 
-### managed_html detail settings ###############################################
-
-managed_html.settings.home_url = URL('web2py_plugins', 'index')
-managed_html.settings.home_label = 'Web2py plugins'
-managed_html.switch_mode()
-    
 ### demo functions #############################################################
 
 
