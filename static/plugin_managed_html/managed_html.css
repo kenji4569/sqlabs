@@ -112,3 +112,12 @@ input[type="button"].managed_html_primary_btn {
   border: 2px solid #03F;
 }
 
+
+/* -------------------------------------------------------------------------- */
+div.managed_html_spinner {
+  width:16px; 
+  height:16px; 
+  background: url(spinner.gif) no-repeat; 
+  position: absolute; 
+}
+
