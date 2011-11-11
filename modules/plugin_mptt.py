@@ -28,19 +28,19 @@ class MPTTModel(object):
                 Field('parent', 'reference %s' % settings.table_node_name),
                 Field('tree_id', 'integer'),
                 Field('level', 'integer'), 
-                Field('left', 'integer'), 
-                Field('right', 'integer'), 
+                Field('lft', 'integer'), 
+                Field('rgt', 'integer'), 
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_node_name, []))
         settings.table_node = db[settings.table_node_name]
         
     @property
     def asc(self):
-        return ~self.settings.table_node.left
+        return ~self.settings.table_node.lft
     
     @property
     def desc(self):
-        return self.settings.table_node.left
+        return self.settings.table_node.lft
         
     def _load_node(self, node_or_node_id):
         if node_or_node_id is None:
@@ -55,103 +55,108 @@ class MPTTModel(object):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
                 
-        left, right = node.left, node.right
+        left, right = node.lft, node.rgt
         if include_self:
             left += 1
             right -= 1
             
-        return db(table_node.left < left)(table_node.right > right)(
+        return db(table_node.lft < left)(table_node.rgt > right)(
                   table_node.tree_id == node.tree_id)
     
-    def descendants_from_node(self, node):
+    def descendants_from_node(self, node, include_self=False):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
+        
+        left, right = node.lft, node.rgt
+        if include_self:
+            left -= 1
+            right += 1
             
-        return db(table_node.left > node.left)(table_node.right < node.right)(
+        return db(table_node.lft > left)(table_node.rgt < right)(
                   table_node.tree_id == node.tree_id)
     
     def count_descendants_from_node(self, node):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
-        return (node.right - node.left - 1) / 2   
+        return (node.rgt - node.lft - 1) / 2   
     
     def leafnodes(self):
         db, table_node = self.db, self.settings.table_node
-        return db(table_node.right == table_node.left+1)
+        return db(table_node.rgt == table_node.lft+1)
     
     def get_next_sibling(self, node):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
         if self.is_root_node(node):
-            next_sib = db(table_node.left == 1)(table_node.tree_id == node.tree_id + 1).select(table_node.id)
+            next_sib = db(table_node.lft == 1)(table_node.tree_id == node.tree_id + 1).select(table_node.id)
         else:
-            next_sib = db(table_node.left == node.right + 1)(table_node.tree_id == node.tree_id).select(table_node.id)
+            next_sib = db(table_node.lft == node.rgt + 1)(table_node.tree_id == node.tree_id).select(table_node.id)
         return next_sib.id
     
     def get_previous_sibling(self, node):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
         if self.is_root_node(node):
-            previous_sib = db(table_node.left == 1)(table_node.tree_id == node.tree_id - 1).select(table_node.id)
+            previous_sib = db(table_node.lft == 1)(table_node.tree_id == node.tree_id - 1).select(table_node.id)
         else:
-            previous_sib = db(table_node.right == node.left - 1)(table_node.tree_id == node.tree_id).select(table_node.id)
+            previous_sib = db(table_node.rgt == node.lft - 1)(table_node.tree_id == node.tree_id).select(table_node.id)
         return previous_sib.id
     
     def roots(self):
         db, table_node = self.db, self.settings.table_node
-        return db(table_node.left == 1)
+        return db(table_node.lft == 1)
     
     def is_root_node(self, node_or_node_id):
         db, table_node = self.db, self.settings.table_node
         if isinstance(node_or_node_id, Row):
-            return node_or_node_id.left == 1
+            return node_or_node_id.lft == 1
         else:
-            return bool(db(table_node.id == node_or_node_id)(table_node.left == 1).count())
+            return bool(db(table_node.id == node_or_node_id)(table_node.lft == 1).count())
             
     def is_child_node(self, node_or_node_id):
         db, table_node = self.db, self.settings.table_node
         if isinstance(node_or_node_id, Row):
-            return node_or_node_id.left > 1
+            return node_or_node_id.lft > 1
         else:
-            return bool(db(table_node.id == node_or_node_id)(table_node.left > 1).count())
+            return bool(db(table_node.id == node_or_node_id)(table_node.lft > 1).count())
         
     def is_leaf_node(self, node_or_node_id):
         db, table_node = self.db, self.settings.table_node
         if isinstance(node_or_node_id, Row):
-            return node_or_node_id.right == node_or_node_id.left+1
+            return node_or_node_id.rgt == node_or_node_id.lft+1
         else:
             return bool(db(table_node.id == node_or_node_id)(
-                           table_node.right == table_node.left+1).count())
+                           table_node.rgt == table_node.lft+1).count())
         
     def is_ancestor_of(self, node1, node2):
         db, table_node = self.db, self.settings.table_node
         node1 = self._load_node(node1)
         node2 = self._load_node(node2)
         
-        return (node1.left < node2.left) and (node1.right > node2.right)
+        return (node1.lft < node2.lft) and (node1.rgt > node2.rgt)
         
     def is_descendant_of(self, node1, node2):
         db, table_node = self.db, self.settings.table_node
         node1 = self._load_node(node1)
         node2 = self._load_node(node2)
-        return (node1.left > node2.left) and (node1.right < node2.right)
+        return (node1.lft > node2.lft) and (node1.rgt < node2.rgt)
         
     def delete_node(self, node):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
         
         current_tree_id = node.tree_id
-        left = node.left
-        right = node.right
+        left = node.lft
+        right = node.rgt
         tree_width = right - left + 1
 
-        db(table_node.left >= left)(table_node.left <= right)(
+        db(table_node.lft >= left)(table_node.lft <= right)(
            table_node.tree_id == current_tree_id).delete()            
 
-        db(table_node.right >= node.right)(table_node.tree_id == current_tree_id
-           ).update(right=table_node.right - tree_width)
-        db(table_node.left >= node.right)(table_node.tree_id == current_tree_id
-           ).update(left=table_node.left - tree_width)
+        db(table_node.rgt >= node.rgt)(table_node.tree_id == current_tree_id
+           ).update(rgt=table_node.rgt - tree_width)
+        db(table_node.lft >= node.rgt)(table_node.tree_id == current_tree_id
+           ).update(lft=table_node.lft - tree_width)
         
 ############################ tree_manager #########################################
 
@@ -161,10 +166,10 @@ class MPTTModel(object):
         node = self._load_node(node)
         target = self._load_node(target)
         
-        left = node.left
+        left = node.lft
         level = node.level
-        target_left = target.left
-        target_right = target.right
+        target_left = target.lft
+        target_right = target.rgt
         target_level = target.level
         
         if position == 'last-child' or position == 'first-child':
@@ -213,27 +218,27 @@ class MPTTModel(object):
         
         node = self._load_node(node)
         
-        left = node.left
-        right = node.right
+        left = node.lft
+        right = node.rgt
         gap_size = right - left + 1
         gap_target_left = left - 1
         
         for beta_node in db(table_node.tree_id == node.tree_id).select():
-            if (beta_node.left >= left and beta_node.left <= right):  
+            if (beta_node.lft >= left and beta_node.lft <= right):  
                 beta_node.update_record(level=beta_node.level - level_change)
 
-            if (beta_node.left >= left and beta_node.left <= right):
+            if (beta_node.lft >= left and beta_node.lft <= right):
                 beta_node.update_record(tree_id=new_tree_id)
 
-            if (beta_node.left >= left and beta_node.left <= right):
-                beta_node.update_record(left=beta_node.left - left_right_change)
-            elif (beta_node.left > gap_target_left):
-                beta_node.update_record(left=beta_node.left - gap_size)
+            if (beta_node.lft >= left and beta_node.lft <= right):
+                beta_node.update_record(lft=beta_node.lft - left_right_change)
+            elif (beta_node.lft > gap_target_left):
+                beta_node.update_record(lft=beta_node.lft - gap_size)
             
-            if (beta_node.right >= left and beta_node.right <= right):
-                beta_node.update_record(right=beta_node.right - left_right_change)
-            elif (beta_node.right > gap_target_left):
-                beta_node.update_record(right=beta_node.right - gap_size)
+            if (beta_node.rgt >= left and beta_node.rgt <= right):
+                beta_node.update_record(rgt=beta_node.rgt - left_right_change)
+            elif (beta_node.rgt > gap_target_left):
+                beta_node.update_record(rgt=beta_node.rgt - gap_size)
                 
             if beta_node.id == node.id:
                 beta_node.update_record(parent=parent)
@@ -246,25 +251,25 @@ class MPTTModel(object):
             if self._get_next_tree_id():
                 next_tid = self._get_next_tree_id()
                 return table_node.insert(parent=None, tree_id=next_tid,
-                                  level=0, left=1, right=2, 
+                                  level=0, lft=1, rgt=2, 
                                   **extra_vars)
             # if there is no trees
             else:
                 return table_node.insert(parent=None, tree_id=1,
-                                  level=0, left=1, right=2, 
+                                  level=0, lft=1, rgt=2, 
                                   **extra_vars)
         
         else:
             if position == 'last-child':
-                db(table_node.right >= target.right)(table_node.tree_id == target.tree_id
-                   ).update(right=table_node.right + 2)
-                db(table_node.left >= target.right)(table_node.tree_id == target.tree_id
-                   ).update(left=table_node.left + 2)
+                db(table_node.rgt >= target.rgt)(table_node.tree_id == target.tree_id
+                   ).update(rgt=table_node.rgt + 2)
+                db(table_node.lft >= target.rgt)(table_node.tree_id == target.tree_id
+                   ).update(lft=table_node.lft + 2)
                 return table_node.insert(parent=target and target.id,
                                   tree_id=target.tree_id, 
                                   level=target.level+1,
-                                  left=target.right,
-                                  right=target.right + 1, 
+                                  lft=target.rgt,
+                                  rgt=target.rgt + 1, 
                                   **extra_vars)
             elif self.is_root_node(target) and position in ('left','right'):
                 target_tree_id = target.tree_id
@@ -280,8 +285,8 @@ class MPTTModel(object):
                 return table_node.insert(parent=None,
                                   tree_id = tree_id,
                                   level=0,
-                                  left=1,
-                                  right=2,
+                                  lft=1,
+                                  rgt=2,
                                   **extra_vars)
             else:
                 raise ValueError
@@ -302,13 +307,13 @@ class MPTTModel(object):
                 
             # self._create_tree_space(space_target)
             
-            # node.update_record(left=1,
-                           # right=2,
+            # node.update_record(lft=1,
+                           # rgt=2,
                            # level=0,
                            # tree_id=tree_id,
                            # parent=None)
         # else:
-            # node.update_record(left=0,
+            # node.update_record(lft=0,
                                # level=0)
 
             # space_target, level, left, parent, right_shift = (
@@ -318,8 +323,8 @@ class MPTTModel(object):
             
             # self._create_space(2, space_target, tree_id)
             
-            # node.update_record(left=node.left - left,
-                               # right=node.right - left + 1,
+            # node.update_record(lft=node.lft - left,
+                               # rgt=node.rgt - left + 1,
                                # level=node.level - level,
                                # tree_id=tree_id,
                                # parent=parent)
@@ -347,16 +352,16 @@ class MPTTModel(object):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
                 
-        left = node.left
-        right = node.right
+        left = node.lft
+        right = node.rgt
         level = node.level
         if not new_tree_id:
             new_tree_id = self._get_next_tree_id()
         left_right_change = left - 1
         
         self._inter_tree_move_and_close_gap(node, level, left_right_change, new_tree_id)
-        node.update_record(left=left - left_right_change,
-                           right=right - left_right_change,
+        node.update_record(lft=left - left_right_change,
+                           rgt=right - left_right_change,
                            level=0,
                            tree_id=new_tree_id,
                            parent=None)
@@ -427,12 +432,12 @@ class MPTTModel(object):
     def _manage_space(self, size, space_target, tree_id):
             db, table_node = self.db, self.settings.table_node
             
-            for node in db((table_node.left >= space_target) | (table_node.left <= space_target))(
+            for node in db((table_node.lft >= space_target) | (table_node.lft <= space_target))(
                            table_node.tree_id == tree_id).select():
-                if node.left > space_target:
-                    node.update_record(left=node.left + size)
-                if node.right > space_target:
-                    node.update_record(right=node.right + size)
+                if node.lft > space_target:
+                    node.update_record(lft=node.lft + size)
+                if node.rgt > space_target:
+                    node.update_record(rgt=node.rgt + size)
         
     def _move_child_node(self, node, target, position):
         db, table_node = self.db, self.settings.table_node
@@ -451,8 +456,8 @@ class MPTTModel(object):
         node = self._load_node(node)
         target = db(table_node.id == target).select().first()
         
-        left = node.left
-        right = node.right
+        left = node.lft
+        right = node.rgt
         level = node.level
         new_tree_id = target.tree_id
                         
@@ -463,8 +468,8 @@ class MPTTModel(object):
         
         self._create_space(tree_width, space_target, new_tree_id)
         self._inter_tree_move_and_close_gap(node, level_change, left_right_change, new_tree_id, parent)
-        node.update_record(left=node.left - left_right_change,
-                           right=node.right - left_right_change,
+        node.update_record(lft=node.lft - left_right_change,
+                           rgt=node.rgt - left_right_change,
                            level=node.level - level_change,
                            tree_id=new_tree_id,
                            parent=parent)
@@ -473,13 +478,13 @@ class MPTTModel(object):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
         target = self._load_node(target)
-        left = node.left
-        right = node.right
+        left = node.lft
+        right = node.rgt
         level = node.level
         current_tree_id = node.tree_id
         tree_width = right - left + 1
-        target_left = target.left
-        target_right = target.right
+        target_left = target.lft
+        target_right = target.rgt
         target_level = target.level
         
         if position == 'last-child' or position == 'first-child':
@@ -535,21 +540,21 @@ class MPTTModel(object):
             gap_size = -gap_size
 
         for beta_node in db(table_node.tree_id == current_tree_id).select():
-            if (beta_node.left >= left and beta_node.left <= right):
+            if (beta_node.lft >= left and beta_node.lft <= right):
                 beta_node.update_record(level=beta_node.level - level_change,
-                                    left=beta_node.left + left_right_change)
+                                    lft=beta_node.lft + left_right_change)
             
-            elif (beta_node.left >= left_boundary and beta_node.left <= right_boundary):
-                beta_node.update_record(left=beta_node.left + gap_size)
+            elif (beta_node.lft >= left_boundary and beta_node.lft <= right_boundary):
+                beta_node.update_record(lft=beta_node.lft + gap_size)
                 
-            if (beta_node.right >= left and beta_node.right <= right):
-                beta_node.update_record(right=beta_node.right + left_right_change)
+            if (beta_node.rgt >= left and beta_node.rgt <= right):
+                beta_node.update_record(rgt=beta_node.rgt + left_right_change)
             
-            elif (beta_node.right >= left_boundary and beta_node.right <= right_boundary):
-                beta_node.update_record(right=beta_node.right + gap_size)
+            elif (beta_node.rgt >= left_boundary and beta_node.rgt <= right_boundary):
+                beta_node.update_record(rgt=beta_node.rgt + gap_size)
                                 
-        node.update_record(left=new_left,
-                           right=new_right,
+        node.update_record(lft=new_left,
+                           rgt=new_right,
                            level=node.level - level_change,
                            parent=parent)
         
@@ -560,8 +565,8 @@ class MPTTModel(object):
         if not node:
             raise ValueError
         
-        left = node.left
-        right = node.right
+        left = node.lft
+        right = node.rgt
         level = node.level
         current_tree_id = node.tree_id
         new_tree_id = target.tree_id
@@ -576,17 +581,18 @@ class MPTTModel(object):
             self._calculate_inter_tree_move_values(node, target, position))
         self._create_space(tree_width, space_target, new_tree_id)
         
-        for beta_node in db(table_node.left >= left)(table_node.left <= right)(
+        for beta_node in db(table_node.lft >= left)(table_node.lft <= right)(
                             table_node.tree_id == current_tree_id).select():
             beta_node.update_record(level=beta_node.level - level_change,
-                                    left=beta_node.left - left_right_change,
-                                    right=beta_node.right - left_right_change,
+                                    lft=beta_node.lft - left_right_change,
+                                    rgt=beta_node.rgt - left_right_change,
                                     tree_id=new_tree_id)
             if beta_node.id == node.id:
                 beta_node.update_record(parent=parent_pk)
         
-        node.update_record(left=node.left - left_right_change,
-                           right=node.right - left_right_change,
+        node.update_record(lft=node.lft - left_right_change,
+                           rgt=node.rgt - left_right_change,
                            level=node.level - level_change,
                            tree_id=new_tree_id,
                            parent=parent_pk)
+
