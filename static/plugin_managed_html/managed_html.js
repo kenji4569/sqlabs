@@ -1,5 +1,4 @@
-(function($) {
-$(function(){
+(function($) {$(function(){
   $('.managed_html_block').hover(function(){
     $(this).children('.managed_html_contents_ctrl').show();
   }, function() {
@@ -11,8 +10,36 @@ $(function(){
   }, function() {
     $(this).removeClass('managed_html_editing');
   });
-})
-})(jQuery);
+  
+  // --- build top-bar ---
+  var home_url = $("meta[name=managed_html_home_url]").attr("content");
+  var home_label = $("meta[name=managed_html_home_label]").attr("content");
+  var edit_url = $("meta[name=managed_html_edit_url]").attr("content");
+  var preview_url = $("meta[name=managed_html_preview_url]").attr("content");
+  
+  var height = 40;
+  var padding = parseInt($('body').css('padding-top'));
+  $('body').css('padding-top', (padding+height) + 'px');
+  var topbar = $('<div class="managed_html_topbar" style="height:'+height+'px;"></div>');
+  var inner = $('<div class="managed_html_container_fluid"></div>');
+  var brand = $('<a class="managed_html_brand" href="'+home_url+'">'+home_label+'</a>');
+  var menu = $('<ul></ul>');
+  if (edit_url!=null) {
+    menu.append($('<li><a href="'+edit_url+'">Edit</a></li>'));
+  } else {
+      menu.append($('<li class="active"><a href="#">Edit</a></li>'));
+  }
+  if (preview_url!=null) {
+    menu.append($('<li><a href="'+preview_url+'">Preview</a></li>'));
+  } else {
+      menu.append($('<li class="active"><a href="#">Preview</a></li>'));
+  }
+  
+  inner.append(brand);
+  inner.append(menu);
+  topbar.append(inner);
+  $('body').prepend(topbar);
+})})(jQuery);
 
 function managed_html_editing(target, true_or_fase) {
   var el = jQuery('#'+target).parent();

@@ -109,6 +109,7 @@
 'Minute': '分',
 'Mon': '月',
 'Month': '月',
+'Moved': 'Moved',
 'Name': '名前',
 'Next': '>',
 'NoSQL package based on Cassandra.': 'CassandraベースのNoSQLパッケージです。',

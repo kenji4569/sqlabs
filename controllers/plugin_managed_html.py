@@ -29,26 +29,29 @@ if db(table_content.created_on<request.now-datetime.timedelta(minutes=60)).count
     session.flash = 'the database has been refreshed'
     redirect(URL('index'))
 
+### managed_html detail settings ###############################################
+
+managed_html.settings.home_url = URL('index')
+managed_html.settings.home_label = 'Back'
+managed_html.switch_mode()
+    
 ### demo functions #############################################################
 
+
 def index():
-    return dict(edit=A('page1', _href=URL('page1', vars=dict(_managed_html_view_mode='edit'))),
-                live=A('page1', _href=URL('page1')),
-                preview=A('page1', _href=URL('page1', vars=dict(_managed_html_view_mode='preview'))))
+    return dict(page1=A('page1', _href=URL('page1', args=managed_html.EDIT_MODE)),
+                page2=A('page2', _href=URL('page2', args=managed_html.EDIT_MODE)))
     
 def page1():
     response.view = 'plugin_managed_html/page1.html'
-    if request.get_vars._managed_html_view_mode == 'edit':
-        managed_html.switch_to_edit_mode()
-    elif request.get_vars._managed_html_view_mode == 'live':
-        managed_html.switch_to_live_mode()
-    elif request.get_vars._managed_html_view_mode == 'preview':
-        managed_html.switch_to_preview_mode()
-    
     product = Storage({'id': 1, 'name': 'Product 1'})
+    return dict(managed_html=managed_html, URL=managed_html.url, ORIGINAL_URL=URL)
+                
     
-    return dict(back=A('back', _href=URL('index')),
-                managed_html=managed_html)
+def page2():
+    response.view = 'plugin_managed_html/page2.html'
+    product = Storage({'id': 1, 'name': 'Product 1'})
+    return dict(managed_html=managed_html, URL=managed_html.url, ORIGINAL_URL=URL)
     
 def download():
     return response.download(request, db)

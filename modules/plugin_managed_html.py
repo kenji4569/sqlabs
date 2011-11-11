@@ -9,19 +9,24 @@ from plugin_uploadify_widget import (
     uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_LENGTH
 )
 
-LIVE_MODE = 'live'
-EDIT_MODE = 'edit'
-PREVIEW_MODE = 'preview'
-
 class ManagedHTML(object):
+
+    LIVE_MODE = '_managed_html_live'
+    EDIT_MODE = '_managed_html_edit'
+    PREVIEW_MODE = '_managed_html_preview'
 
     def __init__(self, db, keyword='_managed_html'):
         self.db, self.keyword = db, keyword
     
         settings = self.settings = Storage()
         
+        settings.URL = URL
+        
         settings.upload = URL('download')
         settings.uploadfolder = os.path.join(self.db._adapter.folder, '..', 'uploads')
+        
+        settings.home_url = '/'
+        settings.home_label = 'Home'
         
         settings.extra_fields = {}
         
@@ -35,7 +40,22 @@ class ManagedHTML(object):
         
         messages = self.messages = Messages(current.T)
         
-        self.switch_to_live_mode()
+        self.view_mode = self.LIVE_MODE
+        
+    def url(self, a=None, c=None, f=None, r=None, args=None, vars=None, **kwds):
+        if not r:
+            if a and not c and not f: (f,a,c)=(a,c,f)
+            elif a and c and not f: (c,f,a)=(a,c,f)
+        if c != 'static':
+            mode = current.request.args(0)
+            if mode in (self.EDIT_MODE, self.PREVIEW_MODE):
+                if args in (None,[]): 
+                    args = [mode]
+                elif not isinstance(args, (list, tuple)):
+                    args = [mode, args]
+                else:
+                    args = [mode] + args
+        return self.settings.URL(a, c, f, r, args, vars, **kwds)
         
     def define_tables(self, migrate=True, fake_migrate=False):
         db, settings = self.db, self.settings
@@ -55,23 +75,27 @@ class ManagedHTML(object):
                 *settings.extra_fields.get(settings.table_file_name, []))
         settings.table_file = db[settings.table_file_name]
             
+    def switch_mode(self):
+        settings, request, response = self.settings, current.request, current.response
+        self.view_mode = request.args(0)
+        if self.view_mode not in (self.EDIT_MODE, self.PREVIEW_MODE):
+            self.view_mode = self.LIVE_MODE
+            return
+            
+        response.files.append(URL('static', 'plugin_managed_html/managed_html.css'))
+        response.files.append(URL('static', 'plugin_managed_html/managed_html.js'))
+        response.files.append(URL('static', 'plugin_managed_html/jquery-ui-1.8.16.custom.min.js'))
         
-    def switch_to_live_mode(self):
-        self.view_mode = LIVE_MODE
+        response.meta.managed_html_home_url = settings.home_url
+        response.meta.managed_html_home_label = settings.home_label
         
-    def switch_to_edit_mode(self):
-        self.view_mode = EDIT_MODE
-        self._show_navbar()
-        
-    def switch_to_preview_mode(self):
-        self.view_mode = PREVIEW_MODE
-        self._show_navbar()
-        
-    def _show_navbar(self):
-        current.response.files.append(URL('static', 'plugin_managed_html/managed_html.css'))
-        current.response.files.append(URL('static', 'plugin_managed_html/managed_html.js'))
-        
-        current.response.files.append(URL('static', 'plugin_managed_html/jquery-ui-1.8.16.custom.min.js'))
+        if self.view_mode == self.EDIT_MODE:
+            response.meta.managed_html_preview_url = settings.URL(
+                args=[self.PREVIEW_MODE]+request.args[1:], vars=request.vars)
+        elif self.view_mode == self.PREVIEW_MODE:
+            response.meta.managed_html_edit_url = settings.URL(
+                args=[self.EDIT_MODE]+request.args[1:], vars=request.vars)
+            
         
     def _post_js(self, name, action, target):
         data = {self.keyword:name, '_action':action}
@@ -94,13 +118,13 @@ class ManagedHTML(object):
         
         def _render(func):
             def _func(content):
-                if self.view_mode == EDIT_MODE:
+                if self.view_mode == self.EDIT_MODE:
                     response.write(XML("<div onclick='%s'>" % self._post_js(name, 'edit', inner_el_id)))
                 
                 if content and content.data:
                     func(Storage(content and content.data and json.loads(content.data) or {}))
                 
-                if self.view_mode == EDIT_MODE:
+                if self.view_mode == self.EDIT_MODE:
                     if not content or not content.data:
                         response.write(XML('<div style="height:15px;background:whiteSmoke;">&nbsp;</div>'))
                     response.write(XML('</div>'))
@@ -174,7 +198,7 @@ class ManagedHTML(object):
             def wrapper(*args, **kwds):
                 content = self._get_content(name)
                 
-                if self.view_mode == EDIT_MODE:
+                if self.view_mode == self.EDIT_MODE:
                     response.write(XML('<div id="%s" class="managed_html_block">' % el_id))
                     
                     response.write(XML("""
@@ -237,8 +261,9 @@ class ManagedHTML(object):
                 arg_to = indices.index(to_idx)
                 indices[arg_from] = to_idx
                 indices[arg_to] = from_idx
-                print from_idx, to_idx
                 content.update_record(data=json.dumps(indices))
+                
+                response.flash = T('Moved')
                 
                 raise HTTP(200, json.dumps(indices))
             
@@ -259,16 +284,16 @@ class ManagedHTML(object):
                         print permutation
                         self._movables[name] = [self._movables[name][i] for i in permutation]
                     
-                    if self.view_mode == EDIT_MODE:
+                    if self.view_mode == self.EDIT_MODE:
                         response.write(XML("""
 <script>jQuery(function(){managed_html_movable("%s", [%s], "%s", "%s")})</script>""" % 
                             (name, ','.join([str(i) for i, f in self._movables[name]]),
                              self.keyword, URL(args=current.request.args, vars=current.request.get_vars))))
                     self._movable_loaded[name] = True
                     
-                if self.view_mode == EDIT_MODE:
-                    _block_index, _func = self._movables[name].pop(0)
-                    
+                _block_index, _func = self._movables[name].pop(0)
+                
+                if self.view_mode == self.EDIT_MODE:
                     el_id = 'managed_html_block_%s_%s' % (name, _block_index)
                     inner_el_id = 'managed_html_inner_%s_%s' % (name, _block_index)
                     
@@ -283,7 +308,7 @@ class ManagedHTML(object):
                     response.write(XML('</div>'))
                     response.write(XML('</div>'))
                 else:
-                    self._movables[name].pop()(*args, **kwds)
+                    _func(*args, **kwds)
                 
             return wrapper
         return _movable
@@ -292,7 +317,7 @@ class ManagedHTML(object):
     # def response(self, name):
         # # TODO
         # response = current.response
-        # if self.view_mode == EDIT_MODE:
+        # if self.view_mode == self.EDIT_MODE:
             # # response.xxx = xxx
             # return SCRIPT(""" """)
         # else:

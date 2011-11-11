@@ -1,0 +1,15 @@
+{{extend 'layout.html'}}
+<div>
+  <h1>{{=response.title or ''}}</h1>
+  <hr/>
+  <a href="{{=URL('page1')}}">Page1</a>
+  <hr/>
+  <div style="width:100px;">
+    {{@managed_html.render('page2_block1', Field('text', comment='Input Text'))
+      def _block(content):}}
+      {{=content.text}}
+    {{pass}}
+    {{_block()}}
+  </div>
+  <br/>
+</div>

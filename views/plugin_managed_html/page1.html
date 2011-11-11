@@ -1,7 +1,8 @@
 {{extend 'layout.html'}}
-<p class="backto">{{=back}}</p>
 <div>
   <h1>{{=response.title or ''}}</h1>
+  <hr/>
+  <a href="{{=URL('page2')}}">Page2</a>
   <hr/>
   <div>
     {{@managed_html.render('block1', Field('text', 'text', comment='Input Text'))
@@ -70,7 +71,7 @@
     {{block_a()}}
     {{block_b()}}
   </div>
-  
+  <br/>
 </div>
 
 
