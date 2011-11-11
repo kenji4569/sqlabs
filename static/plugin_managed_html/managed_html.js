@@ -16,6 +16,7 @@
   var home_label = $("meta[name=managed_html_home_label]").attr("content");
   var edit_url = $("meta[name=managed_html_edit_url]").attr("content");
   var preview_url = $("meta[name=managed_html_preview_url]").attr("content");
+  var live_url = $("meta[name=managed_html_live_url]").attr("content");
   
   var height = 40;
   var padding = parseInt($('body').css('padding-top'));
@@ -23,20 +24,24 @@
   var topbar = $('<div class="managed_html_topbar" style="height:'+height+'px;"></div>');
   var inner = $('<div class="managed_html_container_fluid"></div>');
   var brand = $('<a class="managed_html_brand" href="'+home_url+'">'+home_label+'</a>');
-  var menu = $('<ul></ul>');
+  var nav = $('<ul></ul>');
   if (edit_url!=null) {
-    menu.append($('<li><a href="'+edit_url+'">Edit</a></li>'));
+    nav.append($('<li><a href="'+edit_url+'">Edit</a></li>'));
   } else {
-      menu.append($('<li class="active"><a href="#">Edit</a></li>'));
+      nav.append($('<li class="active"><a href="#">Edit</a></li>'));
   }
   if (preview_url!=null) {
-    menu.append($('<li><a href="'+preview_url+'">Preview</a></li>'));
+    nav.append($('<li><a href="'+preview_url+'">Preview</a></li>'));
   } else {
-      menu.append($('<li class="active"><a href="#">Preview</a></li>'));
+      nav.append($('<li class="active"><a href="#">Preview</a></li>'));
   }
   
+  var secondary_nav = $('<ul class="managed_html_secondary_nav"></ul>');
+  secondary_nav.append($('<li><a target="_blank" href="'+live_url+'" style="color:pink;">Check Live Site</a></li>'));
+  
   inner.append(brand);
-  inner.append(menu);
+  inner.append(nav);
+  inner.append(secondary_nav);
   topbar.append(inner);
   $('body').prepend(topbar);
 })})(jQuery);

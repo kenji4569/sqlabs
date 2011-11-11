@@ -190,3 +190,9 @@ div.managed_html_topbar ul .active > a, div.managed_html_topbar ul a:hover {
   color: white;
   text-decoration: none;
 }
+
+div.managed_html_topbar ul.managed_html_secondary_nav {
+float: right;
+margin-left: 10px;
+margin-right: 0;
+}

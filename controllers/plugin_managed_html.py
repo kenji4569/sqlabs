@@ -39,8 +39,8 @@ managed_html.switch_mode()
 
 
 def index():
-    return dict(page1=A('page1', _href=URL('page1', args=managed_html.EDIT_MODE)),
-                page2=A('page2', _href=URL('page2', args=managed_html.EDIT_MODE)))
+    return dict(page1=A('page1', _href=managed_html.edit_url('page1')),
+                page2=A('page2', _href=managed_html.edit_url('page2')))
     
 def page1():
     response.view = 'plugin_managed_html/page1.html'

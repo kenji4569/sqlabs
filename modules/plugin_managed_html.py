@@ -49,14 +49,24 @@ class ManagedHTML(object):
         if c != 'static':
             mode = current.request.args(0)
             if mode in (self.EDIT_MODE, self.PREVIEW_MODE):
-                if args in (None,[]): 
-                    args = [mode]
-                elif not isinstance(args, (list, tuple)):
-                    args = [mode, args]
-                else:
-                    args = [mode] + args
+                return self._mode_url(mode, a, c, f, r, args, vars, **kwds)
         return self.settings.URL(a, c, f, r, args, vars, **kwds)
         
+    def _mode_url(self, mode, a=None, c=None, f=None, r=None, args=None, vars=None, **kwds):
+        if args in (None,[]): 
+            args = [mode]
+        elif not isinstance(args, (list, tuple)):
+            args = [mode, args]
+        else:
+            args = [mode] + args
+        return self.settings.URL(a, c, f, r, args=args, vars=vars, **kwds)
+        
+    def edit_url(self, a=None, c=None, f=None, r=None, args=None, vars=None, **kwds):
+        return self._mode_url(self.EDIT_MODE, a, c, f, r, args, vars, **kwds)
+    
+    def preview_url(self, a=None, c=None, f=None, r=None, args=None, vars=None, **kwds):
+        return self._mode_url(self.PREVIEW_MODE, a, c, f, r, args, vars, **kwds)
+    
     def define_tables(self, migrate=True, fake_migrate=False):
         db, settings = self.db, self.settings
         
@@ -88,6 +98,8 @@ class ManagedHTML(object):
         
         response.meta.managed_html_home_url = settings.home_url
         response.meta.managed_html_home_label = settings.home_label
+        
+        response.meta.managed_html_live_url = settings.URL(args=request.args[1:], vars=request.vars)
         
         if self.view_mode == self.EDIT_MODE:
             response.meta.managed_html_preview_url = settings.URL(
