@@ -4,7 +4,7 @@ from plugin_managed_html import ManagedHTML
 from gluon.storage import Storage
 
 ### setup core objects #########################################################
-managed_html = ManagedHTML(db)
+managed_html = ManagedHTML(globals(), db)
 managed_html.settings.table_content_name = 'plugin_managed_html_content'
 managed_html.settings.table_file_name = 'plugin_managed_html_file'
 managed_html.settings.extra_fields = {
@@ -44,13 +44,10 @@ def index():
     
 def page1():
     response.view = 'plugin_managed_html/page1.html'
-    product = Storage({'id': 1, 'name': 'Product 1'})
     return dict(managed_html=managed_html, URL=managed_html.url, ORIGINAL_URL=URL)
                 
-    
 def page2():
     response.view = 'plugin_managed_html/page2.html'
-    product = Storage({'id': 1, 'name': 'Product 1'})
     return dict(managed_html=managed_html, URL=managed_html.url, ORIGINAL_URL=URL)
     
 def download():

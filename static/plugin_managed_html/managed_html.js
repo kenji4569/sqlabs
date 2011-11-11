@@ -63,6 +63,8 @@ function managed_html_editing(target, true_or_fase) {
     ctrl_el.find('.managed_html_main_comment').show();
     
     ctrl_el.find('.managed_html_edit_btn').hide();
+    
+    ctrl_el.find('.managed_html_publish_now_btn').hide();
   }
 }
 
@@ -78,15 +80,34 @@ function managed_html_published(target, true_or_fase) {
   }
 }
 
-
-
 function managed_html_web2py_trap_form(action,target) {
-   jQuery('#'+target+' form').each(function(i){
+  function params2json(d) {
+    if (d.constructor != Array) {return d;}
+    var data={};
+    for(var i=0;i<d.length;i++) {
+        if (typeof data[d[i].name] != 'undefined') {
+            if (data[d[i].name].constructor!= Array) { data[d[i].name]=[data[d[i].name],d[i].value ];
+            } else {  data[d[i].name].push(d[i].value);  }
+        } else { data[d[i].name]=d[i].value; }
+    }
+    return data;
+  };
+  jQuery('#'+target+' form').each(function(i){
       var form=jQuery(this);
       if(!form.hasClass('no_trap'))
         form.submit(function(obj){
+         var data = params2json(form.serializeArray());
+         
+         // === For elrte editor widget ===
+         var iframe = form.find('iframe');
+         if (iframe.length>0) {
+            var key = iframe.next().attr('name');
+            var value = form.find('iframe:first').contents().find('body').html();
+            data[key] = value;
+         }
+         
          jQuery('.flash').hide().html('');
-         managed_html_web2py_ajax_page('post',action,form.serialize(),target);
+         managed_html_web2py_ajax_page('post',action,data,target);
          return false;
       });
    });
@@ -101,14 +122,14 @@ function managed_html_web2py_ajax_page(method,action,data,target) {
       jQuery('#'+target).managed_html_spinner('remove');
       var html=xhr.responseText;
       var content=xhr.getResponseHeader('web2py-component-content'); 
-      var command=xhr.getResponseHeader('web2py-component-command');
+      var command=xhr.getResponseHeader('web2py-component-command'); 
       var flash=xhr.getResponseHeader('web2py-component-flash');
       var t = jQuery('#'+target);
       if(content=='prepend') t.prepend(html); 
       else if(content=='append') t.append(html);
-      else if(content!='hide') t.html(html);  
+      else if(content!='hide') t.html(html); 
       managed_html_web2py_trap_form(action,target);
-      web2py_ajax_init();      
+      web2py_ajax_init();  
       if(command) eval(command);
       if(flash) jQuery('.flash').html(flash).slideDown();
       }
