@@ -31,8 +31,8 @@ if db(table_content.created_on<request.now-datetime.timedelta(minutes=60)).count
 
 ### managed_html detail settings ###############################################
 
-managed_html.settings.home_url = URL('index')
-managed_html.settings.home_label = 'Back'
+managed_html.settings.home_url = URL('web2py_plugins', 'index')
+managed_html.settings.home_label = 'Web2py plugins'
 managed_html.switch_mode()
     
 ### demo functions #############################################################
