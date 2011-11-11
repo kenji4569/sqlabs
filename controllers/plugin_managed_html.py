@@ -35,8 +35,6 @@ if db(table_content.created_on<request.now-datetime.timedelta(minutes=60)).count
 
 ### demo functions #############################################################
 
-SHOW_SOCIAL = False
-
 def index():
     return dict(page1=A('page1', _href=managed_html.edit_url('page1')),
                 page2=A('page2', _href=managed_html.edit_url('page2')))
