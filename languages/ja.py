@@ -126,6 +126,7 @@
 'Password': 'パスワード',
 'Please Select': '選択してください',
 'Prev': '<',
+'Publish Now': 'Publish Now',
 'Quantity': '数量',
 'Receiver': '受信者',
 'Record Created': 'レコードを作成しました',

@@ -47,23 +47,38 @@
 })})(jQuery);
 
 function managed_html_editing(target, true_or_fase) {
-  var el = jQuery('#'+target).parent();
+  var el = jQuery('#'+target);
+  var ctrl_el = el.parent();
   if (true_or_fase==false) {
-    el.find('.managed_html_back_btn').hide();
-    el.find('.managed_html_submit_btn').hide();
-    el.find('.managed_html_main_comment').hide();
+    ctrl_el.find('.managed_html_back_btn').hide();
+    ctrl_el.find('.managed_html_submit_btn').hide();
+    ctrl_el.find('.managed_html_main_comment').hide();
     
-    el.find('.managed_html_edit_btn').show();
+    ctrl_el.find('.managed_html_edit_btn').show();
     
-    el.find('.managed_html_contents_ctrl').hide();
+    ctrl_el.find('.managed_html_contents_ctrl').hide();
   } else if (true_or_fase==true) {
-    el.find('.managed_html_back_btn').show();
-    el.find('.managed_html_submit_btn').show();
-    el.find('.managed_html_main_comment').show();
+    ctrl_el.find('.managed_html_back_btn').show();
+    ctrl_el.find('.managed_html_submit_btn').show();
+    ctrl_el.find('.managed_html_main_comment').show();
     
-    el.find('.managed_html_edit_btn').hide();
+    ctrl_el.find('.managed_html_edit_btn').hide();
   }
 }
+
+function managed_html_published(target, true_or_fase) {
+  var el = jQuery('#'+target);
+  var ctrl_el = el.parent();
+  if (true_or_fase==false) {
+    el.addClass('managed_html_block_pending');
+    ctrl_el.find('.managed_html_publish_now_btn').show();
+  } else if (true_or_fase==true) {
+    el.removeClass('managed_html_block_pending');
+    ctrl_el.find('.managed_html_publish_now_btn').hide();
+  }
+}
+
+
 
 function managed_html_web2py_trap_form(action,target) {
    jQuery('#'+target+' form').each(function(i){

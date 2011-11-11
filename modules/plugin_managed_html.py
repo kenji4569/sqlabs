@@ -73,6 +73,7 @@ class ManagedHTML(object):
         if not settings.table_content_name in db.tables:
             table = db.define_table(settings.table_content_name,
                 Field('name', readable=False, writable=False),
+                Field('publish_on', 'datetime', readable=False, writable=False),
                 Field('data', 'text', default=''), 
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_content_name, []))
@@ -116,7 +117,13 @@ class ManagedHTML(object):
                           data=json.dumps(data), target=target)
 
     def _get_content(self, name):
-        return self.db(self.settings.table_content.name==name).select().first()
+        table_content = self.settings.table_content
+        query = (table_content.name==name)
+        if self.view_mode == self.LIVE_MODE:
+            return self.db(query)(table_content.publish_on<=current.request.now
+                                 ).select(orderby=~table_content.publish_on).first()
+        else:
+            return self.db(query).select(orderby=~table_content.id).first()
         
     def _is_simple_form(self, fields):
         return len(fields) == 1 and fields[0].name in ('string', 'text', 'integer', 'double', 
@@ -158,9 +165,9 @@ class ManagedHTML(object):
                 if action == 'edit':
                     content = self._get_content(name)
                     if not content:
-                        settings.table_content.insert(name=name)
+                        #settings.table_content.insert(name=name)
                         content = self._get_content(name)
-                    data = content.data and json.loads(content.data) or {}
+                    data = content and content.data and json.loads(content.data) or {}
                     virtual_record = Storage(id=0)
                     for field in fields:
                         virtual_record[field.name] = data[field.name] if field.name in data else None
@@ -184,9 +191,13 @@ class ManagedHTML(object):
                             if field.type == 'upload':
                                 settings.table_file.insert(name=filename)
                     
-                        content.update_record(data=json.dumps(data))
+                        #content.update_record(data=json.dumps(data))
+                        settings.table_content.insert(name=name, data=json.dumps(data))
+                        content = self._get_content(name)
+                        
                         response.flash = T('Edited')
                         response.js = 'managed_html_editing("%s", false);' % el_id
+                        response.js += 'managed_html_published("%s", false);' % el_id
                         
                         response.body = cStringIO.StringIO()
                         _func(content)
@@ -197,8 +208,12 @@ class ManagedHTML(object):
                     form.components += [INPUT(_type='hidden', _name=self.keyword, _value=name),
                                INPUT(_type='hidden', _name='_action', _value='edit')]
                     raise HTTP(200, form)
-                elif action == 'back':
+                elif action in ('back', 'publish_now'):
                     content = self._get_content(name)
+                    if action == 'publish_now':
+                        content.update_record(publish_on=request.now)
+                        response.js = 'managed_html_published("%s", true);' % el_id
+                        response.flash = 'Published'
                     
                     response.body = cStringIO.StringIO()
                     _func(content)
@@ -211,10 +226,13 @@ class ManagedHTML(object):
                 content = self._get_content(name)
                 
                 if self.view_mode == self.EDIT_MODE:
-                    response.write(XML('<div id="%s" class="managed_html_block">' % el_id))
+                    is_published = (content is None) or bool(content.publish_on and content.publish_on<=request.now)
+                    
+                    response.write(XML('<div id="%s" class="managed_html_block  %s">' %
+                                        (el_id, 'managed_html_block_pending' if not is_published else '')))
                     
                     response.write(XML("""
-<div id="%s" style="min-height:15px;" class="managed_html_content">""" % inner_el_id))
+<div id="%s" style="min-height:15px;" class="managed_html_content">""" % (inner_el_id)))
                     _func(content)
                     response.write(XML('</div>'))
                     
@@ -236,6 +254,11 @@ class ManagedHTML(object):
                               _onclick=self._post_js(name, 'edit', inner_el_id),
                               _class='managed_html_btn'),
                            _class='managed_html_edit_btn'),
+                       SPAN(INPUT(_value=T('Publish Now'), _type='button', 
+                              _onclick=self._post_js(name, 'publish_now', inner_el_id),
+                              _class='managed_html_btn managed_html_success_btn'),
+                           _class='managed_html_publish_now_btn',
+                           _style='display:none;' if is_published else ''),
                     ), _class='managed_html_contents_ctrl')))
                     
                     response.write(XML('</div>'))
@@ -263,7 +286,7 @@ class ManagedHTML(object):
             if action == 'permute':
                 content = self._get_content(name)
                 if not content:
-                    settings.table_content.insert(name=name)
+                    settings.table_content.insert(name=name, publish_on=request.now) # remove if append archive
                     content = self._get_content(name)
                     
                 indices = request.vars.get('indices[]', [])
@@ -273,8 +296,11 @@ class ManagedHTML(object):
                 arg_to = indices.index(to_idx)
                 indices[arg_from] = to_idx
                 indices[arg_to] = from_idx
-                content.update_record(data=json.dumps(indices))
                 
+                content.update_record(data=json.dumps(indices), publish_on=request.now) # remove if append archive
+                # settings.table_content.insert(name=name, data=json.dumps(indices))
+                # content = self._get_content(name)
+                        
                 response.flash = T('Moved')
                 
                 raise HTTP(200, json.dumps(indices))
@@ -283,6 +309,7 @@ class ManagedHTML(object):
             self._movables[name].append((len(self._movables[name]), func))
                 
             def wrapper(*args, **kwds):
+                # is_published = False
                 if not self._movable_loaded.get(name):
                     content = self._get_content(name)
                     if content and content.data:
@@ -293,14 +320,15 @@ class ManagedHTML(object):
                             permutation[:len(indices)] = indices
                         except ValueError:
                             pass
-                        print permutation
                         self._movables[name] = [self._movables[name][i] for i in permutation]
-                    
+                        
+                        # is_published = bool(content.publish_on and content.publish_on<=request.now)
+                        
                     if self.view_mode == self.EDIT_MODE:
                         response.write(XML("""
 <script>jQuery(function(){managed_html_movable("%s", [%s], "%s", "%s")})</script>""" % 
                             (name, ','.join([str(i) for i, f in self._movables[name]]),
-                             self.keyword, URL(args=current.request.args, vars=current.request.get_vars))))
+                             self.keyword, URL(args=request.args, vars=request.get_vars))))
                     self._movable_loaded[name] = True
                     
                 _block_index, _func = self._movables[name].pop(0)
@@ -309,11 +337,11 @@ class ManagedHTML(object):
                     el_id = 'managed_html_block_%s_%s' % (name, _block_index)
                     inner_el_id = 'managed_html_inner_%s_%s' % (name, _block_index)
                     
-                    response.write(XML('<div id="%s" class="managed_html_block">'% el_id))
+                    response.write(XML('<div id="%s" class="managed_html_block managed_html_block_movable">'% el_id))
                     
                     response.write(XML("""
-<div id="%s" class="managed_html_movable managed_html_name_%s">""" % 
-                        (inner_el_id, name)))
+<div id="%s" class="managed_html_movable managed_html_name_%s">
+""" % (inner_el_id, name))) #  %s .. , 'managed_html_content_published' if is_published else ''
                     
                     _func(*args, **kwds)
                     
