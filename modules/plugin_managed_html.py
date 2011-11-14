@@ -5,23 +5,25 @@ from gluon import *
 from gluon.storage import Storage, Messages
 import gluon.contrib.simplejson as json
 import os
-from plugin_uploadify_widget import (
-    uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_LENGTH
-)
-
-LIVE_MODE = 'live'
-EDIT_MODE = 'edit'
-PREVIEW_MODE = 'preview'
 
 class ManagedHTML(object):
 
-    def __init__(self, db, keyword='_managed_html'):
-        self.db, self.keyword = db, keyword
+    LIVE_MODE = '_managed_html_live'
+    EDIT_MODE = '_managed_html_edit'
+    PREVIEW_MODE = '_managed_html_preview'
+
+    def __init__(self, environment, db, keyword='_managed_html'):
+        self.environment, self.db, self.keyword = environment, db, keyword
     
         settings = self.settings = Storage()
         
+        settings.URL = URL
+        
         settings.upload = URL('download')
         settings.uploadfolder = os.path.join(self.db._adapter.folder, '..', 'uploads')
+        
+        settings.home_url = '/'
+        settings.home_label = 'Home'
         
         settings.extra_fields = {}
         
@@ -31,18 +33,47 @@ class ManagedHTML(object):
         settings.table_file_name = 'managed_html_file'
         settings.table_file = None
         
+        settings.text_widget = None
+        settings.upload_widget = None
+        
         # TODO versioning
         
         messages = self.messages = Messages(current.T)
         
-        self.switch_to_live_mode()
+        self.view_mode = self.LIVE_MODE
         
+    def url(self, a=None, c=None, f=None, r=None, args=None, vars=None, **kwds):
+        if not r:
+            if a and not c and not f: (f,a,c)=(a,c,f)
+            elif a and c and not f: (c,f,a)=(a,c,f)
+        if c != 'static':
+            mode = current.request.args(0)
+            if mode in (self.EDIT_MODE, self.PREVIEW_MODE):
+                return self._mode_url(mode, a, c, f, r, args, vars, **kwds)
+        return self.settings.URL(a, c, f, r, args, vars, **kwds)
+        
+    def _mode_url(self, mode, a=None, c=None, f=None, r=None, args=None, vars=None, **kwds):
+        if args in (None,[]): 
+            args = [mode]
+        elif not isinstance(args, (list, tuple)):
+            args = [mode, args]
+        else:
+            args = [mode] + args
+        return self.settings.URL(a, c, f, r, args=args, vars=vars, **kwds)
+        
+    def edit_url(self, a=None, c=None, f=None, r=None, args=None, vars=None, **kwds):
+        return self._mode_url(self.EDIT_MODE, a, c, f, r, args, vars, **kwds)
+    
+    def preview_url(self, a=None, c=None, f=None, r=None, args=None, vars=None, **kwds):
+        return self._mode_url(self.PREVIEW_MODE, a, c, f, r, args, vars, **kwds)
+    
     def define_tables(self, migrate=True, fake_migrate=False):
         db, settings = self.db, self.settings
         
         if not settings.table_content_name in db.tables:
             table = db.define_table(settings.table_content_name,
                 Field('name', readable=False, writable=False),
+                Field('publish_on', 'datetime', readable=False, writable=False),
                 Field('data', 'text', default=''), 
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_content_name, []))
@@ -55,23 +86,29 @@ class ManagedHTML(object):
                 *settings.extra_fields.get(settings.table_file_name, []))
         settings.table_file = db[settings.table_file_name]
             
+    def switch_mode(self):
+        settings, request, response = self.settings, current.request, current.response
+        self.view_mode = request.args(0)
+        if self.view_mode not in (self.EDIT_MODE, self.PREVIEW_MODE):
+            self.view_mode = self.LIVE_MODE
+            return
+           
+        response.files.append(URL('static', 'plugin_managed_html/managed_html.css'))
+        response.files.append(URL('static', 'plugin_managed_html/managed_html.js'))
+        response.files.append(URL('static', 'plugin_managed_html/jquery-ui-1.8.16.custom.min.js'))
         
-    def switch_to_live_mode(self):
-        self.view_mode = LIVE_MODE
+        response.meta.managed_html_home_url = settings.home_url
+        response.meta.managed_html_home_label = settings.home_label
         
-    def switch_to_edit_mode(self):
-        self.view_mode = EDIT_MODE
-        self._show_navbar()
+        response.meta.managed_html_live_url = settings.URL(args=request.args[1:], vars=request.vars)
         
-    def switch_to_preview_mode(self):
-        self.view_mode = PREVIEW_MODE
-        self._show_navbar()
-        
-    def _show_navbar(self):
-        current.response.files.append(URL('static', 'plugin_managed_html/managed_html.css'))
-        current.response.files.append(URL('static', 'plugin_managed_html/managed_html.js'))
-        
-        current.response.files.append(URL('static', 'plugin_managed_html/jquery-ui-1.8.16.custom.min.js'))
+        if self.view_mode == self.EDIT_MODE:
+            response.meta.managed_html_preview_url = settings.URL(
+                args=[self.PREVIEW_MODE]+request.args[1:], vars=request.vars)
+        elif self.view_mode == self.PREVIEW_MODE:
+            response.meta.managed_html_edit_url = settings.URL(
+                args=[self.EDIT_MODE]+request.args[1:], vars=request.vars)
+            
         
     def _post_js(self, name, action, target):
         data = {self.keyword:name, '_action':action}
@@ -80,11 +117,46 @@ class ManagedHTML(object):
                           data=json.dumps(data), target=target)
 
     def _get_content(self, name):
-        return self.db(self.settings.table_content.name==name).select().first()
+        table_content = self.settings.table_content
+        query = (table_content.name==name)
+        if self.view_mode == self.LIVE_MODE:
+            return self.db(query)(table_content.publish_on<=current.request.now
+                                 ).select(orderby=~table_content.publish_on).first()
+        else:
+            return self.db(query).select(orderby=~table_content.id).first()
         
     def _is_simple_form(self, fields):
-        return len(fields) == 1 and fields[0].name in ('string', 'text', 'integer', 'double', 
+        return len(fields) == 1 and fields[0].type in ('string', 'text', 'integer', 'double', 
                                                        'time', 'date', 'datetime')
+        
+    def _get_elrte_widget(self):
+        from plugin_elrte_widget import ElrteWidget, Dialog
+        T = current.T
+        LOAD = self.environment['LOAD']
+        try:
+            lang = T.accepted_language.split('-')[0].replace('ja', 'jp')
+        except:
+            lang = 'en'
+        image_chooser = Dialog(title=T('Select an image'), close=T('close'),
+        content = LOAD('plugin_elrte_widget', 'image_upload_or_choose', ajax=True))
+        file_chooser = Dialog(title=T('Select a file'), close=T('close'),
+                              content=LOAD('plugin_elrte_widget', 'file_upload_or_choose', ajax=True))
+        fm_open = """function(callback, kind){
+    if (kind == 'elfinder') {%s();} else {%s();}
+    jQuery.data(document.body, 'elrte_callback', callback)
+    }""" % (file_chooser.get_show_js(), image_chooser.get_show_js())
+        widget =  ElrteWidget(lang=lang, fm_open=fm_open) # , fm_open=None
+        
+        _files = [URL('static','plugin_elrte_widget/css/elrte.min.css'),
+                 URL('static','plugin_elrte_widget/css/elrte-inner.css'),
+                 URL('static','plugin_elrte_widget/css/smoothness/jquery-ui-1.8.13.custom.css'),
+                 # URL('static','plugin_elrte_widget/js/jquery-ui-1.8.13.custom.min.js'), # do not use elrte's jquery-ui
+                 URL('static','plugin_elrte_widget/js/elrte.min.js')]
+        if lang:
+            _files.append(URL('static','plugin_elrte_widget/js/i18n/elrte.%s.js' % lang))  
+        
+        widget.settings.files = _files
+        return widget
         
     def render(self, name, *fields):
         request, response, session, T, settings = (
@@ -94,20 +166,29 @@ class ManagedHTML(object):
         
         def _render(func):
             def _func(content):
-                if self.view_mode == EDIT_MODE:
+                if self.view_mode == self.EDIT_MODE:
                     response.write(XML("<div onclick='%s'>" % self._post_js(name, 'edit', inner_el_id)))
                 
                 if content and content.data:
                     func(Storage(content and content.data and json.loads(content.data) or {}))
                 
-                if self.view_mode == EDIT_MODE:
-                    if not content or not content.data:
-                        response.write(XML('<div style="height:15px;background:whiteSmoke;">&nbsp;</div>'))
+                if self.view_mode == self.EDIT_MODE:
+                    # if not content or not content.data:
+                    response.write(XML('<div style="height:15px;background:white;">&nbsp;</div>'))
                     response.write(XML('</div>'))
                     
             if (self.keyword in request.vars and 
                     request.vars[self.keyword] == name):
                     
+                if not settings.text_widget:       
+                    settings.text_widget = self._get_elrte_widget() # , fm_open=None
+                
+                if not settings.upload_widget:       
+                    from plugin_uploadify_widget import (
+                        uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_LENGTH
+                    )
+                    settings.upload_widget = uploadify_widget
+
                 def _uploadify_widget(field, value, download_url=None, **attributes):
                     attributes['extra_vars'] = {self.keyword:name, '_action':'edit'}
                     
@@ -115,16 +196,16 @@ class ManagedHTML(object):
                         return settings.table_file.name.store(file,filename,path)
                     field.custom_store = _custom_store
                     
-                    return uploadify_widget(field, value, download_url, **attributes)
+                    return settings.upload_widget(field, value, download_url, **attributes)
                     
                 import cStringIO
                 action = request.vars.get('_action')
                 if action == 'edit':
                     content = self._get_content(name)
                     if not content:
-                        settings.table_content.insert(name=name)
+                        #settings.table_content.insert(name=name)
                         content = self._get_content(name)
-                    data = content.data and json.loads(content.data) or {}
+                    data = content and content.data and json.loads(content.data) or {}
                     virtual_record = Storage(id=0)
                     for field in fields:
                         virtual_record[field.name] = data[field.name] if field.name in data else None
@@ -132,6 +213,9 @@ class ManagedHTML(object):
                         if field.type == 'upload':
                             field.uploadfolder = field.uploadfolder or settings.uploadfolder
                             field.widget = _uploadify_widget
+                        elif field.type == 'text':
+                            field.widget = settings.text_widget
+                            
                     form = SQLFORM(
                         DAL(None).define_table('no_table', *fields),
                         virtual_record,
@@ -148,9 +232,13 @@ class ManagedHTML(object):
                             if field.type == 'upload':
                                 settings.table_file.insert(name=filename)
                     
-                        content.update_record(data=json.dumps(data))
+                        #content.update_record(data=json.dumps(data))
+                        settings.table_content.insert(name=name, data=json.dumps(data))
+                        content = self._get_content(name)
+                        
                         response.flash = T('Edited')
-                        response.js = 'managed_html_editing("%s", false);' % el_id
+                        response.js = 'managed_html_published("%s", false);' % el_id
+                        response.js += 'managed_html_editing("%s", false);' % el_id
                         
                         response.body = cStringIO.StringIO()
                         _func(content)
@@ -161,8 +249,12 @@ class ManagedHTML(object):
                     form.components += [INPUT(_type='hidden', _name=self.keyword, _value=name),
                                INPUT(_type='hidden', _name='_action', _value='edit')]
                     raise HTTP(200, form)
-                elif action == 'back':
+                elif action in ('back', 'publish_now'):
                     content = self._get_content(name)
+                    if action == 'publish_now':
+                        content.update_record(publish_on=request.now)
+                        response.js = 'managed_html_published("%s", true);' % el_id
+                        response.flash = 'Published'
                     
                     response.body = cStringIO.StringIO()
                     _func(content)
@@ -170,15 +262,17 @@ class ManagedHTML(object):
                 else:
                     raise RuntimeError
                 
-                    
             def wrapper(*args, **kwds):
                 content = self._get_content(name)
                 
-                if self.view_mode == EDIT_MODE:
-                    response.write(XML('<div id="%s" class="managed_html_block">' % el_id))
+                if self.view_mode == self.EDIT_MODE:
+                    is_published = (content is None) or bool(content.publish_on and content.publish_on<=request.now)
+                    
+                    response.write(XML('<div id="%s" class="managed_html_block  %s">' %
+                                        (el_id, 'managed_html_block_pending' if not is_published else '')))
                     
                     response.write(XML("""
-<div id="%s" style="min-height:15px;" class="managed_html_content">""" % inner_el_id))
+<div id="%s" class="managed_html_content">""" % (inner_el_id)))
                     _func(content)
                     response.write(XML('</div>'))
                     
@@ -200,6 +294,11 @@ class ManagedHTML(object):
                               _onclick=self._post_js(name, 'edit', inner_el_id),
                               _class='managed_html_btn'),
                            _class='managed_html_edit_btn'),
+                       SPAN(INPUT(_value=T('Publish Now'), _type='button', 
+                              _onclick=self._post_js(name, 'publish_now', inner_el_id),
+                              _class='managed_html_btn managed_html_success_btn'),
+                           _class='managed_html_publish_now_btn',
+                           _style='display:none;' if is_published else ''),
                     ), _class='managed_html_contents_ctrl')))
                     
                     response.write(XML('</div>'))
@@ -227,7 +326,7 @@ class ManagedHTML(object):
             if action == 'permute':
                 content = self._get_content(name)
                 if not content:
-                    settings.table_content.insert(name=name)
+                    settings.table_content.insert(name=name, publish_on=request.now) # remove if append archive
                     content = self._get_content(name)
                     
                 indices = request.vars.get('indices[]', [])
@@ -237,8 +336,12 @@ class ManagedHTML(object):
                 arg_to = indices.index(to_idx)
                 indices[arg_from] = to_idx
                 indices[arg_to] = from_idx
-                print from_idx, to_idx
-                content.update_record(data=json.dumps(indices))
+                
+                content.update_record(data=json.dumps(indices), publish_on=request.now) # remove if append archive
+                # settings.table_content.insert(name=name, data=json.dumps(indices))
+                # content = self._get_content(name)
+                        
+                response.flash = T('Moved')
                 
                 raise HTTP(200, json.dumps(indices))
             
@@ -246,6 +349,7 @@ class ManagedHTML(object):
             self._movables[name].append((len(self._movables[name]), func))
                 
             def wrapper(*args, **kwds):
+                # is_published = False
                 if not self._movable_loaded.get(name):
                     content = self._get_content(name)
                     if content and content.data:
@@ -256,34 +360,35 @@ class ManagedHTML(object):
                             permutation[:len(indices)] = indices
                         except ValueError:
                             pass
-                        print permutation
                         self._movables[name] = [self._movables[name][i] for i in permutation]
-                    
-                    if self.view_mode == EDIT_MODE:
+                        
+                        # is_published = bool(content.publish_on and content.publish_on<=request.now)
+                        
+                    if self.view_mode == self.EDIT_MODE:
                         response.write(XML("""
 <script>jQuery(function(){managed_html_movable("%s", [%s], "%s", "%s")})</script>""" % 
                             (name, ','.join([str(i) for i, f in self._movables[name]]),
-                             self.keyword, URL(args=current.request.args, vars=current.request.get_vars))))
+                             self.keyword, URL(args=request.args, vars=request.get_vars))))
                     self._movable_loaded[name] = True
                     
-                if self.view_mode == EDIT_MODE:
-                    _block_index, _func = self._movables[name].pop(0)
-                    
+                _block_index, _func = self._movables[name].pop(0)
+                
+                if self.view_mode == self.EDIT_MODE:
                     el_id = 'managed_html_block_%s_%s' % (name, _block_index)
                     inner_el_id = 'managed_html_inner_%s_%s' % (name, _block_index)
                     
-                    response.write(XML('<div id="%s" class="managed_html_block">'% el_id))
+                    response.write(XML('<div id="%s" class="managed_html_block managed_html_block_movable">'% el_id))
                     
                     response.write(XML("""
-<div id="%s" class="managed_html_movable managed_html_name_%s">""" % 
-                        (inner_el_id, name)))
+<div id="%s" class="managed_html_movable managed_html_name_%s">
+""" % (inner_el_id, name))) #  %s .. , 'managed_html_content_published' if is_published else ''
                     
                     _func(*args, **kwds)
                     
                     response.write(XML('</div>'))
                     response.write(XML('</div>'))
                 else:
-                    self._movables[name].pop()(*args, **kwds)
+                    _func(*args, **kwds)
                 
             return wrapper
         return _movable
@@ -292,7 +397,7 @@ class ManagedHTML(object):
     # def response(self, name):
         # # TODO
         # response = current.response
-        # if self.view_mode == EDIT_MODE:
+        # if self.view_mode == self.EDIT_MODE:
             # # response.xxx = xxx
             # return SCRIPT(""" """)
         # else:

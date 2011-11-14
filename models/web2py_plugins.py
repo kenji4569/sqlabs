@@ -283,6 +283,9 @@ if request.controller.startswith('plugin_'):
     statics = cache.ram('statics:%s' % plugin_name, _get_statics, time_expire=10)
     
     info_plugin = get_info_plugin_metas()[plugin_name]
+    if info_plugin.get('status') == 'under-construction':
+        SHOW_SOCIAL = False
+    
     response.web2py_plugins = Storage(
         plugin_name=plugin_name,
         plugin_adopted=info_plugin.get('adopted', False),

@@ -1,16 +1,14 @@
 {{extend 'layout.html'}}
-<p class="backto">{{=back}}</p>
 <div>
   <h1>{{=response.title or ''}}</h1>
   <hr/>
-  <div>
-    {{@managed_html.render('block1', Field('text', 'text', comment='Input Text'))
-      def _block(content):}}
-      {{=content.text}}
-    {{pass}}
-    {{_block()}}
-  </div>
-  <br/>
+  
+  <h3>Edit ohter page</h3>
+    <a href="{{=URL('page2')}}">>> Page2</a>
+  <br/><br/>
+  
+  <hr/>
+  <h2>Edit text</h2>
   <div style="width:100px;">
     {{@managed_html.render('block2', Field('text', comment='Input Text'))
       def _block(content):}}
@@ -20,6 +18,7 @@
   </div>
   <br/>
   
+  <h2>Edit image</h2>
   <div style="width:300px;">
     {{@managed_html.render('block3', Field('image', 'upload', comment='Upload Image'))
       def _block(content):}}
@@ -33,8 +32,19 @@
   </div>
   <br/>
   
+  <h2>Edit html</h2>
+  <div>
+    {{@managed_html.render('block1', Field('html', 'text', comment='Input HTML'))
+      def _block(content):}}
+      {{=XML(content.html)}}
+    {{pass}}
+    {{_block()}}
+  </div>
+  <br/>
+  
   <hr/>
-  drag us!
+  
+  <h2>Drag us!</h2>
   <div style="border: 1px solid whiteSmoke; width:200px;">
     {{@managed_html.movable('block_type1')
       def block_a():}}
@@ -57,7 +67,7 @@
   </div>
   
   <hr/>
-  drag us!
+  <h2>Drag another group</h2>
   <div>
     {{@managed_html.movable('block_type2')
       def block_a():}}
@@ -70,7 +80,7 @@
     {{block_a()}}
     {{block_b()}}
   </div>
-  
+  <br/>
 </div>
 
 
