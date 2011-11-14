@@ -84,6 +84,13 @@ class MPTTModel(object):
         db, table_node = self.db, self.settings.table_node
         return db(table_node.rgt == table_node.lft+1)
     
+    def get_first_child(self, node):
+        db, table_node = self.db, self.settings.table_node
+        node = self._load_node(node)
+        #if not self.is_leaf_node(node):
+        #first_child = db(table_node.lft == node.lft + 1)(table_node.tree_id == node.tree_id).select()
+        return first_child.id
+            
     def get_next_sibling(self, node):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
