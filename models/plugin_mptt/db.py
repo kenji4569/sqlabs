@@ -14,14 +14,13 @@ mptt.settings.table_node_name = 'plugin_mptt_node'
 mptt.settings.extra_fields = {
     'plugin_mptt_node': 
         [Field('name'),
+         Field('node_type'),
          Field('created_on', 'datetime', default=request.now)],
 }
 
 ### define tables ##############################################################'
 mptt.define_tables()
 table_node = mptt.settings.table_node
-NodeParent = table_node.with_alias('node_parent')
-parent_left = NodeParent.on(NodeParent.id==table_node.parent)
 
 ### populate records ###########################################################
 deleted = db(table_node.created_on<request.now-datetime.timedelta(minutes=30)).delete()
@@ -30,8 +29,8 @@ if deleted:
     session.flash = 'the database has been refreshed'
     redirect(URL('index'))
 
- if not category_tree.roots().count():
-    category_tree.insert_node(None, name='master', node_type='root')
+if not mptt.roots().count():
+    mptt.insert_node(None, name='master', node_type='root')
         
 ### helper functions ##########################################################
 
@@ -41,10 +40,10 @@ def build_tree_objects(initially_select):
     def _traverse(node):
         node_el_id = 'category_%s' % node.id
         children = []
-        if not category_tree.is_leaf_node(node):
+        if not mptt.is_leaf_node(node):
             initially_open.append(node_el_id)
-            for child in category_tree.descendants_from_node(node)(
-                            table_category.level==node.level+1).select(orderby=category_tree.desc):
+            for child in mptt.descendants_from_node(node)(
+                            table_category.level==node.level+1).select(orderby=mptt.desc):
                 children.append(_traverse(child))
         return dict(data=node.name, 
                     attr=dict(id=node_el_id, rel=node.node_type),
@@ -71,10 +70,10 @@ def render_tree_crud_buttons(tablename):
     # flatten_nodes = []
     # def _traverse(node, ancestors=None):
         # ancestors = ancestors or []
-        # for child in category_tree.descendants_from_node(node)(
-                            # table_category.level==node.level+1).select(orderby=category_tree.desc):
+        # for child in mptt.descendants_from_node(node)(
+                            # table_category.level==node.level+1).select(orderby=mptt.desc):
             # self_and_ancestors = ancestors + [child] 
-            # if not category_tree.is_leaf_node(child):
+            # if not mptt.is_leaf_node(child):
                 # _traverse(child, self_and_ancestors)
             # flatten_nodes.append(self_and_ancestors)
     # _traverse(root_node)
@@ -82,5 +81,4 @@ def render_tree_crud_buttons(tablename):
     
 def get_root_node():
     # TODO for multitetant
-    return category_tree.roots().select().first()
-    
+    return mptt.roots().select().first()

@@ -22,12 +22,14 @@ class TreeTestMixin():
         self.assertEqual(
             '\n'.join(["%s %s %s %s %s %s" % 
                       (node.name, node.parent and node.parent.name, 
-                       node.tree_id, node.level, node.left, node.right) 
+                       node.tree_id, node.level, node.lft, node.rgt) 
                             for node in nodes]),
             self.leading_whitespace_re.sub('',tree_text))
             
     def get_all_nodes(self):
-        return db(table_node.id > 0).select(left=parent_left, orderby=table_node.tree_id)
+        NodeParent = table_node.with_alias('node_parent')
+        return db(table_node.id > 0).select(left=NodeParent.on(NodeParent.id==table_node.parent), 
+                                            orderby=table_node.tree_id)
     
     def get_node(self, node_id):
         return db(table_node.id == node_id).select().first()
@@ -45,7 +47,7 @@ class TreeTestMixin():
         self.node10 = mptt.insert_node(self.node9, name='node10')
         self.node11 = mptt.insert_node(self.node9, name='node11')
         
-        # name, parent, tree_id, level, left, right,   structure
+        # name, parent, tree_id, level, lft, rgt,   structure
         # node1 -      1 0 1 16   node1
         # node2 node1  1 1 2 9    +-- node2
         # node3 node2  1 2 3 4    |   |-- node3
@@ -70,7 +72,7 @@ class TreeTestMixin():
         self.node9 = mptt.insert_node(self.node8, name='node9')
         self.node10 = mptt.insert_node(self.node8, name='node10')
         
-        # name, parent, tree_id, level, left, right,   structure
+        # name, parent, tree_id, level, lft, rgt,   structure
         # node1 -      1 0 1 20    node1
         # node2 node1  1 1 2 7     +-- node2
         # node3 node2  1 2 3 4     |   |-- node3
@@ -115,7 +117,7 @@ class ReadingTestCase(unittest.TestCase, TreeTestMixin):
     def test_descendants_from_node(self):
         def _get_descendants(node_id, **kwds):
             return [node.name for node 
-                    in mptt.descendants_from_node(node_id).select(orderby=table_node.left)]
+                    in mptt.descendants_from_node(node_id).select(orderby=table_node.lft)]
         self.assertEqual(_get_descendants(self.node1), ['node2', 'node3', 'node4', 'node5', 'node6', 'node7', 'node8'])
         self.assertEqual(_get_descendants(self.node2), ['node3', 'node4', 'node5'])
         self.assertEqual(_get_descendants(self.node3), [])
@@ -134,7 +136,7 @@ class ReadingTestCase(unittest.TestCase, TreeTestMixin):
         self.assertEqual(mptt.count_descendants_from_node(self.node10), 0)
     
     def test_leafnodes(self):
-        self.assertEqual([node.name for node in mptt.leafnodes().select(orderby=table_node.tree_id|table_node.left)],
+        self.assertEqual([node.name for node in mptt.leafnodes().select(orderby=table_node.tree_id|table_node.lft)],
                          ['node3', 'node4', 'node5', 'node7', 'node8', 'node10', 'node11'])
     
     def test_roots(self):
