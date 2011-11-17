@@ -14,22 +14,22 @@ def index():
 def output():
     def url(**b):
         b['args'] = b.get('args',[])
-        b['user_signature'] = True
+        b['user_signature'] = False
+        b['hmac_key'] = 'test'
         return URL(**b)
     
     def check_authorization():
-        if not URL.verify(request, user_signature=True):
-            print "error"
+        if not URL.verify(request, user_signature=False, hmac_key='test'):
             raise HTTP(403)
             
     action = request.args and request.args[-1]     
+  
     if action=='new':
         check_authorization()
         vars = request.post_vars
-        print vars
         if not vars.name or vars.name == '---':
             raise HTTP(406)
-        node_id = category_tree.insert_node(vars.target, name=vars.name)
+        node_id = mptt.insert_node(vars.target, name=vars.name)
         raise HTTP(200, node_id)
         
     elif action=='edit':
@@ -37,7 +37,7 @@ def output():
         vars = request.post_vars
         if not vars.name or vars.name == '---':
             raise HTTP(406)
-        record = table_category(vars.id)
+        record = table_node(vars.id)
         if not record:
             raise HTTP(404)
         if record.name == vars.name:
@@ -48,27 +48,25 @@ def output():
     elif action=='delete':
         check_authorization()
         vars = request.post_vars
-        record = table_category(vars.id)
-        if not category_tree.is_leaf_node(record) or not record:
+        record = table_node(vars.id)
+        if not mptt.is_leaf_node(record) or not record:
             raise HTTP(404)
-        if db(table_shop.root_category==record.id).count():
-            raise HTTP(406)
-        category_tree.delete_node(record)
+        mptt.delete_node(record)
         raise HTTP(200)
         
     elif action=='move':
         check_authorization()
         vars = request.post_vars
-        record = table_category(vars.id)
-        parent_record = table_category(vars.parent)
+        record = table_node(vars.id)
+        parent_record = table_node(vars.parent)
         print "id", vars.id
         print "position", vars.position
         print "parent", vars.parent
-        category_tree.get_first_child(record)
-        # TODO
+        get = mptt.get_first_child(record)
+        # TODO      
 
     
-    root_nodes = db(table_node.id > 0).select()
+    root_nodes = mptt.roots().select()
     data = []
     initially_open = []
     for i, root_node in enumerate(root_nodes):
@@ -82,7 +80,7 @@ def output():
     response.files.append(URL('static', 'plugin_mptt/main.css'))
     response.files.append(URL('static', 'plugin_mptt/bootstrap.min.css'))
 
-    return dict(url=URL, data=data,
+    return dict(url=url, data=data,
                 initially_open=initially_open,
                 tree_crud_buttons=render_tree_crud_buttons(str(table_node)))
     

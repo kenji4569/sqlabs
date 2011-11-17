@@ -23,7 +23,7 @@ mptt.define_tables()
 table_node = mptt.settings.table_node
 
 ### populate records ###########################################################
-deleted = db(table_node.created_on<request.now-datetime.timedelta(minutes=30)).delete()
+deleted = db(table_node.created_on<request.now-datetime.timedelta(minutes=10)).delete()
 if deleted:
     table_node.truncate()
     session.flash = 'the database has been refreshed'
@@ -44,15 +44,14 @@ def recordbutton(buttonclass, buttontext, buttonurl, showbuttontext=True, **attr
              _title=buttontext, _href=buttonurl, _class='ui-btn', **attr)
     
 def build_tree_objects(initially_select):
-
     initially_open = []
     def _traverse(node):
-        node_el_id = 'category_%s' % node.id
+        node_el_id = 'node_%s' % node.id
         children = []
         if not mptt.is_leaf_node(node):
             initially_open.append(node_el_id)
             for child in mptt.descendants_from_node(node)(
-                            table_category.level==node.level+1).select(orderby=mptt.desc):
+                            table_node.level==node.level+1).select(orderby=mptt.desc):
                 children.append(_traverse(child))
         return dict(data=node.name, 
                     attr=dict(id=node_el_id, rel=node.node_type),
