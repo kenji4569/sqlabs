@@ -4,14 +4,89 @@
 def index():
     # TODO
     # response.files = ..
-    response.files.append(URL('static', 'plugin_mptt/jstree/jquery.hotkeys.js'))
-    response.files.append(URL('static', 'plugin_mptt/jstree/jquery.jstree.js'))
     
-    return dict(output=XML(response.render('plugin_mptt/index.html', dict(AAA='1123'))),
+    return dict(output=A('output', _href=URL('output')),
                 unit_tests=[A('test all', _href=URL('test')),
                             A('test reading', _href=URL('test', args='reading')),
                             A('test reparenting', _href=URL('test', args='reparenting')),
                             A('test deletion', _href=URL('test', args='deletion'))])
+                            
+def output():
+    def url(**b):
+        b['args'] = b.get('args',[])
+        b['user_signature'] = True
+        return URL(**b)
+    
+    def check_authorization():
+        if not URL.verify(request, user_signature=True):
+            print "error"
+            raise HTTP(403)
+            
+    action = request.args and request.args[-1]     
+    if action=='new':
+        check_authorization()
+        vars = request.post_vars
+        print vars
+        if not vars.name or vars.name == '---':
+            raise HTTP(406)
+        node_id = category_tree.insert_node(vars.target, name=vars.name)
+        raise HTTP(200, node_id)
+        
+    elif action=='edit':
+        check_authorization()
+        vars = request.post_vars
+        if not vars.name or vars.name == '---':
+            raise HTTP(406)
+        record = table_category(vars.id)
+        if not record:
+            raise HTTP(404)
+        if record.name == vars.name:
+            raise HTTP(406)
+        record.update_record(name=vars.name)
+        raise HTTP(200)
+        
+    elif action=='delete':
+        check_authorization()
+        vars = request.post_vars
+        record = table_category(vars.id)
+        if not category_tree.is_leaf_node(record) or not record:
+            raise HTTP(404)
+        if db(table_shop.root_category==record.id).count():
+            raise HTTP(406)
+        category_tree.delete_node(record)
+        raise HTTP(200)
+        
+    elif action=='move':
+        check_authorization()
+        vars = request.post_vars
+        record = table_category(vars.id)
+        parent_record = table_category(vars.parent)
+        print "id", vars.id
+        print "position", vars.position
+        print "parent", vars.parent
+        category_tree.get_first_child(record)
+        # TODO
+
+    
+    root_nodes = db(table_node.id > 0).select()
+    data = []
+    initially_open = []
+    for i, root_node in enumerate(root_nodes):
+        _data, _initially_open = build_tree_objects(root_node)
+        data.append(_data)
+        initially_open += _initially_open
+    
+    response.view = 'plugin_mptt/index.html'
+    response.files.append(URL('static', 'plugin_mptt/jstree/jquery.hotkeys.js'))
+    response.files.append(URL('static', 'plugin_mptt/jstree/jquery.jstree.js'))
+    response.files.append(URL('static', 'plugin_mptt/main.css'))
+    response.files.append(URL('static', 'plugin_mptt/bootstrap.min.css'))
+
+    return dict(url=URL, data=data,
+                initially_open=initially_open,
+                tree_crud_buttons=render_tree_crud_buttons(str(table_node)))
+    
+
 
 ### unit tests #################################################################
 
