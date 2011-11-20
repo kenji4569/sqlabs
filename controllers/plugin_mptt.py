@@ -9,7 +9,8 @@ def index():
                 unit_tests=[A('test all', _href=URL('test')),
                             A('test reading', _href=URL('test', args='reading')),
                             A('test reparenting', _href=URL('test', args='reparenting')),
-                            A('test deletion', _href=URL('test', args='deletion'))])
+                            A('test deletion', _href=URL('test', args='deletion')),
+                            A('test moving', _href=URL('test', args='moving'))])
                             
 def output():
     def url(**b):
@@ -61,9 +62,23 @@ def output():
         parent_record = table_node(vars.parent)
         print "id", vars.id
         print "position", vars.position
+        import pdb
+        pdb.set_trace()
+        
+        position = int(vars.position)
         print "parent", vars.parent
-        get = mptt.get_first_child(record)
-        # TODO      
+        
+        target_child = mptt.get_first_child(parent_record)
+        if target_child:
+            print "have child"
+            for i in range(position):
+                print "hello"
+                target_child = mptt.get_next_sibling(target_child)
+            mptt.move_node(record,target_child,'left')
+        else:
+            print "miss child"
+            mptt.move_node(record,parent_record)
+        raise HTTP(200)
 
     
     root_nodes = mptt.roots().select()
@@ -228,8 +243,7 @@ class ReadingTestCase(unittest.TestCase, TreeTestMixin):
         # TODO
         # self.assertTrue(mptt.is_child_node(self.node1))
         # self.assertFalse(mptt.is_child_node(self.node2))
-        
-        
+
 class ReparentingTestCase(unittest.TestCase, TreeTestMixin):
 
     def setUp(self):
@@ -428,6 +442,82 @@ class DeletionTestCase(unittest.TestCase, TreeTestMixin):
                          node9 node8 1 2 9 10
                          node10 node8 1 2 11 12""")
         
+class MovingTestCase(unittest.TestCase, TreeTestMixin):
+
+    def setUp(self):
+        mptt.settings.table_node.truncate()
+        self.build_tree1()
+        
+    def test_move_node5_to_left_of_node3(self):
+        print self.get_all_nodes()
+        position = 0
+        record = self.node5
+        parent_record = self.node2
+        target_child = mptt.get_first_child(parent_record)
+        if target_child:
+            for i in range(position):
+                target_child = mptt.get_next_sibling(target_child)
+            mptt.move_node(record,target_child,'left')
+        else:
+            mptt.move_node(record,parent_record)
+        
+        print self.get_all_nodes()
+        self.asserTree(self.get_all_nodes(),
+                       """node1 None 1 0 1 16
+                          node2 node1 1 1 2 9
+                          node3 node2 1 2 5 6
+                          node4 node2 1 2 7 8
+                          node5 node2 1 2 3 4
+                          node6 node1 1 1 10 15
+                          node7 node6 1 2 11 12
+                          node8 node6 1 2 13 14
+                          node9 None 2 0 1 6
+                          node10 node9 2 1 2 3
+                          node11 node9 2 1 4 5""")
+        
+                        # name, parent, tree_id, level, left, right
+                        # node1 -      1 0 1 16   node1
+                        # node2 node1  1 1 2 9    +-- node2
+                        # node3 node2  1 2 3 4    |   |-- node3
+                        # node4 node2  1 2 5 6    |   |-- node4
+                        # node5 node2  1 2 7 8    |   +-- node5
+                        # node6 node1  1 1 10 15  +-- node6
+                        # node7 node6  1 2 11 12      |-- node7
+                        # node8 node6  1 2 13 14      +-- node8
+                        # node9 -      2 0 1 6    node9
+                        # node10 node9 2 1 2 3    |-- node10
+                        # node11 node9 2 1 4 5    +-- node11
+                        
+    def test_move_node5_to_left_of_node4(self):
+        print self.get_all_nodes()
+        position = 1
+        record = self.node5
+        parent_record = self.node2
+        target_child = mptt.get_first_child(parent_record)
+        if target_child:
+            for i in range(position):
+                target_child = mptt.get_next_sibling(target_child)
+            mptt.move_node(record,target_child,'left')
+        else:
+            mptt.move_node(record,parent_record)
+        
+        print self.get_all_nodes()
+        self.asserTree(self.get_all_nodes(),
+                       """node1 None 1 0 1 16
+                          node2 node1 1 1 2 9
+                          node3 node2 1 2 5 6
+                          node4 node2 1 2 7 8
+                          node5 node2 1 2 5 6
+                          node6 node1 1 1 10 15
+                          node7 node6 1 2 11 12
+                          node8 node6 1 2 13 14
+                          node9 None 2 0 1 6
+                          node10 node9 2 1 2 3
+                          node11 node9 2 1 4 5""")
+        
+
+
+            
 def run_test(TestCase):
     import cStringIO
     stream = cStringIO.StringIO()
@@ -443,6 +533,8 @@ def test():
         test_case_classes.append(ReparentingTestCase)
     if request.args(0) in ('deletion', None):
         test_case_classes.append(DeletionTestCase)
+    if request.args(0) in ('moving', None):
+        test_case_classes.append(MovingTestCase)
         
     return dict(back=A('back', _href=URL('index')),
                 output=CODE(*[run_test(t) for t in test_case_classes]))
