@@ -97,9 +97,9 @@ class MPTTModel(object):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
         if self.is_root_node(node):
-            next_sib = db(table_node.lft == 1)(table_node.tree_id == node.tree_id + 1).select(table_node.id)
+            next_sib = db(table_node.lft == 1)(table_node.tree_id == node.tree_id + 1).select().first()
         else:
-            next_sib = db(table_node.lft == node.rgt + 1)(table_node.tree_id == node.tree_id).select(table_node.id)
+            next_sib = db(table_node.lft == node.rgt + 1)(table_node.tree_id == node.tree_id).select().first()
         return next_sib.id
     
     def get_previous_sibling(self, node):
