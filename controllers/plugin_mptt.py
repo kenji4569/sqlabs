@@ -62,13 +62,10 @@ def output():
         parent_record = table_node(vars.parent)
         print "id", vars.id
         print "position", vars.position
-        import pdb
-        pdb.set_trace()
-        
         position = int(vars.position)
         print "parent", vars.parent
         
-        target_child = mptt.get_first_child(parent_record)
+        target_child = mptt._load_node(mptt.get_first_child(parent_record))
         if target_child:
             print "have child"
             for i in range(position):

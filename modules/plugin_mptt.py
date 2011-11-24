@@ -439,15 +439,10 @@ class MPTTModel(object):
                     beta_node.update_record(tree_id=beta_node.tree_id + shift)
 
     def _manage_space(self, size, space_target, tree_id):
-            db, table_node = self.db, self.settings.table_node
+        db, table_node = self.db, self.settings.table_node
+        db(table_node.lft > space_target)(table_node.tree_id == tree_id).update(lft=table_node.lft + size)
+        db(table_node.rgt > space_target)(table_node.tree_id == tree_id).update(rgt=table_node.rgt + size)
             
-            for node in db((table_node.lft >= space_target) | (table_node.lft <= space_target))(
-                           table_node.tree_id == tree_id).select():
-                if node.lft > space_target:
-                    node.update_record(lft=node.lft + size)
-                if node.rgt > space_target:
-                    node.update_record(rgt=node.rgt + size)
-        
     def _move_child_node(self, node, target, position):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
