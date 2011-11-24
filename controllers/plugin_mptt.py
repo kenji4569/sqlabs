@@ -67,17 +67,20 @@ def output():
         
         target_child = mptt._load_node(mptt.get_first_child(parent_record))
         if target_child:
-            print "have child"
+            tmp = None
+            end_flag = False
             for i in range(position):
-                print "hello"
-                target_child = mptt.get_next_sibling(target_child)
-            mptt.move_node(record,target_child,'left')
+                tmp = mptt.get_next_sibling(target_child)
+                if tmp is False:
+                    mptt.move_node(record,target_child,'right')
+                    end_flag = True
+                target_child = tmp
+            if end_flag is False:  
+                mptt.move_node(record,target_child,'left')
         else:
-            print "miss child"
             mptt.move_node(record,parent_record)
         raise HTTP(200)
 
-    
     root_nodes = mptt.roots().select()
     data = []
     initially_open = []
@@ -122,10 +125,10 @@ class TreeTestMixin():
     def build_tree1(self):
         self.node1 = mptt.insert_node(None, name='node1')
         self.node2 = mptt.insert_node(self.node1, name='node2')
-        self.node3 = mptt.insert_node(self.node2, name='node3')
-        self.node4 = mptt.insert_node(self.node2, name='node4')
-        self.node5 = mptt.insert_node(self.node2, name='node5')
-        self.node6 = mptt.insert_node(self.node1, name='node6')
+        self.node3 = mptt.insert_node(self.node2.id, name='node3')
+        self.node4 = mptt.insert_node(self.node2.id, name='node4')
+        self.node5 = mptt.insert_node(self.node2.id, name='node5')
+        self.node6 = mptt.insert_node(self.node1.id, name='node6')
         self.node7 = mptt.insert_node(self.node6, name='node7')
         self.node8 = mptt.insert_node(self.node6, name='node8')
         self.node9 = mptt.insert_node(None, name='node9')
@@ -451,13 +454,21 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         parent_record = self.node2
         #target_child = mptt.get_first_child(parent_record)
         target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        
         if target_child:
+            tmp = None
+            end_flag = False
             for i in range(position):
-                target_child = mptt.get_next_sibling(target_child)
-            mptt.move_node(record,target_child,'left')
+                tmp = mptt.get_next_sibling(target_child)
+                if tmp is False:
+                    mptt.move_node(record,target_child,'right')
+                    end_flag = True
+                target_child = tmp
+            if end_flag is False:  
+                mptt.move_node(record,target_child,'left')
         else:
             mptt.move_node(record,parent_record)
-        
+
         self.asserTree(self.get_all_nodes(),
                        """node1 None 1 0 1 16
                           node2 node1 1 1 2 9
@@ -476,13 +487,21 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         record = self.node5
         parent_record = self.node2
         target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        
         if target_child:
+            tmp = None
+            end_flag = False
             for i in range(position):
-                target_child = mptt.get_next_sibling(target_child)
-            mptt.move_node(record,target_child,'left')
+                tmp = mptt.get_next_sibling(target_child)
+                if tmp is False:
+                    mptt.move_node(record,target_child,'right')
+                    end_flag = True
+                target_child = tmp
+            if end_flag is False:  
+                mptt.move_node(record,target_child,'left')
         else:
             mptt.move_node(record,parent_record)
-        
+
         self.asserTree(self.get_all_nodes(),
                        """node1 None 1 0 1 16
                           node2 node1 1 1 2 9
@@ -502,13 +521,21 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         record = self.node5
         parent_record = self.node4
         target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        
         if target_child:
+            tmp = None
+            end_flag = False
             for i in range(position):
-                target_child = mptt.get_next_sibling(target_child)
-            mptt.move_node(record,target_child,'left')
+                tmp = mptt.get_next_sibling(target_child)
+                if tmp is False:
+                    mptt.move_node(record,target_child,'right')
+                    end_flag = True
+                target_child = tmp
+            if end_flag is False:  
+                mptt.move_node(record,target_child,'left')
         else:
             mptt.move_node(record,parent_record)
-        
+
         print self.get_all_nodes()
         self.asserTree(self.get_all_nodes(),
                        """node1 None 1 0 1 16
@@ -529,13 +556,21 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         record = self.node5
         parent_record = self.node6
         target_child = mptt._load_node(mptt.get_first_child(parent_record))
+
         if target_child:
+            tmp = None
+            end_flag = False
             for i in range(position):
-                target_child = mptt.get_next_sibling(target_child)
-            mptt.move_node(record,target_child,'left')
+                tmp = mptt.get_next_sibling(target_child)
+                if tmp is False:
+                    mptt.move_node(record,target_child,'right')
+                    end_flag = True
+                target_child = tmp
+            if end_flag is False:  
+                mptt.move_node(record,target_child,'left')
         else:
             mptt.move_node(record,parent_record)
-        
+
         print self.get_all_nodes()
         self.asserTree(self.get_all_nodes(),
                        """node1 None 1 0 1 16
@@ -546,6 +581,82 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
                           node6 node1 1 1 8 15
                           node7 node6 1 2 9 10
                           node8 node6 1 2 13 14
+                          node9 None 2 0 1 6
+                          node10 node9 2 1 2 3
+                          node11 node9 2 1 4 5""")
+
+    def test_move_node5_to_left_of_node6(self):
+        #print self.get_all_nodes()
+        position = 1
+        record = self.node5
+        parent_record = self.node1
+        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        
+        if target_child:
+            tmp = None
+            end_flag = False
+            for i in range(position):
+                tmp = mptt.get_next_sibling(target_child)
+                if tmp is False:
+                    mptt.move_node(record,target_child,'right')
+                    end_flag = True
+                target_child = tmp
+            if end_flag is False:  
+                mptt.move_node(record,target_child,'left')
+        else:
+            mptt.move_node(record,parent_record)
+        
+        print self.get_all_nodes()
+        self.asserTree(self.get_all_nodes(),
+                       """node1 None 1 0 1 16
+                          node2 node1 1 1 2 7
+                          node3 node2 1 2 3 4
+                          node4 node2 1 2 5 6
+                          node5 node1 1 1 8 9
+                          node6 node1 1 1 10 15
+                          node7 node6 1 2 11 12
+                          node8 node6 1 2 13 14
+                          node9 None 2 0 1 6
+                          node10 node9 2 1 2 3
+                          node11 node9 2 1 4 5""")
+
+    def test_move_node5_to_right_of_node8(self):
+        #print self.get_all_nodes()
+        position = 2
+        record = self.node5
+        parent_record = self.node6
+        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        
+#        if target_child:
+#            for i in range(position):
+#                target_child = mptt.get_next_sibling(target_child)
+#            mptt.move_node(record,target_child,'left')
+#        else:
+#            mptt.move_node(record,parent_record)
+        if target_child:
+            tmp = None
+            end_flag = False
+            for i in range(position):
+                tmp = mptt.get_next_sibling(target_child)
+                if tmp is False:
+                    mptt.move_node(record,target_child,'right')
+                    end_flag = True
+                target_child = tmp
+            if end_flag is False:  
+                mptt.move_node(record,target_child,'left')
+        else:
+            mptt.move_node(record,parent_record)
+
+        print self.get_all_nodes()
+        self.asserTree(self.get_all_nodes(),
+                       """node1 None 1 0 1 16
+                          node2 node1 1 1 2 7
+                          node3 node2 1 2 3 4
+                          node4 node2 1 2 5 6
+                          node5 node6 1 2 13 14
+                          node6 node1 1 1 8 15
+                          node7 node6 1 2 9 10
+                          node8 node6 1 2 11 12
                           node9 None 2 0 1 6
                           node10 node9 2 1 2 3
                           node11 node9 2 1 4 5""")
