@@ -88,7 +88,27 @@ def output():
         _data, _initially_open = build_tree_objects(root_node)
         data.append(_data)
         initially_open += _initially_open
-    
+
+    root_nodes = mptt.roots().select()
+    tree = []
+    initially_open = []
+    for root_node in root_nodes:
+        descendants = mptt.descendants_from_node(root_node)(
+              table_node.level <= root_node.level+4).select(orderby=table_node.desc)
+        for node in descendants:
+            tree_str = "tree" + "[-1][1]" * (node.level-1) + ".append((node, []))"
+            exec tree_str
+#            if node.level == 1:
+#                tree.append((node, []))
+#            elif node.level == 2:
+#                tree[-1][1].append((node, []))
+#            elif node.level == 3:
+#                tree[-1][1][-1][1].append((node, []))
+#            elif node.level == 4:
+#                tree[-1][1][-1][1][-1][1].append((node, []))
+    response.categories = tree                    
+        
+
     response.view = 'plugin_mptt/index.html'
     response.files.append(URL('static', 'plugin_mptt/jstree/jquery.hotkeys.js'))
     response.files.append(URL('static', 'plugin_mptt/jstree/jquery.jstree.js'))

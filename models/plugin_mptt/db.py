@@ -42,7 +42,7 @@ def recordbutton(buttonclass, buttontext, buttonurl, showbuttontext=True, **attr
     return A(SPAN(_class='ui-icon ' + buttonclass), 
              inner, 
              _title=buttontext, _href=buttonurl, _class='ui-btn', **attr)
-    
+
 def build_tree_objects(initially_select):
     initially_open = []
     def _traverse(node):
