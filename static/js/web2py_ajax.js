@@ -95,3 +95,15 @@ function web2py_comet(url,onmessage,onopen,onclose) {
     return true; // supported
   } else return false; // not supported
 }
+
+/////////////////////////////////////////////////////////////
+function web2py_trap_link(target) {
+    jQuery('#'+target+' a.w2p_trap').each(function(i){
+	    var link=jQuery(this);
+	    link.click(function(e) {
+		    jQuery('.flash').hide().html('');
+		    web2py_ajax_page('get',link.attr('href'),[],target);
+		    e.preventDefault();
+		});
+	});  
+}

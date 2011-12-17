@@ -12,7 +12,7 @@
   <div style="width:100px;">
     {{@managed_html.render('block2', Field('text', comment='Input Text'))
       def _block(content):}}
-      {{=content.text}}
+      {{=content.text or ''}}
     {{pass}}
     {{_block()}}
   </div>
@@ -20,7 +20,7 @@
   
   <h2>Edit image</h2>
   <div style="width:300px;">
-    {{@managed_html.render('block3', Field('image', 'upload', comment='Upload Image'))
+    {{@managed_html.render('block3', Field('image', widget=managed_html.image_widget, comment='Upload Image'))
       def _block(content):}}
       {{if content.image:}}
         <img src="{{=URL('download', args=content.image)}}"/>
@@ -36,7 +36,7 @@
   <div>
     {{@managed_html.render('block1', Field('html', 'text', comment='Input HTML'))
       def _block(content):}}
-      {{=XML(content.html)}}
+      {{=XML(content.html or '')}}
     {{pass}}
     {{_block()}}
   </div>
