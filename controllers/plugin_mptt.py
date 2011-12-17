@@ -4,14 +4,122 @@
 def index():
     # TODO
     # response.files = ..
-    response.files.append(URL('static', 'plugin_mptt/jstree/jquery.hotkeys.js'))
-    response.files.append(URL('static', 'plugin_mptt/jstree/jquery.jstree.js'))
     
-    return dict(output=XML(response.render('plugin_mptt/index.html', dict(AAA='1123'))),
+    return dict(output=A('output', _href=URL('output')),
                 unit_tests=[A('test all', _href=URL('test')),
                             A('test reading', _href=URL('test', args='reading')),
                             A('test reparenting', _href=URL('test', args='reparenting')),
-                            A('test deletion', _href=URL('test', args='deletion'))])
+                            A('test deletion', _href=URL('test', args='deletion')),
+                            A('test moving', _href=URL('test', args='moving'))])
+                            
+def output():
+    def url(**b):
+        b['args'] = b.get('args',[])
+        b['user_signature'] = False
+        b['hmac_key'] = 'test'
+        return URL(**b)
+    
+    def check_authorization():
+        if not URL.verify(request, user_signature=False, hmac_key='test'):
+            raise HTTP(403)
+            
+    action = request.args and request.args[-1]     
+  
+    if action=='new':
+        check_authorization()
+        vars = request.post_vars
+        if not vars.name or vars.name == '---':
+            raise HTTP(406)
+        node_id = mptt.insert_node(vars.target, name=vars.name)
+        raise HTTP(200, node_id)
+        
+    elif action=='edit':
+        check_authorization()
+        vars = request.post_vars
+        if not vars.name or vars.name == '---':
+            raise HTTP(406)
+        record = table_node(vars.id)
+        if not record:
+            raise HTTP(404)
+        if record.name == vars.name:
+            raise HTTP(406)
+        record.update_record(name=vars.name)
+        raise HTTP(200)
+        
+    elif action=='delete':
+        check_authorization()
+        vars = request.post_vars
+        record = table_node(vars.id)
+        if not mptt.is_leaf_node(record) or not record:
+            raise HTTP(404)
+        mptt.delete_node(record)
+        raise HTTP(200)
+        
+    elif action=='move':
+        check_authorization()
+        vars = request.post_vars
+        record = table_node(vars.id)
+        parent_record = table_node(vars.parent)
+        print "id", vars.id
+        print "position", vars.position
+        position = int(vars.position)
+        print "parent", vars.parent
+        
+        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        if target_child:
+            tmp = None
+            end_flag = False
+            for i in range(position):
+                tmp = mptt.get_next_sibling(target_child)
+                if tmp is False:
+                    mptt.move_node(record,target_child,'right')
+                    end_flag = True
+                target_child = tmp
+            if end_flag is False:  
+                mptt.move_node(record,target_child,'left')
+        else:
+            mptt.move_node(record,parent_record)
+        raise HTTP(200)
+
+    root_nodes = mptt.roots().select()
+    data = []
+    initially_open = []
+    for i, root_node in enumerate(root_nodes):
+        _data, _initially_open = build_tree_objects(root_node)
+        data.append(_data)
+        initially_open += _initially_open
+
+    root_nodes = mptt.roots().select()
+    tree = []
+    initially_open = []
+    for root_node in root_nodes:
+        descendants = mptt.descendants_from_node(root_node)(
+              table_node.level <= root_node.level+4).select(orderby=table_node.desc)
+        for node in descendants:
+            tree_str = "tree" + "[-1][1]" * (node.level-1) + ".append((node, []))"
+            exec tree_str
+#            if node.level == 1:
+#                tree.append((node, []))
+#            elif node.level == 2:
+#                tree[-1][1].append((node, []))
+#            elif node.level == 3:
+#                tree[-1][1][-1][1].append((node, []))
+#            elif node.level == 4:
+#                tree[-1][1][-1][1][-1][1].append((node, []))
+    response.categories = tree                    
+        
+
+    response.view = 'plugin_mptt/index.html'
+    response.files.append(URL('static', 'plugin_mptt/jstree/jquery.hotkeys.js'))
+    response.files.append(URL('static', 'plugin_mptt/jstree/jquery.jstree.js'))
+    response.files.append(URL('static', 'plugin_mptt/main.css'))
+    response.files.append(URL('static', 'plugin_mptt/bootstrap.min.css'))
+
+    return dict(url=url, data=data,
+                initially_open=initially_open,
+                tree_crud_buttons=render_tree_crud_buttons(str(table_node)))
+    
+
 
 ### unit tests #################################################################
 
@@ -33,14 +141,29 @@ class TreeTestMixin():
     
     def get_node(self, node_id):
         return db(table_node.id == node_id).select().first()
-        
+    
+    def move_action(self, position, record, parent_record, target_child):
+        if target_child:
+            tmp = None
+            end_flag = False
+            for i in range(position):
+                tmp = mptt.get_next_sibling(target_child)
+                if tmp is False:
+                    mptt.move_node(record,target_child,'right')
+                    end_flag = True
+                target_child = tmp
+            if end_flag is False:  
+                mptt.move_node(record,target_child,'left')
+        else:
+            mptt.move_node(record,parent_record)
+    
     def build_tree1(self):
         self.node1 = mptt.insert_node(None, name='node1')
         self.node2 = mptt.insert_node(self.node1, name='node2')
-        self.node3 = mptt.insert_node(self.node2, name='node3')
-        self.node4 = mptt.insert_node(self.node2, name='node4')
-        self.node5 = mptt.insert_node(self.node2, name='node5')
-        self.node6 = mptt.insert_node(self.node1, name='node6')
+        self.node3 = mptt.insert_node(self.node2.id, name='node3')
+        self.node4 = mptt.insert_node(self.node2.id, name='node4')
+        self.node5 = mptt.insert_node(self.node2.id, name='node5')
+        self.node6 = mptt.insert_node(self.node1.id, name='node6')
         self.node7 = mptt.insert_node(self.node6, name='node7')
         self.node8 = mptt.insert_node(self.node6, name='node8')
         self.node9 = mptt.insert_node(None, name='node9')
@@ -155,8 +278,7 @@ class ReadingTestCase(unittest.TestCase, TreeTestMixin):
         # TODO
         # self.assertTrue(mptt.is_child_node(self.node1))
         # self.assertFalse(mptt.is_child_node(self.node2))
-        
-        
+
 class ReparentingTestCase(unittest.TestCase, TreeTestMixin):
 
     def setUp(self):
@@ -355,6 +477,173 @@ class DeletionTestCase(unittest.TestCase, TreeTestMixin):
                          node9 node8 1 2 9 10
                          node10 node8 1 2 11 12""")
         
+class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
+
+    def setUp(self):
+        mptt.settings.table_node.truncate()
+        self.build_tree1()
+        
+    def test_move_node_within_the_same_level1(self):
+        position = 0
+        record = self.node5
+        parent_record = self.node2
+        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        
+        self.move_action(position, record, parent_record, target_child)
+
+        self.asserTree(self.get_all_nodes(),
+                       """node1 None 1 0 1 16
+                          node2 node1 1 1 2 9
+                          node3 node2 1 2 5 6
+                          node4 node2 1 2 7 8
+                          node5 node2 1 2 3 4
+                          node6 node1 1 1 10 15
+                          node7 node6 1 2 11 12
+                          node8 node6 1 2 13 14
+                          node9 None 2 0 1 6
+                          node10 node9 2 1 2 3
+                          node11 node9 2 1 4 5""")
+        
+    def test_move_node_within_the_same_level2(self):
+        position = 1
+        record = self.node5
+        parent_record = self.node2
+        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        
+        self.move_action(position, record, parent_record, target_child)        
+        
+        self.asserTree(self.get_all_nodes(),
+                       """node1 None 1 0 1 16
+                          node2 node1 1 1 2 9
+                          node3 node2 1 2 3 4
+                          node4 node2 1 2 7 8
+                          node5 node2 1 2 5 6
+                          node6 node1 1 1 10 15
+                          node7 node6 1 2 11 12
+                          node8 node6 1 2 13 14
+                          node9 None 2 0 1 6
+                          node10 node9 2 1 2 3
+                          node11 node9 2 1 4 5""")
+        
+    def test_move_node_to_child_of_another_node(self):
+        position = 0
+        record = self.node5
+        parent_record = self.node4
+        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        
+        self.move_action(position, record, parent_record, target_child)
+        
+        self.asserTree(self.get_all_nodes(),
+                       """node1 None 1 0 1 16
+                          node2 node1 1 1 2 9
+                          node3 node2 1 2 3 4
+                          node4 node2 1 2 5 8
+                          node5 node4 1 3 6 7
+                          node6 node1 1 1 10 15
+                          node7 node6 1 2 11 12
+                          node8 node6 1 2 13 14
+                          node9 None 2 0 1 6
+                          node10 node9 2 1 2 3
+                          node11 node9 2 1 4 5""")
+        
+    def test_move_node_to_left_of_another_node(self):
+        position = 1
+        record = self.node5
+        parent_record = self.node6
+        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        
+        self.move_action(position, record, parent_record, target_child)
+
+        self.asserTree(self.get_all_nodes(),
+                       """node1 None 1 0 1 16
+                          node2 node1 1 1 2 7
+                          node3 node2 1 2 3 4
+                          node4 node2 1 2 5 6
+                          node5 node6 1 2 11 12
+                          node6 node1 1 1 8 15
+                          node7 node6 1 2 9 10
+                          node8 node6 1 2 13 14
+                          node9 None 2 0 1 6
+                          node10 node9 2 1 2 3
+                          node11 node9 2 1 4 5""")
+
+    def test_move_node_to_sibliing_of_parent(self):
+        position = 1
+        record = self.node5
+        parent_record = self.node1
+        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        
+        self.move_action(position, record, parent_record, target_child)
+        
+        self.asserTree(self.get_all_nodes(),
+                       """node1 None 1 0 1 16
+                          node2 node1 1 1 2 7
+                          node3 node2 1 2 3 4
+                          node4 node2 1 2 5 6
+                          node5 node1 1 1 8 9
+                          node6 node1 1 1 10 15
+                          node7 node6 1 2 11 12
+                          node8 node6 1 2 13 14
+                          node9 None 2 0 1 6
+                          node10 node9 2 1 2 3
+                          node11 node9 2 1 4 5""")
+
+    def test_move_node_to_last_child(self):
+        position = 2
+        record = self.node5
+        parent_record = self.node6
+        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        
+        self.move_action(position, record, parent_record, target_child)
+        
+        self.asserTree(self.get_all_nodes(),
+                       """node1 None 1 0 1 16
+                          node2 node1 1 1 2 7
+                          node3 node2 1 2 3 4
+                          node4 node2 1 2 5 6
+                          node5 node6 1 2 13 14
+                          node6 node1 1 1 8 15
+                          node7 node6 1 2 9 10
+                          node8 node6 1 2 11 12
+                          node9 None 2 0 1 6
+                          node10 node9 2 1 2 3
+                          node11 node9 2 1 4 5""")
+        
+    def test_move_node_to_different_tree(self):
+        position = 0
+        record = self.node5
+        parent_record = self.node9
+        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        
+        self.move_action(position, record, parent_record, target_child)
+
+        print self.get_all_nodes()
+        self.asserTree(self.get_all_nodes(),
+                       """node1 None 1 0 1 14
+                          node2 node1 1 1 2 7
+                          node3 node2 1 2 3 4
+                          node4 node2 1 2 5 6
+                          node6 node1 1 1 8 13
+                          node7 node6 1 2 9 10
+                          node8 node6 1 2 11 12
+                          node5 node9 2 1 2 3
+                          node9 None 2 0 1 8
+                          node10 node9 2 1 4 5
+                          node11 node9 2 1 6 7""")
+
+                        # name, parent, tree_id, level, left, right
+                        # node1 -      1 0 1 16   node1
+                        # node2 node1  1 1 2 9    +-- node2
+                        # node3 node2  1 2 3 4    |   |-- node3
+                        # node4 node2  1 2 5 6    |   |-- node4
+                        # node5 node2  1 2 7 8    |   +-- node5
+                        # node6 node1  1 1 10 15  +-- node6
+                        # node7 node6  1 2 11 12      |-- node7
+                        # node8 node6  1 2 13 14      +-- node8
+                        # node9 -      2 0 1 6    node9
+                        # node10 node9 2 1 2 3    |-- node10
+                        # node11 node9 2 1 4 5    +-- node11
+                        
 def run_test(TestCase):
     import cStringIO
     stream = cStringIO.StringIO()
@@ -370,6 +659,8 @@ def test():
         test_case_classes.append(ReparentingTestCase)
     if request.args(0) in ('deletion', None):
         test_case_classes.append(DeletionTestCase)
+    if request.args(0) in ('moving', None):
+        test_case_classes.append(JsTreeMovingTestCase)
         
     return dict(back=A('back', _href=URL('index')),
                 output=CODE(*[run_test(t) for t in test_case_classes]))

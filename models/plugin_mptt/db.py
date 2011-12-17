@@ -23,7 +23,7 @@ mptt.define_tables()
 table_node = mptt.settings.table_node
 
 ### populate records ###########################################################
-deleted = db(table_node.created_on<request.now-datetime.timedelta(minutes=30)).delete()
+deleted = db(table_node.created_on<request.now-datetime.timedelta(minutes=10)).delete()
 if deleted:
     table_node.truncate()
     session.flash = 'the database has been refreshed'
@@ -34,16 +34,24 @@ if not mptt.roots().count():
         
 ### helper functions ##########################################################
 
-def build_tree_objects(initially_select):
+def recordbutton(buttonclass, buttontext, buttonurl, showbuttontext=True, **attr):
+    if showbuttontext:
+        inner = SPAN(buttontext, _class='ui-button-text') 
+    else:
+        inner = SPAN(XML('&nbsp'), _style='padding:6px;')
+    return A(SPAN(_class='ui-icon ' + buttonclass), 
+             inner, 
+             _title=buttontext, _href=buttonurl, _class='ui-btn', **attr)
 
+def build_tree_objects(initially_select):
     initially_open = []
     def _traverse(node):
-        node_el_id = 'category_%s' % node.id
+        node_el_id = 'node_%s' % node.id
         children = []
         if not mptt.is_leaf_node(node):
             initially_open.append(node_el_id)
             for child in mptt.descendants_from_node(node)(
-                            table_category.level==node.level+1).select(orderby=mptt.desc):
+                            table_node.level==node.level+1).select(orderby=mptt.desc):
                 children.append(_traverse(child))
         return dict(data=node.name, 
                     attr=dict(id=node_el_id, rel=node.node_type),
@@ -58,9 +66,9 @@ def render_tree_crud_buttons(tablename):
               buttonedit='ui-icon-pencil')
     return DIV(
         A('x', _class='close', _href='#', _onclick='jQuery(this).parent().hide();'),
-        SOLIDFORM.recordbutton('%(buttonadd)s' % ui, T('Add'), '#', False, _id='add_node_button'), 
-        SOLIDFORM.recordbutton('%(buttonedit)s' % ui, T('Edit'),'#', False, _id='edit_node_button'),
-        SOLIDFORM.recordbutton('%(buttondelete)s' % ui, T('Delete'),'#', False, _id='delete_node_button'),
+        recordbutton('%(buttonadd)s' % ui, T('Add'), '#', False, _id='add_node_button'), 
+        recordbutton('%(buttonedit)s' % ui, T('Edit'),'#', False, _id='edit_node_button'),
+        recordbutton('%(buttondelete)s' % ui, T('Delete'),'#', False, _id='delete_node_button'),
         _id='tree_crud_buttons', _style='display:none;position:absolute;',
         _class='tree_crud_button alert-message info',
     )

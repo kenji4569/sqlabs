@@ -7,6 +7,22 @@ from gluon.dal import Row
 from gluon.storage import Storage
 from email._parseaddr import SPACE
 
+def update_args(func):
+    def wrapper(self, *args, **kwds):
+        output = func(self, *args, **kwds)
+        for arg in args:
+            if isinstance(arg, Row):
+                table_node = self.settings.table_node
+                latest_node = self.db(table_node.id == arg[table_node.id]).select().first()
+                arg.lft = latest_node.lft
+                arg.rgt = latest_node.rgt
+                arg.level = latest_node.level
+                arg.parent = latest_node.parent
+                arg.tree_id = latest_node.tree_id
+        return output
+    return wrapper
+                
+        
 class MPTTModel(object):
     
     def __init__(self, db):
@@ -87,27 +103,35 @@ class MPTTModel(object):
     def get_first_child(self, node):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
-        #if not self.is_leaf_node(node):
-        #first_child = db(table_node.lft == node.lft + 1)(table_node.tree_id == node.tree_id).select()
+        if not self.is_leaf_node(node):
+            first_child = db(table_node.lft == node.lft + 1)(table_node.tree_id == node.tree_id).select().first()
+        else:
+            return None  
         return first_child.id
             
     def get_next_sibling(self, node):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
         if self.is_root_node(node):
-            next_sib = db(table_node.lft == 1)(table_node.tree_id == node.tree_id + 1).select(table_node.id)
+            next_sib = db(table_node.lft == 1)(table_node.tree_id == node.tree_id + 1).select().first()
         else:
-            next_sib = db(table_node.lft == node.rgt + 1)(table_node.tree_id == node.tree_id).select(table_node.id)
-        return next_sib.id
+            next_sib = db(table_node.lft == node.rgt + 1)(table_node.tree_id == node.tree_id).select().first()
+        if next_sib:
+            return next_sib.id
+        else:
+            return False
     
     def get_previous_sibling(self, node):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
         if self.is_root_node(node):
-            previous_sib = db(table_node.lft == 1)(table_node.tree_id == node.tree_id - 1).select(table_node.id)
+            previous_sib = db(table_node.lft == 1)(table_node.tree_id == node.tree_id - 1).select().first()
         else:
-            previous_sib = db(table_node.rgt == node.lft - 1)(table_node.tree_id == node.tree_id).select(table_node.id)
-        return previous_sib.id
+            previous_sib = db(table_node.rgt == node.lft - 1)(table_node.tree_id == node.tree_id).select().first()
+        if previous_sib:
+            return previous_sib.id
+        else:
+            return False
     
     def roots(self):
         db, table_node = self.db, self.settings.table_node
@@ -148,6 +172,7 @@ class MPTTModel(object):
         node2 = self._load_node(node2)
         return (node1.lft > node2.lft) and (node1.rgt < node2.rgt)
         
+    @update_args        
     def delete_node(self, node):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
@@ -250,6 +275,7 @@ class MPTTModel(object):
             if beta_node.id == node.id:
                 beta_node.update_record(parent=parent)
                     
+    @update_args
     def insert_node(self, target, position='last-child', **extra_vars):
         db, table_node = self.db, self.settings.table_node
         target = self._load_node(target)
@@ -336,6 +362,7 @@ class MPTTModel(object):
                                # tree_id=tree_id,
                                # parent=parent)
             
+    @update_args            
     def move_node(self, node, target, position='last-child'):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
@@ -437,15 +464,10 @@ class MPTTModel(object):
                     beta_node.update_record(tree_id=beta_node.tree_id + shift)
 
     def _manage_space(self, size, space_target, tree_id):
-            db, table_node = self.db, self.settings.table_node
+        db, table_node = self.db, self.settings.table_node
+        db(table_node.lft > space_target)(table_node.tree_id == tree_id).update(lft=table_node.lft + size)
+        db(table_node.rgt > space_target)(table_node.tree_id == tree_id).update(rgt=table_node.rgt + size)
             
-            for node in db((table_node.lft >= space_target) | (table_node.lft <= space_target))(
-                           table_node.tree_id == tree_id).select():
-                if node.lft > space_target:
-                    node.update_record(lft=node.lft + size)
-                if node.rgt > space_target:
-                    node.update_record(rgt=node.rgt + size)
-        
     def _move_child_node(self, node, target, position):
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
