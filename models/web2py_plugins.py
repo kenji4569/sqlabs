@@ -52,6 +52,14 @@ This plugin provides time, date and datetime picker widgets using %s.
 This plugin provides a color picker widget, using %s. Picked color is displayed in forms. 
 """) % A('colorpicker.js', _href='http://www.eyecon.ro/colorpicker/').xml())
     ),
+    
+    plugin_dialog=dict(
+        label='Dialog',
+        short_description=('A simple dialog'),
+        long_description=XML(("""
+A simple dialog.
+""") )
+    ),
     plugin_elrte_widget=dict(
         label='elRTE WYSIWYG Widget',
         short_description=T('A WYSIWYG editor widget using elRTE.js'),

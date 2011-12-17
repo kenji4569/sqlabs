@@ -1,0 +1,6 @@
+div.dialog .dialog-back{
+  background-color:black;-moz-opacity:0.5;opacity:.50;opacity:0.5;
+}
+div.dialog .dialog-front{
+  padding:16px;border:2px solid black;background-color:white;
+}
