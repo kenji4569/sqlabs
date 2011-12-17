@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from plugin_elrte_widget import ElrteWidget, Dialog
+from plugin_elrte_widget import ElrteWidget
+from plugin_dialog import DIALOG
 from plugin_uploadify_widget import (
     uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_LENGTH
 )
@@ -40,14 +41,14 @@ def index():
     except:
         lang = 'en'
 
-    image_chooser = Dialog(title=T('Select an image'), close=T('close'),
+    image_chooser = DIALOG(title=T('Select an image'), close=T('close'), renderstyle=True,
                            content=LOAD('plugin_elrte_widget', 'image_upload_or_choose', ajax=True))
-    file_chooser = Dialog(title=T('Select a file'), close=T('close'),
+    file_chooser = DIALOG(title=T('Select a file'), close=T('close'), renderstyle=True,
                           content=LOAD('plugin_elrte_widget', 'file_upload_or_choose', ajax=True))
     fm_open = """function(callback, kind){
-if (kind == 'elfinder') {%s();} else {%s();}
+if (kind == 'elfinder') {%s;} else {%s;}
 jQuery.data(document.body, 'elrte_callback', callback)
-}""" % (file_chooser.get_show_js(), image_chooser.get_show_js())
+}""" % (file_chooser.show(), image_chooser.show())
 
     ################################ The core ######################################
     # Inject the elrte widget
