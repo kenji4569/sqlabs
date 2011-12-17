@@ -8,7 +8,7 @@ db.define_table('color', Field('category', db.category), Field('name'))
 db.define_table('product', 
     Field('category', db.category, comment='<- type "A" or "B"'),
     Field('color', db.color,  
-          requires=IS_IN_DB(db(db.color.id>0), 'color.id', 'color.name', zero='---'),
+          requires=IS_EMPTY_OR(IS_IN_DB(db(db.color.id>0), 'color.id', 'color.name', zero='---')),
           comment='<- select category first'),
     )
     
@@ -32,6 +32,7 @@ db.product.color.widget = lazy_options_widget(
                   lambda category_id: (db.color.category==category_id), 
                   request.vars.category,
                   orderby=db.color.id)
+                  
 ################################################################################
      
 def index():

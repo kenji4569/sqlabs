@@ -37,6 +37,9 @@ class lazy_options_widget(SQLFORM.widgets.options):
         self.keyword = self.keyword % dict(fieldname=field.name)
             
         requires = field.requires
+
+        if isinstance(requires, IS_EMPTY_OR):
+            requires = requires.other
         if not isinstance(requires, (list, tuple)):
             requires = [requires]
         if requires:

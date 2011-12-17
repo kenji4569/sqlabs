@@ -204,4 +204,5 @@
 'under construction': '準備中',
 'value already in database or empty': '値は空、もしくは、データベースに既に存在しています',
 'value not allowed': '許可された値ではありません',
+'value not in database': 'value not in database',
 }
