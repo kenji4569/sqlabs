@@ -95,6 +95,7 @@
 'Hour': '時',
 'Image': '画像',
 'Input at least one variant': '少なくとも一つのバリエーションを選んでください',
+'Insufficient privileges': 'Insufficient privileges',
 'Introducing new products or services being developed by %s': '%s で開発している新商品やサービスを紹介します',
 'Invalid email': '不正なemailです',
 'Invalid query': '不正なクエリです',

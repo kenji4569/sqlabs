@@ -22,10 +22,10 @@ $.suggest = function(input, options) {
     $results.addClass(options.resultsClass).appendTo('body');
   }
   
-  resetPosition();
-  $(window)
-    .load(resetPosition)		// just in case user is changing size of page while loading
-    .resize(resetPosition);
+  // resetPosition();
+  // $(window)
+    // .load(resetPosition)		// just in case user is changing size of page while loading
+    // .resize(resetPosition);
 
   $input.blur(function() {
     setTimeout(function() { $results.hide() }, 200);
@@ -34,14 +34,14 @@ $.suggest = function(input, options) {
   $input.keydown(processKey);
   $input.focus(suggest);
 
-  function resetPosition() {
+  // function resetPosition() {
     // requires jquery.dimension plugin
-    var offset = $input.offset();
-    $results.css({
-        top: (offset.top + input.offsetHeight) + 'px',
-        left: offset.left + 'px'
-    });
-  }
+    // var offset = $input.offset();
+    // $results.css({
+        // top: (offset.offsetHeight) + 'px',
+        // left: (offset.offsetLeft) + 'px'
+    // });
+  // }
   function processKey(e) {
     preval = $input.val();
     // handling up/down/escape requires results to be visible
