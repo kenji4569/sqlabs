@@ -50,11 +50,14 @@ if (kind == 'elfinder') {%s;} else {%s;}
 jQuery.data(document.body, 'elrte_callback', callback)
 }""" % (file_chooser.show(), image_chooser.show())
 
+    cssfiles = [URL('static','css/base.css')]
+    
     ################################ The core ######################################
     # Inject the elrte widget
     # You can specify the language for the editor, and include your image chooser.
     # In this demo, the image chooser uses the uploadify plugin.
-    db.product.description.widget = ElrteWidget(lang=lang, fm_open=fm_open)
+    # If you want to edit contents with css applied, pass the css file urls for an argument.
+    db.product.description.widget = ElrteWidget(lang=lang, fm_open=fm_open, cssfiles=cssfiles)
     ################################################################################
 
     form = SQLFORM(db.product)

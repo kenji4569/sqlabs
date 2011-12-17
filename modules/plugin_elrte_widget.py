@@ -3,6 +3,7 @@
 # Authors: Kenji Hosoda <hosoda@s-cubism.jp>
 from gluon import *
 from gluon.storage import Storage
+from gluon.contrib import simplejson as json
 
 def _set_files(files):
     if current.request.ajax:
@@ -22,9 +23,9 @@ $.each(%s, function() {
 
 class ElrteWidget(object):
     
-    def __init__(self, lang=None, toolbar='default', fm_open="''"):
-        self.lang, self.toolbar, self.fm_open = lang, toolbar, fm_open
-        
+    def __init__(self, lang=None, toolbar='default', fm_open="''", cssfiles=[]):
+        self.lang, self.toolbar, self.fm_open, self.cssfiles = lang, toolbar, fm_open, cssfiles
+
         settings = self.settings = Storage()
         
         self.settings.files = None
@@ -71,9 +72,18 @@ jQuery(function() { var t = 10; (function run() {if ((function() {
     }
     var el = $('#%(id)s');
     if(!$.support.opacity){if (el.text() == '') { el.text('<p>&nbsp;</p>')}}
-    el.elrte({cssClass: 'el-rte', lang: '%(lang)s', toolbar: '%(toolbar)s', fmOpen : %(fm_open)s }); 
+
+    el.elrte({cssClass: 'el-rte', lang: '%(lang)s', 
+              toolbar: '%(toolbar)s', 
+              fmOpen : %(fm_open)s,
+              cssfiles: %(cssfiles)s}); 
 })()) {setTimeout(run, t); t = 2*t;}})();});
-""" % dict(id=_id, lang=self.lang or '', toolbar=self.toolbar, fm_open=self.fm_open))
+
+""" % dict(id=_id, lang=self.lang or '', 
+           toolbar=self.toolbar, 
+           fm_open=self.fm_open,
+           cssfiles=json.dumps(self.cssfiles),
+           ))
         
         return SPAN(script, TEXTAREA((value!=None and str(value)) or '', **attr), **attributes)
-     
+       
