@@ -154,6 +154,14 @@ A yet another grid using SOLIDFORM and SOLIDTABLE.
 A simple dialog.
 """) )
     ),
+    plugin_managed_html=dict(
+        label='Managed HTML',
+        show_image=False,
+        short_description=('A WYSIWYG CMS. Just take a look.'),
+        long_description=XML(("""
+A WYSIWYG CMS. Just take a look.
+""") )
+    ),
     
     plugin_comment_cascade=dict(
         label='Comment Cascade',
@@ -245,14 +253,6 @@ A simple dialog.
         show_image=False,
         short_description='A minimum set of checkout models for shopping',
         long_description="""A minimum set of checkout models for shopping (Now Developping)""",
-        status='under-construction',
-    ),
-    
-    plugin_managed_html=dict(
-        label='Managed HTML',
-        show_image=False,
-        short_description='TODO',
-        long_description="""TODO""",
         status='under-construction',
     ),
 )

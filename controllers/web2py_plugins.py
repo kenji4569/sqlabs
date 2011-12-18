@@ -40,6 +40,7 @@ The code parts are organized in %s, and easily available.""") % ('Web2py', T("a 
                      map(lambda k: (k, info_plugin_metas[k]), (
                         'plugin_solidgrid',
                         'plugin_dialog',
+                        'plugin_managed_html',
                     ))),
                 ('Social Networking (experimental)',
                      map(lambda k: (k, info_plugin_metas[k]), (
