@@ -77,6 +77,7 @@ function web2py_ajax_page(method,action,data,target) {
       else if(content=='append') t.append(html);
       else if(content!='hide') t.html(html);  
       web2py_trap_form(action,target);
+      web2py_trap_link(target);
       web2py_ajax_init();      
       if(command) eval(command);
       if(flash) jQuery('.flash').html(flash).slideDown();

@@ -12,6 +12,8 @@ PREVIEW_MODE = '_managed_html_preview'
 
 class ManagedHTML(object):
 
+    _image_grid_keyword = 'managed_html_image_grid'
+
     def __init__(self, db, keyword='_managed_html'):
         self.db, self.keyword = db, keyword
     
@@ -113,6 +115,10 @@ class ManagedHTML(object):
         
         if self.view_mode in (EDIT_MODE, PREVIEW_MODE):
             if self.view_mode == EDIT_MODE:
+                if (self._image_grid_keyword in current.request.vars or 
+                        current.request.args(1) == self._image_grid_keyword):
+                    raise HTTP(200, self.image_grid())
+                
                 response.meta.managed_html_preview_url = settings.URL(
                     args=[PREVIEW_MODE]+request.args[1:], vars=request.vars)
             elif self.view_mode == PREVIEW_MODE:
@@ -122,8 +128,68 @@ class ManagedHTML(object):
             from plugin_dialog import DIALOG
             T = current.T
             response.meta.managed_html_show_page_crud = DIALOG(
-                title=T('+ Page'), close_button=T('close'), renderstyle=True,
+                title=T('+ Page'), close_button=T('close'), 
                 content=settings.page_crud).show()
+        
+    def image_grid(self):
+        from plugin_solidgrid import SolidGrid
+        from plugin_uploadify_widget import (
+            uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_LENGTH
+        )
+        table_image = self.settings.table_image
+        request = current.request
+        solidgrid = SolidGrid(renderstyle=True)
+        
+        if request.vars._hmac_key:
+            hmac_key = request.vars._hmac_key
+            user_signature = False
+            request.get_vars._signature = request.post_vars._signature
+        else:
+            hmac_key = None
+            user_signature = True
+            
+        def _uploadify_widget(field, value, download_url=None, **attributes):
+            if current.session.auth:
+                attributes['extra_vars'] = {'_signature': request.get_vars._signature,
+                                            '_hmac_key': current.session.auth.hmac_key}
+            return uploadify_widget(field, value, download_url, **attributes)
+        table_image.name.widget = _uploadify_widget
+        
+        table_image.name.uploadfolder = self.settings.uploadfolder
+
+        extracolumns = [
+            {'label': 'Select', 'width': '150px;',
+                'content':lambda row, rc: 
+                 SPAN(solidgrid.recordbutton('ui-icon-seek-next', 'Select',
+                            '#', _onclick="""
+jQuery(document.body).trigger('managed_html_image_selected', '%s');return false;
+                            """ % row.name, _class='ui-btn'))},
+             {'label': 'Image', 'width': '150px;',
+              'content':lambda row, rc: DIV(
+                self.file_represent(row.thumbnail),
+                _style='word-break:break-all;')}
+        ]
+        main_table = table_image
+        grid = solidgrid(main_table, 
+            fields=[main_table.ALL],
+            columns=[extracolumns[0], extracolumns[1], 
+                     main_table.keyword, main_table.description, main_table.extension], 
+            extracolumns=extracolumns,
+            editable=['keyword', 'description'],
+            details=False,
+            showid=False,
+            searchable=[main_table.keyword, main_table.extension],
+            args=request.args[:1] + [self._image_grid_keyword],
+            user_signature=user_signature,
+            hmac_key=hmac_key,
+            oncreate=self.oncreate_image,
+            formname='managed_html_image_grid_form',
+            upload=self.settings.upload,
+        )
+        return DIV(DIV(grid.gridbuttons), DIV(_style='clear:both;'), BR(), HR(),
+                 DIV(grid.search_form, _class='well search_form') if hasattr(grid, 'search_form') else '',
+                 DIV(grid), 
+                 _class='image_grid')
         
     def _post_js(self, name, action, target):
         data = {self.keyword:name, '_action':action}
@@ -159,7 +225,7 @@ class ManagedHTML(object):
         fm_open = """function(callback, kind) {
 if (kind == 'elfinder') {%s;} else {%s;}
 jQuery(document.body).bind('managed_html_file_selected managed_html_image_selected', function(e, filename) {
-    callback('%s'.replace('__filename__', filename)); jQuery('.dialog').hide(); 
+    callback('%s'.replace('__filename__', filename)); jQuery('.managed_html_dialog').hide(); 
 });
 }""" % (file_chooser.show(), image_chooser.show(), self.settings.upload('__filename__')) # TODO setting for managed_html_file_selected
 
@@ -236,15 +302,15 @@ jQuery(document.body).bind('managed_html_file_selected managed_html_image_select
         
         from plugin_dialog import DIALOG
         image_chooser = DIALOG(title=T('Select an image'), close_button=T('close'),
-                               content=self.settings.image_crud,
-                               onclose="""
-jQuery(document.body).trigger("managed_html_file_selected", "");""",
-                               _id='managed_html_file_chooser')
+            content=LOAD(url=URL(args=current.request.args, vars={self._image_grid_keyword:True}), ajax=True),
+            onclose="""
+jQuery(document.body).trigger("managed_html_image_selected", "");""",
+            _id='managed_html_image_chooser', _class='managed_html_dialog')
                
         from gluon.sqlhtml import UploadWidget
         return DIV(INPUT(_type='button', _value='Select', 
                          _onclick="""
-jQuery(document.body).one('managed_html_file_selected', function(e, filename) {
+jQuery(document.body).one('managed_html_image_selected', function(e, filename) {
 if(filename!="") {
     var url = "%(upload)s".replace('__filename__', filename);
     jQuery("#%(id)s__hidden").attr('value', filename);
@@ -256,7 +322,7 @@ if(filename!="") {
     } else {
         a.html("file");
     }
-    jQuery('.dialog').hide();
+    jQuery('.managed_html_dialog').hide();
 }
 }); %(show)s; return false;""" % dict(id=el_id, show=image_chooser.show(),
                                   upload=self.settings.upload('__filename__'))), 
@@ -276,7 +342,7 @@ if(this.checked) {
                          _name=field.name, _id='%s__hidden' % el_id, 
                          requires=field.requires), 
                    _id=el_id)
-        
+                   
     def _is_published(self, content):
         return (content is None) or bool(content.publish_on and 
                                          content.publish_on<=current.request.now)

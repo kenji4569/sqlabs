@@ -28,16 +28,12 @@ image_crud_keyword = 'managed_html_image_crud'
 managed_html.settings.image_crud =LOAD(
     url=URL(args=request.args, vars={image_crud_keyword:True}), ajax=True)
 
-managed_html.switch_mode()
-    
 ### define tables ##############################################################
 managed_html.define_tables()
 table_content = managed_html.settings.table_content
 table_image = managed_html.settings.table_image
-table_image.name.widget = uploadify_widget
-table_image.name.uploadfolder = managed_html.settings.uploadfolder
 table_image.name.comment = '<- upload an image (max file size=10k)'
-# table_image.name.requires = [IS_UPLOADIFY_LENGTH(10240, 1), IS_UPLOADIFY_IMAGE()]
+table_image.name.requires = [IS_UPLOADIFY_LENGTH(10240, 1), IS_UPLOADIFY_IMAGE()]
 
 ### populate records ###########################################################
 import datetime
@@ -47,25 +43,14 @@ if db(table_content.created_on<request.now-datetime.timedelta(minutes=60)).count
     session.flash = 'the database has been refreshed'
     redirect(managed_html.edit_url('page1'))
 
+### fake authentication ########################################################
+
+from gluon.storage import Storage
+session.auth = Storage(hmac_key='test')
+
 ### demo functions #############################################################
 
-# for ajax
-if image_crud_keyword in request.vars or request.args(2) == image_crud_keyword:
-    form = SQLFORM(table_image, upload=managed_html.settings.upload)
-    info = ''
-    if form.process(onsuccess=managed_html.oncreate_image).accepted:
-        info = 'submitted' 
-    
-    records = db(table_image.id>0).select(orderby=~table_image.id, limitby=(0,3))
-    _get_src = lambda r: URL(request.controller, 'download', args=r.name)
-    records = DIV([IMG(_src=_get_src(r), 
-                       _onclick="""
-jQuery(document.body).trigger('managed_html_image_selected', '%s');return false;
-""" % _get_src(r),
-                       _style='max-width:50px;max-height:50px;margin:5px;cursor:pointer;') 
-                    for r in records])
-    el = BEAUTIFY(dict(form=form, info=info, records=records))
-    raise HTTP(200, el)
+managed_html.switch_mode()
     
 def index():
     return dict(page1=A('page1', _href=managed_html.edit_url('page1')),

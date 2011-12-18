@@ -116,7 +116,7 @@ function managed_html_web2py_ajax_page(method,action,data,target) {
       web2py_trap_link(target);
       web2py_ajax_init();  
       if(command) eval(command);
-      if(flash) jQuery('.flash').html(eval(flash)).slideDown();
+      if(flash) jQuery('.flash').html(flash).slideDown();
       }
     });
 }
@@ -239,7 +239,7 @@ function managed_html_movable(name, indices, keyword, url, confirm_message) {
             complete: function(xhr, text) {
               to_parent.managed_html_spinner('remove');
               var flash=xhr.getResponseHeader('web2py-component-flash');
-              if(flash) jQuery('.flash').html(eval(flash)).slideDown();
+              if(flash) jQuery('.flash').html(flash).slideDown();
             }
           });
         }
