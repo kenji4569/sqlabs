@@ -19,7 +19,6 @@ The code parts are organized in %s, and easily available.""") % ('Web2py', T("a 
                         'plugin_lazy_options_widget',
                         'plugin_anytime_widget',
                         'plugin_color_widget',
-                        'plugin_dialog',
                         'plugin_uploadify_widget',
                         'plugin_elrte_widget',
                         'plugin_tight_input_widget',
@@ -36,6 +35,10 @@ The code parts are organized in %s, and easily available.""") % ('Web2py', T("a 
                         'plugin_tablescope', 
                         'plugin_tablecheckbox', 
                         'plugin_tablepermuter', 
+                    ))),
+                ('Components',
+                     map(lambda k: (k, info_plugin_metas[k]), (
+                        'plugin_dialog',
                     ))),
                 ('Social Networking (experimental)',
                      map(lambda k: (k, info_plugin_metas[k]), (
