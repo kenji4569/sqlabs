@@ -38,6 +38,7 @@ The code parts are organized in %s, and easily available.""") % ('Web2py', T("a 
                     ))),
                 ('Components',
                      map(lambda k: (k, info_plugin_metas[k]), (
+                        'plugin_solidgrid',
                         'plugin_dialog',
                     ))),
                 ('Social Networking (experimental)',

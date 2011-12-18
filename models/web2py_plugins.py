@@ -53,13 +53,6 @@ This plugin provides a color picker widget, using %s. Picked color is displayed 
 """) % A('colorpicker.js', _href='http://www.eyecon.ro/colorpicker/').xml())
     ),
     
-    plugin_dialog=dict(
-        label='Dialog',
-        short_description=('A simple dialog'),
-        long_description=XML(("""
-A simple dialog.
-""") )
-    ),
     plugin_elrte_widget=dict(
         label='elRTE WYSIWYG Widget',
         short_description=T('A WYSIWYG editor widget using elRTE.js'),
@@ -143,6 +136,23 @@ and submits selected record ids.
         long_description=XML(T("""
 This plugin a form object which makes table rows permutable using %s, and submits permuted row indices.
 """) % A('jquery.tablednd.js', _href='http://www.isocra.com/2008/02/table-drag-and-drop-jquery-plugin/').xml())
+    ),
+    
+    
+    plugin_solidgrid=dict(
+        label='Solid Grid',
+        show_image=False,
+        short_description=('A yet another grid'),
+        long_description=XML(("""
+A yet another grid using SOLIDFORM and SOLIDTABLE.
+""") )
+    ),
+    plugin_dialog=dict(
+        label='Dialog',
+        short_description=('A simple dialog'),
+        long_description=XML(("""
+A simple dialog.
+""") )
     ),
     
     plugin_comment_cascade=dict(
