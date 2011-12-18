@@ -502,6 +502,7 @@ class SolidGrid(object):
             
             search_form = SQLFORM.factory(
                 formstyle='divs', submit_button=T('Search'), 
+                _class='search_form',
                 *_search_fields)
             
             for _from_to in _from_tos:
