@@ -215,12 +215,17 @@ class Catalog(object):
                 
         return _VirtualSet()
         
-    def get_variant(self, variant_id, load_product=True, 
+    def get_variant(self, id=None, sku=None, load_product=True, 
                     load_options=True, load_option_groups=True, 
                     product_fields=[], product_attributes={},
                     fields=[]):
         settings = self.settings
-        variant = self.db(settings.table_variant.id==variant_id).select(*fields).first()
+        if id:
+            variant = self.db(settings.table_variant.id==id).select(*fields).first()
+        elif sku:
+            variant = self.db(settings.table_variant.sku==sku).select(*fields).first()
+        else:
+            return None
         if not variant:
             return None
            

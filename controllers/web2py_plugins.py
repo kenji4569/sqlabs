@@ -19,6 +19,7 @@ The code parts are organized in %s, and easily available.""") % ('Web2py', T("a 
                         'plugin_lazy_options_widget',
                         'plugin_anytime_widget',
                         'plugin_color_widget',
+                        'plugin_dialog',
                         'plugin_uploadify_widget',
                         'plugin_elrte_widget',
                         'plugin_tight_input_widget',

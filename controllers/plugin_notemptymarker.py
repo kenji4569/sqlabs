@@ -29,6 +29,7 @@ def index():
         redirect(URL('index'))
     style = STYLE("""input[type="text"], select, textarea {width:100%; max-height: 50px;} 
                      .w2p_fw {padding-right: 20px; max-width:200px;}
-                     .w2p_fl {background: #eee;}""")
+                     .w2p_fl {background: #eee;}
+                     .not_empty {color:#d00;}""")
     return dict(form_marked=DIV(style, form_marked), 
                 form_unmarked=form_unmarked)

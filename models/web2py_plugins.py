@@ -39,11 +39,11 @@ The lazy options widget receives js events and sends ajax requests to populate i
     ),
     plugin_anytime_widget=dict(
         label='Anytime Widget',
-        adopted=True,
         short_description=T('A date-time picker widget using anytime.js'),
         long_description=XML(T("""
 This plugin provides time, date and datetime picker widgets using %s.
-""") % A('anytime.js', _href='http://www.ama3.com/anytime/').xml())
+""") % A('anytime.js', _href='http://www.ama3.com/anytime/').xml() + 
+'<br/><span style="color:#D00;">!Note: The anytime.js is under the Creative Commons BY-NC-SA 3.0 License.</span>')
     ),
     plugin_color_widget=dict(
         label='Color Widget',
@@ -51,6 +51,14 @@ This plugin provides time, date and datetime picker widgets using %s.
         long_description=XML(T("""
 This plugin provides a color picker widget, using %s. Picked color is displayed in forms. 
 """) % A('colorpicker.js', _href='http://www.eyecon.ro/colorpicker/').xml())
+    ),
+    
+    plugin_dialog=dict(
+        label='Dialog',
+        short_description=('A simple dialog'),
+        long_description=XML(("""
+A simple dialog.
+""") )
     ),
     plugin_elrte_widget=dict(
         label='elRTE WYSIWYG Widget',

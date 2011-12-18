@@ -17,7 +17,9 @@ def _is_not_empty(requires):
                  IS_IMAGE, IS_UPLOAD_FILENAME, IS_IPV4, 
                  IS_NOT_IN_DB, IS_IN_DB))
 
-def mark_not_empty(table, marker=SPAN('*', _style='color:#d00;')):
+default_not_empty_marker = SPAN('*', _class='not_empty')
+                 
+def mark_not_empty(table, marker=default_not_empty_marker):
     for field in table:
         is_not_empty = False
         if field.requires:
@@ -31,7 +33,7 @@ def mark_not_empty(table, marker=SPAN('*', _style='color:#d00;')):
                     
         if is_not_empty:  
             field._label = field.label
-            field.label = SPAN(field.label, ' ', marker, ' ')
+            field.label = SPAN(SPAN(field.label), ' ', marker, ' ')
             
 def unmark_not_empty(table):
     for field in table:

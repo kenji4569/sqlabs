@@ -8,7 +8,7 @@
   <div style="width:100px;">
     {{@managed_html.render('page2_block1', Field('text', comment='Input Text'))
       def _block(content):}}
-      {{=content.text}}
+      {{=content.text or ''}}
     {{pass}}
     {{_block()}}
   </div>

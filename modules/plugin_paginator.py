@@ -3,6 +3,7 @@
 # Authors: Kenji Hosoda <hosoda@s-cubism.jp>
 # original by http://groups.google.com/group/web2py/browse_frm/thread/d1ec3ded48839071#
 from gluon import *
+from gluon.storage import Messages
 
 class Paginator(DIV): 
 
@@ -15,6 +16,10 @@ class Paginator(DIV):
             paginate, records, page_var, anchor, extra_vars
         )
         self.page = int(current.request.get_vars.get(self.page_var) or 1)
+        
+        self.messages = Messages(current.T)
+        self.messages.prev = 'Prev'
+        self.messages.next = 'Next'
         
         if renderstyle:
             _url = URL('static','plugin_paginator/paginator.css')
@@ -45,12 +50,12 @@ class Paginator(DIV):
                 else:
                     return A(page, _title=page, 
                               _href=self._url(page),
-                              )
+                              _class='w2p_trap')
                               
             if self.page != 1:
                 self.append(
-                    A(current.T('Prev') , _href=self._url(self.page - 1),
-                         _title=(self.page - 1), _class='previous_page'))
+                    A(self.messages.prev, _href=self._url(self.page - 1),
+                         _title=(self.page - 1), _class='previous_page w2p_trap'))
                 
             _pad_prev = 2
             _pad_next = 3 if self.page>3 else 7-self.page
@@ -72,21 +77,26 @@ class Paginator(DIV):
             
             if pages > self.page:
                 self.append(
-                    A(current.T('Next') , _href=self._url(self.page + 1),
-                         _title=(self.page + 1), _class='next_page'))
+                    A(self.messages.next, _href=self._url(self.page + 1),
+                         _title=(self.page + 1), _class='next_page w2p_trap'))
             
         return DIV.xml(self) 
       
 class PaginateSelector(SPAN):
     
     def __init__(self, paginates=(10, 25, 50, 100),
-                 paginate_var='paginate', page_var='page', anchor=None, **attributes):
+                 paginate_var='paginate', page_var='page', 
+                 anchor=None, style='text', **attributes):
         SPAN.__init__(self, **attributes)
         self.attributes['_class'] = 'paginate_selector'
-        self.paginates, self.paginate_var, self.page_var, self.anchor  = (
-            paginates, paginate_var, page_var, anchor
+        self.paginates, self.paginate_var, self.page_var, self.anchor, self.style  = (
+            paginates, paginate_var, page_var, anchor, style
         )
         self.paginate = int(current.request.get_vars.get(self.paginate_var, paginates[0]))
+        
+        self.messages = Messages(current.T)
+        self.messages.paginate = 'Paginate: '
+        self.messages.option = ''
         
     def _url(self, paginate):
         vars = current.request.get_vars.copy()
@@ -95,14 +105,25 @@ class PaginateSelector(SPAN):
         return URL(args=current.request.args, vars=vars, anchor=self.anchor)
   
     def xml(self): 
-        def _get_paginate_link(_paginate):
-            if _paginate == self.paginate:
-                return str(_paginate)
-            else:
-                return A(_paginate, _href=self._url(_paginate)).xml()
-        inner = XML(current.T('Paginate: ') +
-                 ', '.join([_get_paginate_link(_paginate) for _paginate in self.paginates])) 
-        return SPAN(inner, **self.attributes).xml()
+        if self.style == 'text':
+            def _get_paginate_link(_paginate):
+                if _paginate == self.paginate:
+                    return str(_paginate)
+                else:
+                    return A(_paginate, _href=self._url(_paginate), _class='w2p_trap').xml()
+            inner = XML(self.messages.paginate +
+                     ', '.join([_get_paginate_link(_paginate) for _paginate in self.paginates])) 
+            return SPAN(inner, **self.attributes).xml()
+        elif self.style == 'select':
+            options = [OPTION(self.messages.option % _paginate if self.messages.option else _paginate, 
+                              _value=_paginate) for _paginate in self.paginates]
+            return SPAN(self.messages.paginate,
+                        SELECT(options, value=self.paginate,
+                               _onchange='location.href="%s".replace("__paginate__", this.value)' % self._url('__paginate__')
+                               
+                               ), **self.attributes).xml()
+        else:
+            raise RuntimeError
                     
 class PaginateInfo(SPAN):
     def __init__(self, page, paginate, records, **attributes):
@@ -112,8 +133,17 @@ class PaginateInfo(SPAN):
             page, paginate, records
         )
         
+        self.messages = Messages(current.T)
+        self.messages.display_without_span = 'Display: <b>%(total)s</b>'
+        self.messages.display_with_span = 'Display: <b>%(start)s - %(end)s</b> of <b>%(total)s</b>'
+        
+        
     def xml(self): 
-        inner = XML(current.T('Display: <b>%(start)s - %(end)s</b> of <b>%(total)s</b>') % 
-              dict(start=(self.page - 1)*self.paginate + 1, end=self.page*self.paginate, 
-                   total=self.records))
+        if self.records <= self.paginate:
+            inner = XML(self.messages.display_without_span % 
+                        dict(total=self.records))
+        else:  
+            inner = XML(self.messages.display_with_span % 
+                  dict(start=(self.page - 1)*self.paginate + 1, end=self.page*self.paginate, 
+                       total=self.records))
         return SPAN(inner, **self.attributes).xml()

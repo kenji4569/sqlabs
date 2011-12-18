@@ -8,7 +8,7 @@ db.define_table('color', Field('category', db.category), Field('name'))
 db.define_table('product', 
     Field('category', db.category, comment='<- type "A" or "B"'),
     Field('color', db.color,  
-          requires=IS_IN_DB(db(db.color.id>0), 'color.id', 'color.name', zero='---'),
+          requires=IS_EMPTY_OR(IS_IN_DB(db(db.color.id>0), 'color.id', 'color.name', zero='---')),
           comment='<- select category first'),
     )
     
@@ -22,16 +22,21 @@ for category in db(db.category.id>0).select():
      
 db.product.category.widget = suggest_widget(db.category.name, id_field=db.category.id, 
                                           limitby=(0,10), min_length=1)
-                                          
+     
+from gluon.storage import Storage
+session.auth = Storage(hmac_key='test')
+                                        
 ################################ The core ######################################
 # The lazy_options_widget receives js events
 # called "product_category__selected" and "product_category__unselected"
-# which will be triggered by the above suggest_widget.
+# which will be triggered by the above suggest_widget.]
+# You can also pass user_signature and hmac_key arguments for authorization in ajax 
 db.product.color.widget = lazy_options_widget(
                   'product_category__selected', 'product_category__unselected',
                   lambda category_id: (db.color.category==category_id), 
                   request.vars.category,
-                  orderby=db.color.id)
+                  orderby=db.color.id,
+                  user_signature=True)
 ################################################################################
      
 def index():
@@ -43,3 +48,4 @@ def index():
                 categories=SQLTABLE(db().select(db.category.ALL)),
                 colors=SQLTABLE(db(db.color.id>0)(db.color.category==db.category.id
                                 ).select(db.color.id, db.category.name, db.color.name)))
+            

@@ -3,6 +3,7 @@
 # Authors: Kenji Hosoda <hosoda@s-cubism.jp>
 from gluon import *
 from gluon.storage import Storage
+from gluon.contrib import simplejson as json
 
 def _set_files(files):
     if current.request.ajax:
@@ -22,9 +23,9 @@ $.each(%s, function() {
 
 class ElrteWidget(object):
     
-    def __init__(self, lang=None, toolbar='default', fm_open="''"):
-        self.lang, self.toolbar, self.fm_open = lang, toolbar, fm_open
-        
+    def __init__(self, lang=None, toolbar='default', fm_open="''", cssfiles=[]):
+        self.lang, self.toolbar, self.fm_open, self.cssfiles = lang, toolbar, fm_open, cssfiles
+
         settings = self.settings = Storage()
         
         self.settings.files = None
@@ -71,45 +72,18 @@ jQuery(function() { var t = 10; (function run() {if ((function() {
     }
     var el = $('#%(id)s');
     if(!$.support.opacity){if (el.text() == '') { el.text('<p>&nbsp;</p>')}}
-    el.elrte({cssClass: 'el-rte', lang: '%(lang)s', toolbar: '%(toolbar)s', fmOpen : %(fm_open)s }); 
+
+    el.elrte({cssClass: 'el-rte', lang: '%(lang)s', 
+              toolbar: '%(toolbar)s', 
+              fmOpen : %(fm_open)s,
+              cssfiles: %(cssfiles)s}); 
 })()) {setTimeout(run, t); t = 2*t;}})();});
-""" % dict(id=_id, lang=self.lang or '', toolbar=self.toolbar, fm_open=self.fm_open))
+
+""" % dict(id=_id, lang=self.lang or '', 
+           toolbar=self.toolbar, 
+           fm_open=self.fm_open,
+           cssfiles=json.dumps(self.cssfiles),
+           ))
         
         return SPAN(script, TEXTAREA((value!=None and str(value)) or '', **attr), **attributes)
        
-class Dialog(DIV):
-        
-    def __init__(self, title, content, close='close', width=70, height=70, **attributes):
-        DIV.__init__(self, **attributes)
-        self.title, self.content, self.close, self.width, self.height = (
-            title, content, close, width, height)
-        self.attributes['_class'] = 'dialog'
-        import uuid
-        self.attributes['_id'] = self.attributes.get('_id') or str(uuid.uuid4())
-        self.attributes['_style'] = self.attributes.get('_style', 'display:none;z-index:1001;position:fixed;top:0%;left:0%;width:100%;height:100%;')
-        
-    def get_show_js(self):
-        import gluon.contrib.simplejson as json
-        return """(function(){
-var el = jQuery("#%(id)s");
-if (el.length == 0) {el = jQuery(%(xml)s); jQuery(document.body).append(el);}
-el.css('zIndex', (parseInt(el.css('zIndex')) || 1000) + 10);
-el.show();})"""  % dict(id=self.attributes['_id'], 
-                       xml=json.dumps(self.xml().replace('<!--', '').replace('//-->', '')))
-        
-    def xml(self): 
-        self.components += (
-            DIV(_style='background-color:black;-moz-opacity:0.5;opacity:.50;opacity:0.5;width:100%;height:100%;',
-                _class='dialog-back'),
-            DIV(SPAN(self.title, _style='font-weight:bold'),
-                SPAN('[', A(self.close, _href='#', 
-                           _onclick="jQuery('#%s').hide();return false;" % self.attributes['_id']), ']', 
-                     _style='float:right',),
-                HR(),
-                DIV(self.content, _id='c%s' % self.attributes['_id']),
-                _style=('position:absolute;top:%(top)s%%;left:%(left)s%%;width:%(width)s%%;height:%(height)s%%;padding:16px;border:2px solid black;background-color:white;opacity:1.0;z-index:1100;overflow:auto;' %
-                    dict(left=(100-self.width)/2,top=(100-self.height)/2,width=self.width,height=self.height)),
-                _class='dialog-front',
-            ),
-        )
-        return DIV.xml(self)

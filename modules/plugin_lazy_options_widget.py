@@ -7,17 +7,22 @@ class lazy_options_widget(SQLFORM.widgets.options):
 
     def __init__(self, on_key, off_key, where,
                  trigger=None, default='---',
-                 keyword='_lazy_options_%(fieldname)s',
-                 orderby=None):
+                 keyword='_lazy_options_%(fieldname)s', orderby=None,  
+                 user_signature=False, hmac_key=None):
         self.on_key, self.off_key, self.where = (
             on_key, off_key, where
         )
         self.trigger, self.default, self.keyword, self.orderby = (
-            trigger, default, keyword, orderby
+            trigger, default, keyword, orderby, 
         )
+        self.user_signature, self.hmac_key = user_signature, hmac_key
         
     def callback(self):
         if self.keyword in current.request.vars:
+            if self.user_signature:
+                if not URL.verify(current.request, user_signature=self.user_signature, hmac_key=self.hmac_key):
+                    raise HTTP(400)
+                    
             trigger = current.request.vars[self.keyword]
             raise HTTP(200, self._get_select_el(trigger))
         
@@ -37,6 +42,9 @@ class lazy_options_widget(SQLFORM.widgets.options):
         self.keyword = self.keyword % dict(fieldname=field.name)
             
         requires = field.requires
+
+        if isinstance(requires, IS_EMPTY_OR):
+            requires = requires.other
         if not isinstance(requires, (list, tuple)):
             requires = [requires]
         if requires:
@@ -51,7 +59,8 @@ class lazy_options_widget(SQLFORM.widgets.options):
         
         request = current.request
         if hasattr(request,'application'):
-            self.url = URL(r=request, args=request.args)
+            self.url = URL(r=request, args=request.args, 
+                           user_signature=self.user_signature, hmac_key=self.hmac_key)
             self.callback()
         else:
             self.url = request
