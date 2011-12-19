@@ -8,33 +8,43 @@ class SOLIDFORM(SQLFORM):
 
     def __init__(self, *args, **kwds):
         self.structured_fields = kwds.get('fields')
-        self.include_id = False
+        self.showid = kwds.get('showid', True)
         
         table = args and args[0] or kwds['table']
         if not self.structured_fields:
-            _showid = kwds.get('showid', True)
-            self.structured_fields = [f.name for f in table 
-                    if (f.writable or f.readable) and not f.compute and not (not _showid and f.type=='id')]
-
+            self.structured_fields = [f.name for f in table if self._is_show(f)]
+        else:
+            self.structured_fields = copy.copy(self.structured_fields)
         _precedent_row_len = 1
         
+        include_id = False
         flat_fields = []
         max_row_lines = 1
         for i, inner in enumerate(self.structured_fields):
             if type(inner) in (list, tuple):
+                _inner = []
                 for field in inner:
-                    if field:
+                    if field == 'id':
+                        include_id = True
+                        self.showid = True
+                    if field and self._is_show(table[field]):
                         flat_fields.append(field)
-                        if field == 'id':
-                            self.include_id = True
-                max_row_lines = max(len(inner), max_row_lines)
-                _precedent_row_len = len(inner)
+                        _inner.append(field)
+                self.structured_fields[i] = _inner
+                max_row_lines = max(len(_inner), max_row_lines)
+                _precedent_row_len = len(_inner)
             elif inner:
-                flat_fields.append(inner)
                 if inner == 'id':
-                    self.include_id = True
+                    include_id = True
+                    self.showid = True
+                if self._is_show(table[inner]):
+                    flat_fields.append(inner)
+                else:
+                    self.structured_fields[i] = None
             else:
                 self.structured_fields[i] = [inner for i in range(_precedent_row_len)]
+                
+        self.structured_fields = [e for e in self.structured_fields if e or e is None ]
         
         row_spans = dict((e, 1) for e in flat_fields)
         col_spans = dict((e, 1) for e in flat_fields)
@@ -72,22 +82,21 @@ class SOLIDFORM(SQLFORM):
         self.row_lines = row_lines
         kwds['fields'] = copy.copy(flat_fields)
             
-        if self.include_id:
-            kwds['showid'] = True
-            
-        self.showid = kwds.get('showid', True)
         if not self.structured_fields or flat_fields[0] == 'id':
             self.ignore_first = False  
         else:
-            self.ignore_first = self.include_id
+            self.ignore_first = include_id
         
         self.readonly = kwds.get('readonly', False)
             
+        kwds['showid'] = self.showid
         SQLFORM.__init__(self, *args, **kwds)
+        
+    def _is_show(self, fieldobj):
+        return (fieldobj.writable or fieldobj.readable) and (fieldobj.type!='id' or (self.showid and fieldobj.readable))
         
     def createform(self, xfields):
         table_inner = []
-        
         if self.showid and self.record and (not self.readonly or self.ignore_first):
             if not self.ignore_first:
                 id, a, b, c = xfields[0]
