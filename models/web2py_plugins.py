@@ -43,7 +43,7 @@ The lazy options widget receives js events and sends ajax requests to populate i
         long_description=XML(T("""
 This plugin provides time, date and datetime picker widgets using %s.
 """) % A('anytime.js', _href='http://www.ama3.com/anytime/').xml() + 
-'<br/><span style="color:#D00;">!Note: The anytime.js is under the Creative Commons BY-NC-SA 3.0 License.</span>')
+'<br/><span style="color:#D00;">NOTE: Confirm the anytime.js licence. The anytime.js is under the Creative Commons BY-NC-SA 3.0 License.</span>')
     ),
     plugin_color_widget=dict(
         label='Color Widget',
@@ -141,8 +141,7 @@ This plugin a form object which makes table rows permutable using %s, and submit
     
     plugin_solidgrid=dict(
         label='Solid Grid',
-        show_image=False,
-        short_description=('A yet another grid'),
+        short_description=('A yet another grid. (EXPERIMENTAL)'),
         long_description=XML(("""
 A yet another grid using SOLIDFORM and SOLIDTABLE.
 """) )
@@ -156,10 +155,9 @@ A simple dialog.
     ),
     plugin_managed_html=dict(
         label='Managed HTML',
-        show_image=False,
-        short_description=('A WYSIWYG CMS. Just take a look.'),
+        short_description=('An extreme WYSIWYG CMS. (EXPERIMENTAL)'),
         long_description=XML(("""
-A WYSIWYG CMS. Just take a look.
+A WYSIWYG CMS. Just take a look!
 """) )
     ),
     
