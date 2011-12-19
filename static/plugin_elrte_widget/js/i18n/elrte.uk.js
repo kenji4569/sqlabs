@@ -115,7 +115,7 @@ elRTE.prototype.i18Messages.uk = {
 	'Heading 3' : 'Заголовок 3',
 	'Heading 4' : 'Заголовок 4',
 	'Heading 5' : 'Заголовок 5',
-	'Heading 6' : 'Заголовок 6',	
+	'Heading 6' : 'Заголовок 6',
 	'Paragraph' : 'Параграф',
 	'Address' : 'Адрес',
 	'Preformatted':'',

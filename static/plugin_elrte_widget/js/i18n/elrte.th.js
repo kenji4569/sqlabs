@@ -32,7 +32,7 @@ elRTE.prototype.i18Messages.th = {
 	'Paste'                   : 'วาง',
 	'Paste only text'         : 'วางข้อความเท่านั้น',
 	'Paste formatted text'    : 'วางข้อความที่จัดรูปแบบ',
-	'Clean format'            : 'ล้างรูปแบบ', 
+	'Clean format'            : 'ล้างรูปแบบ',
 	'Undo last action'        : 'ยกเลิกการทำงานล่าสุด',
 	'Redo previous action'    : 'ทำซ้ำการกระทำก่อนหน้า',
 	'Bold'                    : 'ตัวหนา',
@@ -110,7 +110,7 @@ elRTE.prototype.i18Messages.th = {
 	'Open file manger' : 'เปิดการจัดการไฟล์',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'การดำเนินการนี้จะปิดการใช้งานในเบราว์เซอร์ของคุณในเหตุผลด้านความปลอดภัย กรุณาใช้ทางลัดแทน',
-	// format 
+	// format
 	'Heading 1'     : 'หัวเรื่อง 1',
 	'Heading 2'     : 'หัวเรื่อง 2',
 	'Heading 3'     : 'หัวเรื่อง 3',
@@ -127,7 +127,7 @@ elRTE.prototype.i18Messages.th = {
 	'Normal (14pt)' : 'ปกติ (14pt)',
 	'Large (18pt)'  : 'ขนาดใหญ่ (18pt)',
 	'Large (24pt)'  : 'ขนาดใหญ่ (24pt)',
-	'Large (36pt)'  : 'ขนาดใหญ่ (36pt)',				
+	'Large (36pt)'  : 'ขนาดใหญ่ (36pt)',
 	// bookmark
 	'Bookmark name' : 'ชื่อบุ๊คมาร์ค',
 	// link

@@ -3,7 +3,7 @@
  *	Uses code and techniques from following libraries:
  *	1. http://www.dyve.net/jquery/?autocomplete
  *	2. http://dev.jquery.com/browser/trunk/plugins/interface/iautocompleter.js
- *	All the new stuff written by Peter Vulgaris (www.vulgarisoip.com)	
+ *	All the new stuff written by Peter Vulgaris (www.vulgarisoip.com)
  *	Feel free to do whatever you want with this file
  */
 (function($) {
@@ -21,7 +21,7 @@ $.suggest = function(input, options) {
     $results = $(document.createElement("ul"));
     $results.addClass(options.resultsClass).appendTo('body');
   }
-  
+
   // resetPosition();
   // $(window)
     // .load(resetPosition)		// just in case user is changing size of page while loading
@@ -81,7 +81,7 @@ $.suggest = function(input, options) {
     if (options.name != null) {
       $('input[name='+options.name+']').val('');
     }
-  
+
     var q = $.trim($input.val());
     if (q.length >= options.minchars) {
       if ($input.val() != preval) {
@@ -93,7 +93,7 @@ $.suggest = function(input, options) {
         } else {
           var query = {}
           query[options.keyword] = q;
-          jQuery.ajax({type: "POST", url: options.source, data: query, 
+          jQuery.ajax({type: "POST", url: options.source, data: query,
             success: function(html) {
               $results.hide();
               displayItems(html);
@@ -129,11 +129,11 @@ $.suggest = function(input, options) {
     if(html=='') {
       $input.addClass(options.noMatchClass);
       $input.removeClass(options.matchClass);
-      $input.removeClass(options.selectedClass); 
+      $input.removeClass(options.selectedClass);
     } else {
       $input.addClass(options.matchClass);
       $input.removeClass(options.noMatchClass);
-      $input.removeClass(options.selectedClass); 
+      $input.removeClass(options.selectedClass);
     }
     if (!html) return;
     if (!html.length) {
@@ -141,7 +141,7 @@ $.suggest = function(input, options) {
       return;
     }
     $results.html(html).show();
-    
+
     $results
       .find('li')
       .mouseover(function() {
@@ -149,14 +149,14 @@ $.suggest = function(input, options) {
         $(this).addClass(options.selectClass);
       })
       .click(function(e) {
-        e.preventDefault(); 
+        e.preventDefault();
         e.stopPropagation();
         selectCurrentResult();
       });
   }
   function getCurrentResult() {
     var $currentResult = $results.find('li.' + options.selectClass);
-    
+
     if (!$currentResult.length)
       $currentResult = false;
     return $currentResult;
@@ -164,11 +164,11 @@ $.suggest = function(input, options) {
   function selectCurrentResult() {
     $currentResult = getCurrentResult();
     if ($currentResult) {
-      
-      $input.addClass(options.selectedClass);  
+
+      $input.addClass(options.selectedClass);
       $input.removeClass(options.matchClass);
-      $input.removeClass(options.noMatchClass);  
-      
+      $input.removeClass(options.noMatchClass);
+
       var val = $currentResult.children('b').text();
       $input.val(val);
       if (options.name != null) {
@@ -176,7 +176,7 @@ $.suggest = function(input, options) {
         $('input[name='+options.name+']').val(val);
       }
       $input.trigger($input.attr('id') + '__selected', [val]);
-      
+
       $results.hide();
       if (options.onSelect) options.onSelect($currentResult.text());
     }

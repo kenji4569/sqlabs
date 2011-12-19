@@ -108,7 +108,7 @@ elRTE.prototype.i18Messages.fr = {
 	'Open in' : 'Ouvrir dans',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'Cette opération est désactivée dans votre navigateur pour des raisons de sécurité. Utilisez le raccourci.',
-	// format 
+	// format
 	'Heading 1' : 'Entête 1',
 	'Heading 2' : 'Entête 2',
 	'Heading 3' : 'Entête 3',
@@ -163,7 +163,7 @@ elRTE.prototype.i18Messages.fr = {
 	'Cells'         : 'Cellules',
 	'Caption'       : 'Étiquette',
 	'Inner borders' : 'Bordures intérieures'
-	
-	
+
+
 }
 })(jQuery);

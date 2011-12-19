@@ -720,7 +720,7 @@ $.extend( $.ui.tabs.prototype, {
 				var t = o.selected;
 				self.select( ++t < self.anchors.length ? t : 0 );
 			}, ms );
-			
+
 			if ( e ) {
 				e.stopPropagation();
 			}

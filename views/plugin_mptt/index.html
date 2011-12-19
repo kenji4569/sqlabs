@@ -35,7 +35,7 @@ function handle_error(r) {
     jQuery('.flash').hide().html("{{=T('not authorized')}}").slideDown();
   }
 }
-tree_el.jstree({ 
+tree_el.jstree({
     "plugins" : ["themes", "json_data", "ui", "crrm", "hotkeys", "dnd", "types"],
     "json_data" : {
       "data" : {{=XML(json.dumps(data))}}
@@ -43,8 +43,8 @@ tree_el.jstree({
     "types" : {
       "types" : {
         "root" : {
-          "icon" : { 
-            "image" : "{{=URL('static', 'jstree/_drive.png')}}" 
+          "icon" : {
+            "image" : "{{=URL('static', 'jstree/_drive.png')}}"
           },
         }
       }
@@ -57,10 +57,10 @@ tree_el.jstree({
       "dots" : true,
       "icons" : true
     },
-  }).bind("select_node.jstree", function (event, data) { 
+  }).bind("select_node.jstree", function (event, data) {
     var el = data.rslt.obj;
     tree_crud_buttons.data('data', data);
-    
+
     var pos = el.position();
     pos.top -= 5;
     pos.left += 105;
@@ -82,7 +82,7 @@ tree_el.jstree({
         jQuery('.flash').hide().html("{{=T('Created')}}").slideDown();
         $(data.rslt.obj).attr("id", "node_" + r);
       }
-    ).error(function(r){ 
+    ).error(function(r){
       handle_error(r, data);
       $.jstree.rollback(data.rlbk);
     });
@@ -95,7 +95,7 @@ tree_el.jstree({
       function (r) {
         jQuery('.flash').hide().html("{{=T('Updated')}}").slideDown();
       }
-    ).error(function(r){ 
+    ).error(function(r){
       handle_error(r, data);
       $.jstree.rollback(data.rlbk);
     });
@@ -112,7 +112,7 @@ tree_el.jstree({
       function (r) {
         jQuery('.flash').hide().html("{{=T('Deleted')}}").slideDown();
       }
-    ).error(function(r){ 
+    ).error(function(r){
       handle_error(r);
       data.inst.refresh();
     });
@@ -132,7 +132,7 @@ tree_el.jstree({
         jQuery('.flash').hide().html("{{=T('Moved')}}").slideDown();
         // TODO refresh?
       }
-    ).error(function(r){ 
+    ).error(function(r){
       handle_error(r);
       $.jstree.rollback(data.rlbk);
     });

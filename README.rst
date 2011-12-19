@@ -4,7 +4,7 @@ Sqlabs
 About
 -----------------------------------------
 
-The aim for this project is to showcases developmental products by S-cubism. 
+The aim for this project is to showcases developmental products by S-cubism.
 Currently you can try demos for plugins of Web2py framework, and view their sources.
 
 License

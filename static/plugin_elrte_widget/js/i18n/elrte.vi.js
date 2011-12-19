@@ -31,7 +31,7 @@ elRTE.prototype.i18Messages.vi = {
 	'Paste'                   : 'Dán',
 	'Paste only text'         : 'Chỉ dán chữ',
 	'Paste formatted text'    : 'Dán theo định dạng văn bản',
-	'Clean format'            : 'Xóa định dạng', 
+	'Clean format'            : 'Xóa định dạng',
 	'Undo last action'        : 'Khôi phục thao tác',
 	'Redo previous action'    : 'Làm lại thao tác',
 	'Bold'                    : 'Đậm',
@@ -109,7 +109,7 @@ elRTE.prototype.i18Messages.vi = {
 	'Open file manger' : 'Quản lí tập tin',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'Tính năng này bị khóa trong trình duyệt của bạn vì lí do bảo mật. Dùng tổ hợp phím để thay thế.',
-	// format 
+	// format
 	'Heading 1'     : 'Tiêu đề 1',
 	'Heading 2'     : 'Tiêu đề 2',
 	'Heading 3'     : 'Tiêu đề 3',
@@ -126,7 +126,7 @@ elRTE.prototype.i18Messages.vi = {
 	'Normal (14pt)' : 'Bình thường (14pt)',
 	'Large (18pt)'  : 'Lớn (18pt)',
 	'Large (24pt)'  : 'Lớn (24pt)',
-	'Large (36pt)'  : 'Lớn (36pt)',				
+	'Large (36pt)'  : 'Lớn (36pt)',
 	// bookmark
 	'Bookmark name' : 'Tên của thẻ làm dấu',
 	// link

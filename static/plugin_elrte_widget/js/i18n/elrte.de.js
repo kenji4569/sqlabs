@@ -31,7 +31,7 @@ elRTE.prototype.i18Messages.de = {
 	'Paste'                   : 'Einfügen',
 	'Paste only text'         : 'nur Text einfügen',
 	'Paste formatted text'    : 'formatierten Text einfügen',
-	'Clean format'            : 'Formatierungen entfernen', 
+	'Clean format'            : 'Formatierungen entfernen',
 	'Undo last action'        : 'Rückgängig',
 	'Redo previous action'    : 'Wiederherstellen',
 	'Bold'                    : 'Fett',
@@ -46,8 +46,8 @@ elRTE.prototype.i18Messages.de = {
 	'Align full'              : 'Blocksatz',
 	'Font color'              : 'Textfarbe',
 	'Background color'        : 'Hintergrundfarbe',
-	'Indent'                  : 'Einzug erhöhen', 
-	'Outdent'                 : 'Einzug verringern', 
+	'Indent'                  : 'Einzug erhöhen',
+	'Outdent'                 : 'Einzug verringern',
 	'Format'                  : 'Format',
 	'Font size'               : 'Größe',
 	'Font'                    : 'Schriftart',
@@ -108,13 +108,13 @@ elRTE.prototype.i18Messages.de = {
 	'Open in' : 'öffnen in',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'Dieser Vorgang ist in Ihrem Browser aus Sicherheitsgründen deaktiviert. Benutzen Sie stattessen die Tastenkombination.',
-	// format 
+	// format
 	'Heading 1' : 'Überschrift 1',
 	'Heading 2' : 'Überschrift 2',
 	'Heading 3' : 'Überschrift 3',
 	'Heading 4' : 'Überschrift 4',
 	'Heading 5' : 'Überschrift 5',
-	'Heading 6' : 'Überschrift 6',	
+	'Heading 6' : 'Überschrift 6',
 	'Paragraph' : 'Absatz',
 	'Address' : 'Addresse',
 	'Preformatted' : 'vorformattierter Text',
@@ -125,7 +125,7 @@ elRTE.prototype.i18Messages.de = {
 	'Normal (14pt)' : 'Normal (14pt)',
 	'Large (18pt)'  : 'Groß (18pt)',
 	'Large (24pt)'  : 'Groß (24pt)',
-	'Large (36pt)'  : 'Groß (36pt)',				
+	'Large (36pt)'  : 'Groß (36pt)',
 	// bookmark
 	'Bookmark name' : 'Lesezeichen-Name',
 	// link
@@ -164,7 +164,7 @@ elRTE.prototype.i18Messages.de = {
 	'Cells'         : 'Zellen',
 	'Caption'       : 'Überschrift',
 	'Inner borders' : 'Innere Ränder'
-	
-	
+
+
 }
 })(jQuery);

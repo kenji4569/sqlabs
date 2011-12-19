@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <title>{{=response.title or request.application}}</title>
-  
+
   <meta property="og:title" content="{{=response.title or request.application}}" />
   <meta property="og:type" content="product" />
   <meta property="og:url" content="{{=ROOT_URL}}{{=URL('index')}}" />
@@ -12,7 +12,7 @@
   <meta property="og:site_name" content="sqlabs" />
   <meta property="og:description" content="{{=response.meta.description}}" />
   <meta property="fb:admins" content="{{=FACEBOOK_OG_ADMIN}}" />
-  
+
   <meta name="google-site-verification" content="" />
   <meta name="application-name" content="{{=request.application}}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -39,7 +39,7 @@
     {{=XML(GOOGLE_ANALYTICS)}}
   {{pass}}
 </head>
-   
+
 <!--[if lt IE 7 ]> <body class="ie6"> <![endif]-->
 <!--[if IE 7 ]>    <body class="ie7"> <![endif]-->
 <!--[if IE 8 ]>    <body class="ie8"> <![endif]-->
@@ -48,9 +48,9 @@
   {{if FACEBOOK_SDK:}}
     {{=XML(FACEBOOK_SDK)}}
   {{pass}}
-  
+
   <div class="flash">{{=response.flash or ''}}</div>
-  
+
   <div id="container">
     <div id='header'>
       {{block header}}

@@ -32,7 +32,7 @@ elRTE.prototype.i18Messages.da = {
 	'Paste'                   : 'Sæt ind',
 	'Paste only text'         : 'Indsæt kun teskst',
 	'Paste formatted text'    : 'Indsæt formateret tekst',
-	'Clean format'            : 'Fjern formatering', 
+	'Clean format'            : 'Fjern formatering',
 	'Undo last action'        : 'Fortryd sidste handling',
 	'Redo previous action'    : 'Gentag sidste handling',
 	'Bold'                    : 'Fed',
@@ -110,7 +110,7 @@ elRTE.prototype.i18Messages.da = {
 	'Open file manger' : 'Åbn fil håndtering',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : '',
-	// format 
+	// format
 	'Heading 1'     : 'Overskrift 1',
 	'Heading 2'     : 'Overskrift 2',
 	'Heading 3'     : 'Overskrift 3',
@@ -127,7 +127,7 @@ elRTE.prototype.i18Messages.da = {
 	'Normal (14pt)' : 'Normal (14pt)',
 	'Large (18pt)'  : 'Stor (18pt)',
 	'Large (24pt)'  : 'Stor (24pt)',
-	'Large (36pt)'  : 'Stor (36pt)',				
+	'Large (36pt)'  : 'Stor (36pt)',
 	// bookmark
 	'Bookmark name' : 'Bogmærke navn',
 	// link

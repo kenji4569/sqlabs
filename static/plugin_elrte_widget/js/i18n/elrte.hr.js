@@ -32,7 +32,7 @@ elRTE.prototype.i18Messages.hr = {
 	'Paste'                   : 'Zalijepi',
 	'Paste only text'         : 'Zalijepi samo tekst',
 	'Paste formatted text'    : 'Zalijepi formatirani tekst',
-	'Clean format'            : 'Čisti oblik', 
+	'Clean format'            : 'Čisti oblik',
 	'Undo last action'        : 'Poništi zadnju radnju',
 	'Redo previous action'    : 'Ponovi prethodnu radnju',
 	'Bold'                    : 'Podebljano',
@@ -110,7 +110,7 @@ elRTE.prototype.i18Messages.hr = {
 	'Open file manger' : 'Otvori upravitelj datoteka',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'Ova operacija je onemogućena u vašem pregledniku zbog sigurnosnih razloga. Koristite prečac kao zamjenu.',
-	// format 
+	// format
 	'Heading 1'     : 'Naslov 1',
 	'Heading 2'     : 'Naslov 2',
 	'Heading 3'     : 'Naslov 3',
@@ -127,7 +127,7 @@ elRTE.prototype.i18Messages.hr = {
 	'Normal (14pt)' : 'Normalan (14pt)',
 	'Large (18pt)'  : 'Veliku (18pt)',
 	'Large (24pt)'  : 'Veliki (24pt)',
-	'Large (36pt)'  : 'Veliki (36pt)',				
+	'Large (36pt)'  : 'Veliki (36pt)',
 	// bookmark
 	'Bookmark name' : 'Naziv zabilješke',
 	// link

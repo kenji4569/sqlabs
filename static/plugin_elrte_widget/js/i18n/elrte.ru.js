@@ -32,7 +32,7 @@ elRTE.prototype.i18Messages.ru = {
 	'Paste'                   : 'Вставить',
 	'Paste only text'         : 'Вставить только текст',
 	'Paste formatted text'    : 'Вставить форматированый текст',
-	'Clean format'            : 'Удалить форматирование', 
+	'Clean format'            : 'Удалить форматирование',
 	'Undo last action'        : 'Отменить действие',
 	'Redo previous action'    : 'Повторить действие ',
 	'Bold'                    : 'Жирный',
@@ -110,13 +110,13 @@ elRTE.prototype.i18Messages.ru = {
 	'Open file manger' : 'Открыть файловый менеджер',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'Действие запрещено в вашем браузере по соображениям безопастности. Используйте сочетание клавиш',
-	// format 
+	// format
 	'Heading 1' : 'Заголовок 1',
 	'Heading 2' : 'Заголовок 2',
 	'Heading 3' : 'Заголовок 3',
 	'Heading 4' : 'Заголовок 4',
 	'Heading 5' : 'Заголовок 5',
-	'Heading 6' : 'Заголовок 6',	
+	'Heading 6' : 'Заголовок 6',
 	'Paragraph' : 'Параграф',
 	'Address' : 'Адрес',
 	'Preformatted' : '',
@@ -127,7 +127,7 @@ elRTE.prototype.i18Messages.ru = {
 	'Normal (14pt)' : 'Обычный (14pt)',
 	'Large (18pt)'  : 'Большой (18pt)',
 	'Large (24pt)'  : 'Крупный (24pt)',
-	'Large (36pt)'  : 'Огромный (36pt)',				
+	'Large (36pt)'  : 'Огромный (36pt)',
 	// bookmark
 	'Bookmark name' : 'Имя закладки',
 	// link
@@ -206,8 +206,8 @@ elRTE.prototype.i18Messages.ru = {
 	'Italian localization' : 'Итальянская локализация',
 	'Traditional Chinese localization' : 'Китайская (традиционная) локализация',
 	'For more information about this software visit the' : 'Подробная информация и форум тех. поддержки',
-	'elRTE website' : 'на сайте elRTE' 
-	
-	
+	'elRTE website' : 'на сайте elRTE'
+
+
 }
 })(jQuery);

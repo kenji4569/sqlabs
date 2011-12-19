@@ -32,7 +32,7 @@ elRTE.prototype.i18Messages.ko = {
 	'Paste'                   : '붙여넣기',
 	'Paste only text'         : '텍스트만 붙여넣기',
 	'Paste formatted text'    : '텍스트 속성까지 붙여넣기',
-	'Clean format'            : '서식 지우기', 
+	'Clean format'            : '서식 지우기',
 	'Undo last action'        : '실행취소',
 	'Redo previous action'    : '다시실행',
 	'Bold'                    : '굵게',
@@ -110,7 +110,7 @@ elRTE.prototype.i18Messages.ko = {
 	'Open file manger' : '파일 관리자 열기',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : '이 기능은 현재 사용중인 브라우저의 보안설정으로 인하여 사용할 수 없습니다. 단축키를 이용하시기 바랍니다.',
-	// format 
+	// format
 	'Heading 1'     : '제목 1',
 	'Heading 2'     : '제목 2',
 	'Heading 3'     : '제목 3',
@@ -127,7 +127,7 @@ elRTE.prototype.i18Messages.ko = {
 	'Normal (14pt)' : '가나다Abc(14pt)',
 	'Large (18pt)'  : '가나다Abc(18pt)',
 	'Large (24pt)'  : '가나다Abc(24pt)',
-	'Large (36pt)'  : '가나다Abc(36pt)',				
+	'Large (36pt)'  : '가나다Abc(36pt)',
 	// bookmark
 	'Bookmark name' : '북마크 이름',
 	// link

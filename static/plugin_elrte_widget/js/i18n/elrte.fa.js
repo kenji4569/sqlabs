@@ -31,7 +31,7 @@ elRTE.prototype.i18Messages.fa = {
 	'Paste'                   : 'بازگردانی',
 	'Paste only text'         : 'بازگرادنی فقط متنها',
 	'Paste formatted text'    : 'بازگردانی متن های دارای قالب',
-	'Clean format'            : 'حذف قالب ها', 
+	'Clean format'            : 'حذف قالب ها',
 	'Undo last action'        : 'بازگشتن به آخرین حرکت',
 	'Redo previous action'    : 'تکرار حرکت قبلی',
 	'Bold'                    : 'درشت',
@@ -46,8 +46,8 @@ elRTE.prototype.i18Messages.fa = {
 	'Align full'              : 'به صورت کشده و کامل',
 	'Font color'              : 'رنگ قلم ها',
 	'Background color'        : 'رنگ ضمینه',
-	'Indent'                  : 'تورفتگی', 
-	'Outdent'                 : 'بیرون رفتگی', 
+	'Indent'                  : 'تورفتگی',
+	'Outdent'                 : 'بیرون رفتگی',
 	'Format'                  : 'قالب',
 	'Font size'               : 'اندازه قلم',
 	'Font'                    : 'قلم',
@@ -108,13 +108,13 @@ elRTE.prototype.i18Messages.fa = {
 	'Open in' : 'باز کردن در',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'این عملیات به دلایل امنیتی در مرورگر وب شما مسدود شده ، لطفا از میانبر ها استفاده کنید.',
-	// format 
+	// format
 	'Heading 1' : 'سر فصل 1',
 	'Heading 2' : 'سر فصل 2',
 	'Heading 3' : 'سر فصل 3',
 	'Heading 4' : 'سر فصل 4',
 	'Heading 5' : 'سر فصل 5',
-	'Heading 6' : 'سر فصل 6',	
+	'Heading 6' : 'سر فصل 6',
 	'Paragraph' : 'پراگراف',
 	'Address' : 'آدرس',
 	'Preformatted' : 'قالب بندی شده',
@@ -125,7 +125,7 @@ elRTE.prototype.i18Messages.fa = {
 	'Normal (14pt)' : '',
 	'Large (18pt)'  : '',
 	'Large (24pt)'  : '',
-	'Large (36pt)'  : '',				
+	'Large (36pt)'  : '',
 	// bookmark
 	'Bookmark name' : 'نام نشانه',
 	// link
@@ -164,7 +164,7 @@ elRTE.prototype.i18Messages.fa = {
 	'Cells'         : 'خانه هاس',
 	'Caption'       : 'عنوان',
 	'Inner borders' : 'کادر درونی'
-	
-	
+
+
 }
 })(jQuery);

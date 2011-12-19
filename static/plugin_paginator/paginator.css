@@ -1,6 +1,6 @@
 /* original by: http://activeadmin.info/ */
 div.paginator {
-  display: inline; margin-left: 10px; 
+  display: inline; margin-left: 10px;
   font-size: 0.8em; font-weight: bold; font-family: Helvetica, Arial, sans-serif;
   }
   div.paginator a {
@@ -16,7 +16,7 @@ div.paginator {
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#f9f9f9, endColorstr=#dddbdb);
     -ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#f9f9f9, endColorstr=#dddbdb);
     text-shadow: white 0 1px 0;
-    color: #777; 
+    color: #777;
     }
     div.paginator a:hover {
       color: #444;
@@ -54,7 +54,7 @@ div.paginator {
     margin-right: 4px;
     padding: 2px 5px;
     border: none;}
-    
+
 span.paginate_selector, span.paginate_info {
   font-size: 0.85em; color: #B3BCC1;
 }

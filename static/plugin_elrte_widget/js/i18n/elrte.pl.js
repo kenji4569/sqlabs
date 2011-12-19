@@ -31,7 +31,7 @@ elRTE.prototype.i18Messages.pl = {
 	'Paste'                   : 'Wklej',
 	'Paste only text'         : 'Wklej tylko tekst',
 	'Paste formatted text'    : 'Wklej tekst sformatowany',
-	'Clean format'            : 'Wyczyść formaty', 
+	'Clean format'            : 'Wyczyść formaty',
 	'Undo last action'        : 'Cofnij',
 	'Redo previous action'    : 'Ponów',
 	'Bold'                    : 'Pogróbienie',
@@ -46,8 +46,8 @@ elRTE.prototype.i18Messages.pl = {
 	'Align full'              : 'Wyjustowanie',
 	'Font color'              : 'Kolor czcionki',
 	'Background color'        : 'Kolor tła',
-	'Indent'                  : 'Wcięcie', 
-	'Outdent'                 : 'Wysunięcie', 
+	'Indent'                  : 'Wcięcie',
+	'Outdent'                 : 'Wysunięcie',
 	'Format'                  : 'Format',
 	'Font size'               : 'Rozmiar czcionki',
 	'Font'                    : 'Czcionka',
@@ -108,13 +108,13 @@ elRTE.prototype.i18Messages.pl = {
 	'Open in' : 'Otwórz w',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'Ta operacja jest zabroniona w twojej przeglądarce z powodu zabezpieczeń. Pomimo to możesz używać klawiszy skrótów.',
-	// format 
+	// format
 	'Heading 1' : 'Nagłówek 1',
 	'Heading 2' : 'Nagłówek 2',
 	'Heading 3' : 'Nagłówek 3',
 	'Heading 4' : 'Nagłówek 4',
 	'Heading 5' : 'Nagłówek 5',
-	'Heading 6' : 'Nagłówek 6',	
+	'Heading 6' : 'Nagłówek 6',
 	'Paragraph' : 'Paragraf',
 	'Address' : 'Addresse',
 	'Preformatted' : '',
@@ -125,7 +125,7 @@ elRTE.prototype.i18Messages.pl = {
 	'Normal (14pt)' : 'Średni (14pt)',
 	'Large (18pt)'  : 'Duży (18pt)',
 	'Large (24pt)'  : 'Duży (24pt)',
-	'Large (36pt)'  : 'Duży (36pt)',				
+	'Large (36pt)'  : 'Duży (36pt)',
 	// bookmark
 	'Bookmark name' : 'Nazwa kotwicy',
 	// link
@@ -164,7 +164,7 @@ elRTE.prototype.i18Messages.pl = {
 	'Cells'         : 'Komórki',
 	'Caption'       : 'Legenda',
 	'Inner borders' : 'Wewnętrzne ramki'
-	
-	
+
+
 }
 })(jQuery);

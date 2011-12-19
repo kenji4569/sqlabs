@@ -18,7 +18,7 @@ function ajax(u,s,t) {
         }
         if (pcs.length>0){query = pcs.join("&");}
     }
-    jQuery.ajax({type: "POST", url: u, data: query, success: function(msg) { if(t) { if(t==':eval') eval(msg); else jQuery("#" + t).html(msg); } } }); 
+    jQuery.ajax({type: "POST", url: u, data: query, success: function(msg) { if(t) { if(t==':eval') eval(msg); else jQuery("#" + t).html(msg); } } });
 }
 
 String.prototype.reverse = function () { return this.split('').reverse().join('');};
@@ -40,12 +40,12 @@ function web2py_ajax_init() {
      inputField:this, ifFormat:datetime_format, showsTime: true,timeFormat: "24"
   }); }); } catch(e) {};
 
-  jQuery("input.time").live('focus', function() { var el = jQuery(this); 
-          if (!el.hasClass('hasTimeEntry')) try { el.timeEntry(); } catch(e) {}; 
+  jQuery("input.time").live('focus', function() { var el = jQuery(this);
+          if (!el.hasClass('hasTimeEntry')) try { el.timeEntry(); } catch(e) {};
   });
 };
 
-jQuery(function() {   
+jQuery(function() {
    var flash = jQuery('.flash');
    flash.hide();
    if(flash.html()) flash.slideDown();
@@ -69,16 +69,16 @@ function web2py_ajax_page(method,action,data,target) {
       xhr.setRequestHeader('web2py-component-element',target);},
     'complete':function(xhr,text){
       var html=xhr.responseText;
-      var content=xhr.getResponseHeader('web2py-component-content'); 
+      var content=xhr.getResponseHeader('web2py-component-content');
       var command=xhr.getResponseHeader('web2py-component-command');
       var flash=xhr.getResponseHeader('web2py-component-flash');
       var t = jQuery('#'+target);
-      if(content=='prepend') t.prepend(html); 
+      if(content=='prepend') t.prepend(html);
       else if(content=='append') t.append(html);
-      else if(content!='hide') t.html(html);  
+      else if(content!='hide') t.html(html);
       web2py_trap_form(action,target);
       web2py_trap_link(target);
-      web2py_ajax_init();      
+      web2py_ajax_init();
       if(command) eval(command);
       if(flash) jQuery('.flash').html(flash).slideDown();
       }
@@ -106,5 +106,5 @@ function web2py_trap_link(target) {
 		    web2py_ajax_page('get',link.attr('href'),[],target);
 		    e.preventDefault();
 		});
-	});  
+	});
 }
