@@ -3,19 +3,18 @@
 # Authors: Kenji Hosoda <hosoda@s-cubism.jp>
 from gluon import *
 from gluon.sqlhtml import AutocompleteWidget
-from html import URL as Url
 
 class suggest_widget(AutocompleteWidget):
 
     def __init__(self, field, id_field=None, db=None,
                  orderby=None, limitby=(0,10),
                  keyword='_autocomplete_%(fieldname)s',
-                 min_length=2):
+                 min_length=2, 
+                 user_signature=False, hmac_key=None):
         self.keyword = keyword % dict(fieldname=field.name)
         self.db = db or field._db
-        self.orderby = orderby
-        self.limitby = limitby
-        self.min_length = min_length
+        self.orderby, self.limitby, self.min_length = orderby, limitby, min_length
+        self.user_signature, self.hmac_key = user_signature, hmac_key
         self.fields=[field]
         if id_field:
             self.is_reference = True
@@ -25,7 +24,8 @@ class suggest_widget(AutocompleteWidget):
             
         request = current.request
         if hasattr(request,'application'):
-            self.url = Url(r=request, args=request.args)
+            self.url = URL(r=request, args=request.args, 
+                           user_signature=user_signature, hmac_key=hmac_key)
             self.callback()
         else:
             self.url = request
@@ -35,6 +35,10 @@ class suggest_widget(AutocompleteWidget):
         
     def callback(self):
         if self.keyword in current.request.vars:
+            if self.user_signature:
+                if not URL.verify(current.request, user_signature=self.user_signature, hmac_key=self.hmac_key):
+                    raise HTTP(400)
+                    
             field = self.fields[0]
             rows = self.db(field.like(current.request.vars[self.keyword]+'%')
                           ).select(orderby=self.orderby,limitby=self.limitby,*self.fields)

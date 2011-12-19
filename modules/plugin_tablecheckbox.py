@@ -11,6 +11,7 @@ class TableCheckbox(FORM):
                  submit_button='Submit checks',
                  **attributes):
         FORM.__init__(self, **attributes)
+        self.id_getter = id_getter
         self.attributes['_class'] = 'tablecheckbox'
         self.tablecheckbox_var, self.confirm_message, self.submit_button = (
             tablecheckbox_var, confirm_message, submit_button
@@ -36,10 +37,11 @@ jQuery(document).ready(function(){
               _id=self._button, _disabled='disabled'))
       
     def column(self):
-        return {'label':INPUT(_type='checkbox', _name=self._checkall, 
-                                _onclick=self._get_toggle_all_js()),
+        return {'label':DIV(INPUT(_type='checkbox', _name=self._checkall, 
+                                _onclick=self._get_toggle_all_js()), 
+                            _style='text-align:center;'),
                 'content':lambda row, rc: DIV(INPUT(_type='checkbox', _name=self._selected, 
-                                                    _value=row.id, _style='margin:3px;'),
+                                                    _value=self.id_getter(row), _style='margin:3px;'),
                                               _style='text-align:center;'),
                 'width': '', 'class': '', 'selected': False}
          

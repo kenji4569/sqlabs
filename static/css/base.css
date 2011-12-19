@@ -404,7 +404,7 @@ div.flash {
     border: 2px solid #fff;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
-    z-index: 2;
+    z-index: 99999;
 }
 div.error {
     background-color: red;

@@ -1,0 +1,146 @@
+{{extend 'layout.html'}}
+{{from gluon.contrib import simplejson as json}}
+<div class="container" style="padding:0;">
+  <div class="well">
+    <div id="tree" class="jstree" style="min-height:100px;background:white;">
+    </div>
+    {{=tree_crud_buttons}}
+    <script type="text/javascript"><!--
+(function($) { $(function () {
+var tree_el = $("#tree");
+
+var tree_crud_buttons = $("#tree_crud_buttons");
+tree_crud_buttons.find('#add_node_button').click(function(){
+  tree_el.jstree("create", null, "last", "---"); return false;
+});
+tree_crud_buttons.find('#edit_node_button').click(function(){
+  var data = tree_crud_buttons.data('data'),
+      el = data.rslt.obj,
+      pos = el.position();
+  pos.top -= 5;
+  pos.left += 155;
+  tree_crud_buttons.css(pos);
+  tree_el.jstree("rename"); return false;
+});
+tree_crud_buttons.find('#delete_node_button').click(function(){
+  if(confirm("{{=T('Sure you want to delete them?')}}")){
+    tree_el.jstree("remove");
+  }
+  return false;
+});
+function handle_error(r) {
+  if (r.status==406) {
+    jQuery('.flash').hide().html("{{=T('Unchanged')}}").slideDown();
+  } else {
+    jQuery('.flash').hide().html("{{=T('not authorized')}}").slideDown();
+  }
+}
+tree_el.jstree({ 
+    "plugins" : ["themes", "json_data", "ui", "crrm", "hotkeys", "dnd", "types"],
+    "json_data" : {
+      "data" : {{=XML(json.dumps(data))}}
+    },
+    "types" : {
+      "types" : {
+        "root" : {
+          "icon" : { 
+            "image" : "{{=URL('static', 'jstree/_drive.png')}}" 
+          },
+        }
+      }
+    },
+    "core" : {
+      "initially_open": {{=XML(json.dumps(initially_open))}}
+    },
+    "themes" : {
+      "theme" : "apple",
+      "dots" : true,
+      "icons" : true
+    },
+  }).bind("select_node.jstree", function (event, data) { 
+    var el = data.rslt.obj;
+    tree_crud_buttons.data('data', data);
+    
+    var pos = el.position();
+    pos.top -= 5;
+    pos.left += 105;
+    tree_crud_buttons.css(pos);
+    if (data.rslt.obj.find('li').length > 0) {
+      tree_crud_buttons.find('#delete_node_button').hide();
+    } else {
+      tree_crud_buttons.find('#delete_node_button').show();
+    }
+    tree_crud_buttons.show();
+  }).bind("create.jstree", function (e, data) {
+    $.post("{{=url(args=['new'])}}",
+      {
+        "target" : data.rslt.parent.attr("id").split("_")[1],
+        "name" : data.rslt.name,
+        "node_type" : data.rslt.obj.attr("rel")
+      },
+      function (r) {
+        jQuery('.flash').hide().html("{{=T('Created')}}").slideDown();
+        $(data.rslt.obj).attr("id", "node_" + r);
+      }
+    ).error(function(r){ 
+      handle_error(r, data);
+      $.jstree.rollback(data.rlbk);
+    });
+  }).bind("rename.jstree", function (e, data) {
+    $.post("{{=url(args=['edit'])}}",
+      {
+        "id"   : data.rslt.obj.attr("id").split("_")[1],
+        "name" : data.rslt.new_name
+      },
+      function (r) {
+        jQuery('.flash').hide().html("{{=T('Updated')}}").slideDown();
+      }
+    ).error(function(r){ 
+      handle_error(r, data);
+      $.jstree.rollback(data.rlbk);
+    });
+  }).bind("remove.jstree", function (e, data) {
+    if (data.rslt.obj.find('li').length > 0) {
+      jQuery('.flash').hide().html("{{=T('Undeletable')}}").slideDown();
+      $.jstree.rollback(data.rlbk);
+      return;
+    }
+    $.post("{{=url(args=['delete'])}}",
+      {
+        "id"   : data.rslt.obj.attr("id").split("_")[1],
+      },
+      function (r) {
+        jQuery('.flash').hide().html("{{=T('Deleted')}}").slideDown();
+      }
+    ).error(function(r){ 
+      handle_error(r);
+      data.inst.refresh();
+    });
+  }).bind("move_node.jstree", function (e, data) {
+    if (data.rslt.cr === -1 || data.rslt.o.attr("ref") == 'root') {
+      alert("{{=T('Unmovable')}}");
+      $.jstree.rollback(data.rlbk);
+      return;
+    }
+    $.post("{{=url(args=['move'])}}",
+      {
+        "id"   : data.rslt.o.attr("id").split("_")[1],
+        "parent": data.rslt.np.attr("id").split("_")[1],
+        "position": data.rslt.cp
+      },
+      function (r) {
+        jQuery('.flash').hide().html("{{=T('Moved')}}").slideDown();
+        // TODO refresh?
+      }
+    ).error(function(r){ 
+      handle_error(r);
+      $.jstree.rollback(data.rlbk);
+    });
+   // console.log(data.rslt.np.text());
+   // console.log(data.rslt.cp);
+  });
+});})(jQuery);
+--></script>
+
+  </div>
+</div>
