@@ -27,7 +27,7 @@ if (db(table_product.created_on<request.now-datetime.timedelta(minutes=60)).coun
 ### fake authentication ########################################################
 
 from gluon.storage import Storage
-session.auth = Storage(hmac_key='test')
+session.auth = Storage(hmac_key='test', user=Storage(email='user@test.com'))
 
 ### demo functions #############################################################
 

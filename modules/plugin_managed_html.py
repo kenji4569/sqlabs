@@ -12,6 +12,9 @@ PREVIEW_MODE = '_managed_html_preview'
     
 FILE_GRID_KEYWORD = '_managed_html_%s_grid'
 
+IMAGE_EXTENSIONS = ('png', 'jpg', 'jpeg', 'gif', 'bmp')
+MOVIE_EXTENSIONS = ('flv', 'mp4')
+
 class ManagedHTML(object):
 
     def __init__(self, db, keyword='_managed_html'):
@@ -40,6 +43,9 @@ class ManagedHTML(object):
         
         settings.uploadfolder = os.path.join(self.db._adapter.folder, '..', 'uploads')
         settings.upload = lambda filename: URL('download', args=[filename]) # TODO
+        
+        settings.image_comment = None
+        settings.image_requires = None
         
         messages = self.messages = Messages(current.T)
         
@@ -129,12 +135,17 @@ class ManagedHTML(object):
             response.meta.managed_html_show_page_crud = DIALOG(
                 title=T('+ Page'), close_button=T('close'), 
                 content=settings.page_crud).show()
+                
+    def is_image(self, *args, **kwargs):
+        from plugin_uploadify_widget import IS_UPLOADIFY_IMAGE
+        return IS_UPLOADIFY_IMAGE(*args, **kwargs)
+        
+    def is_length(self, *args, **kwargs):
+        from plugin_uploadify_widget import IS_UPLOADIFY_LENGTH
+        return IS_UPLOADIFY_LENGTH(*args, **kwargs)
         
     def _file_grid(self, file_type):
         from plugin_solidgrid import SolidGrid
-        from plugin_uploadify_widget import (
-            uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_LENGTH
-        )
         table_file = self.settings.table_file
         request = current.request
         solidgrid = SolidGrid(renderstyle=True)
@@ -147,6 +158,7 @@ class ManagedHTML(object):
             hmac_key = None
             user_signature = True
             
+        from plugin_uploadify_widget import uploadify_widget
         def _uploadify_widget(field, value, download_url=None, **attributes):
             if current.session.auth:
                 attributes['extra_vars'] = {'_signature': request.get_vars._signature,
@@ -155,32 +167,40 @@ class ManagedHTML(object):
         table_file.name.widget = _uploadify_widget
         
         table_file.name.uploadfolder = self.settings.uploadfolder
+        
+        table_file.name.comment = self.settings.get('%s_comment' % file_type)
+        table_file.name.requires = self.settings.get('%s_requires' % file_type)
 
         def _oncreate(form):
             if 'filename' in request.vars.name:
                 filename = request.vars.name.filename
-                if filename and filename.split('.')[-1].lower() in ('png', 'jpg', 'jpeg', 'gif', 'bmp'):
-                    # (nx, ny) = 80, 80 # TODO setting
-                    # from PIL import Image
-                    # img = Image.open(os.path.join(self.settings.uploadfolder, filename))
-                    
-                    # # print img.size # TODO
-                    
-                    # img.thumbnail((nx, ny), Image.ANTIALIAS)
-                    
-                    # root, ext = os.path.splitext(filename)
-                    # thumbnail = '%s_thumbnail%s' % (root, ext)
-                    
-                    # img.save(os.path.join(self.settings.uploadfolder, thumbnail))
-                    thumbnail = filename
-                    
-                    extension = filename and filename.split('.')[-1]
-                    extension = extension and extension.lower()
-                    self.db(self.settings.table_file.id==form.vars.id).update(
-                        name=filename, extension=extension, thumbnail=thumbnail,
-                    )
+                if filename:
+                    extension = filename.split('.')[-1].lower()
+                    if extension in (IMAGE_EXTENSIONS + MOVIE_EXTENSIONS):
+                        thumbnail = ''
+                        if extension in IMAGE_EXTENSIONS:
+                            # (nx, ny) = 80, 80 # TODO setting
+                            # from PIL import Image
+                            # img = Image.open(os.path.join(self.settings.uploadfolder, filename))
+                            
+                            # # print img.size # TODO
+                            
+                            # img.thumbnail((nx, ny), Image.ANTIALIAS)
+                            
+                            # root, ext = os.path.splitext(filename)
+                            # thumbnail = '%s_thumbnail%s' % (root, ext)
+                            
+                            # img.save(os.path.join(self.settings.uploadfolder, thumbnail))
+                            thumbnail = filename
+                        
+                        self.db(self.settings.table_file.id==form.vars.id).update(
+                            name=filename, extension=extension, thumbnail=thumbnail,
+                        )
             
         _grid_keyword = FILE_GRID_KEYWORD % file_type
+        _extensions = {'image': IMAGE_EXTENSIONS,
+                       'movie': MOVIE_EXTENSIONS,
+                       }.get(file_type)
         extracolumns = [
             {'label': 'Select', 'width': '150px;',
                 'content':lambda row, rc: 
@@ -188,13 +208,13 @@ class ManagedHTML(object):
                             '#', _onclick="""
 jQuery(document.body).trigger('managed_html_file_selected', ['%s', '%s']);return false;
                             """ % (row.name, row.thumbnail), _class='ui-btn'))},
-             {'label': 'Thumbnail', 'width': '150px;',
+             {'label': 'File', 'width': '150px;',
               'content':lambda row, rc: DIV(
-                self.file_represent(row.thumbnail),
+                self._file_represent(row.name, row.thumbnail),
                 _style='word-break:break-all;')}
         ]
         main_table = table_file
-        grid = solidgrid(main_table, 
+        grid = solidgrid((main_table.extension.belongs(_extensions)), 
             fields=[main_table.ALL],
             columns=[extracolumns[0], extracolumns[1], 
                      main_table.keyword, main_table.description, main_table.extension], 
@@ -215,24 +235,77 @@ jQuery(document.body).trigger('managed_html_file_selected', ['%s', '%s']);return
                  DIV(grid), 
                  _class='file_grid')
         
-    def _post_js(self, name, action, target):
-        data = {self.keyword:name, '_action':action}
-        return """managed_html_ajax_page("%(url)s", %(data)s, "%(target)s");
-               """ % dict(url=URL(args=current.request.args, vars=current.request.get_vars), 
-                          data=json.dumps(data), target=target)
-
-    def _get_content(self, name, cache=None):
-        table_content = self.settings.table_content
-        query = (table_content.name==name)
-        if self.view_mode == LIVE_MODE:
-            return self.db(query)(table_content.publish_on<=current.request.now
-                                 ).select(orderby=~table_content.publish_on, cache=cache).first()
-        else:
-            return self.db(query).select(orderby=~table_content.id).first()
+    def _file_represent(self, filename, thumbnail, max_width=80, max_height=80): # TODO set self.settings.thumbnail_size
+        if not filename:
+            return A('', _href='#')
+        if not thumbnail:
+            return A('file', _href=self.settings.upload(filename))
+        return A(IMG(_src=self.settings.upload(thumbnail), 
+                     _style='max-width:%spx;max-height:%spx;' % (max_width, max_height)),
+                      _href=self.settings.upload(filename), _target='_blank')
         
-    def _is_simple_form(self, fields):
-        return len(fields) == 1
+    def _file_widget(self, field, value, download_url=None, **attributes):
+        file_type = attributes.get('file_type')
+        T = current.T
+        el_id = '%s_%s' % (field._tablename, field.name)
         
+        from plugin_dialog import DIALOG
+        image_chooser = DIALOG(title=T('Select'), close_button=T('close'),
+            content=LOAD(url=URL(args=current.request.args, 
+                                 vars={FILE_GRID_KEYWORD % file_type:True}), ajax=True),
+            onclose='jQuery(document.body).trigger("managed_html_file_selected", "");',
+            _id='managed_html_file_chooser', _class='managed_html_dialog')
+               
+        
+        _record = self.db(self.settings.table_file.name==value
+                            ).select(self.settings.table_file.thumbnail).first()
+        thumbnail = _record and _record.thumbnail or ''
+        
+        from gluon.sqlhtml import UploadWidget
+        return DIV(INPUT(_type='button', _value='Select', 
+                         _onclick="""
+jQuery(document.body).one('managed_html_file_selected', function(e, name, thumbnail) {
+if(name!="") {
+    var url = "%(upload)s".replace('__filename__', name);
+    jQuery("#%(id)s__hidden").attr('value', name);
+    var ext = name.split('.').slice(-1);
+    var a = jQuery("#%(id)s__file a");
+    a.attr('href', url);
+    if(thumbnail!="") {
+        var thumbnail_url = "%(upload)s".replace('__filename__', thumbnail);
+        a.html("<img src='"+thumbnail_url+"' style='max-width:150px;max-height:150px;'/>");
+    } else {
+        a.html("file");
+    }
+    jQuery('.managed_html_dialog').hide();
+}
+}); %(show)s; return false;""" % dict(id=el_id, show=image_chooser.show(),
+                                      upload=self.settings.upload('__filename__'))), 
+                   DIV(self._file_represent(value, thumbnail, 150, 150), _id='%s__file' % el_id, 
+                       _style='margin-top:5px;'),
+                   DIV(INPUT(_type='checkbox', _onclick="""
+if(this.checked) {
+    if(!confirm("%(confirm)s")) { this.checked=false; } else { 
+        jQuery("#%(id)s__hidden").attr('value', '');
+        jQuery("#%(id)s a").html("");
+    }
+}""" % dict(confirm=current.T('Are you sure you want to delete this object?'), 
+                                   id=el_id), 
+                             _name=field.name + UploadWidget.ID_DELETE_SUFFIX),
+                       UploadWidget.DELETE_FILE, _style='margin-top:5px;'),
+                   INPUT(_type='hidden', _value=value,
+                         _name=field.name, _id='%s__hidden' % el_id, 
+                         requires=field.requires), 
+                   _id=el_id)
+        
+    def image_widget(self, field, value, download_url=None, **attributes):
+        attributes['file_type'] = 'image'
+        return self._file_widget(field, value, download_url=None, **attributes)
+               
+    def movie_widget(self, field, value, download_url=None, **attributes):
+        attributes['file_type'] = 'movie'
+        return self._file_widget(field, value, download_url=None, **attributes)
+          
     def text_widget(self, field, value, **attributes):
         T = current.T
         try:
@@ -242,7 +315,8 @@ jQuery(document.body).trigger('managed_html_file_selected', ['%s', '%s']);return
         
         from plugin_dialog import DIALOG
         image_chooser = DIALOG(title=T('Select an image'), close_button=T('close'),
-            content=LOAD(url=URL(args=current.request.args, vars={IMAGE_GRID_KEYWORD:True}), ajax=True),
+            content=LOAD(url=URL(args=current.request.args, 
+                                 vars={FILE_GRID_KEYWORD % file_type:True}), ajax=True),
             onclose='jQuery(document.body).trigger("managed_html_file_selected", "");',
             _id='managed_html_file_chooser', _class='managed_html_dialog')
         # file_chooser = DIALOG(title=T('Select a file'), close_button=T('close'),
@@ -271,73 +345,27 @@ jQuery(document.body).bind('managed_html_file_selected managed_html_file_selecte
         widget.settings.files = _files
         return widget(field, value, **attributes)
         
-    def file_represent(self, filename, max_width=80, max_height=80): # TODO set self.settings.thumbnail_size
-        if not filename:
-            return A('', _href='#')
-        extension = filename.split('.')[-1].lower()
-        return A(IMG(_src=self.settings.upload(filename), 
-                     _style='max-width:%spx;max-height:%spx;' % (max_width, max_height)) # TODO setting
-                        if extension in ('png', 'jpg', 'jpeg', 'gif', 'bmp') else 'file',
-                      _href=self.settings.upload(filename), _target='_blank')
+    def _post_js(self, name, action, target):
+        data = {self.keyword:name, '_action':action}
+        return """managed_html_ajax_page("%(url)s", %(data)s, "%(target)s");
+               """ % dict(url=URL(args=current.request.args, vars=current.request.get_vars), 
+                          data=json.dumps(data), target=target)
+
+    def _get_content(self, name, cache=None):
+        table_content = self.settings.table_content
+        query = (table_content.name==name)
+        if self.view_mode == LIVE_MODE:
+            return self.db(query)(table_content.publish_on<=current.request.now
+                                 ).select(orderby=~table_content.publish_on, cache=cache).first()
+        else:
+            return self.db(query).select(orderby=~table_content.id).first()
         
-    def _file_widget(self, field, value, download_url=None, **attributes):
-        file_type = attributes.get('file_type')
-        T = current.T
-        el_id = '%s_%s' % (field._tablename, field.name)
-        
-        from plugin_dialog import DIALOG
-        image_chooser = DIALOG(title=T('Select an image'), close_button=T('close'),
-            content=LOAD(url=URL(args=current.request.args, vars={IMAGE_GRID_KEYWORD:True}), ajax=True),
-            onclose='jQuery(document.body).trigger("managed_html_file_selected", "");',
-            _id='managed_html_file_chooser', _class='managed_html_dialog')
-               
-        from gluon.sqlhtml import UploadWidget
-        return DIV(INPUT(_type='button', _value='Select', 
-                         _onclick="""
-jQuery(document.body).one('managed_html_file_selected', function(e, name, thumbnail) {
-if(name!="") {
-    var url = "%(upload)s".replace('__filename__', name);
-    jQuery("#%(id)s__hidden").attr('value', name);
-    var ext = name.split('.').slice(-1);
-    var a = jQuery("#%(id)s__file a");
-    a.attr('href', url);
-    if(thumbnail!="") {
-        var thumbnail_url = "%(upload)s".replace('__filename__', thumbnail);
-        a.html("<img src='"+thumbnail_url+"' style='max-width:150px;max-height:150px;'/>");
-    } else {
-        a.html("file");
-    }
-    jQuery('.managed_html_dialog').hide();
-}
-}); %(show)s; return false;""" % dict(id=el_id, show=image_chooser.show(),
-                                      upload=self.settings.upload('__filename__'))), 
-                   DIV(self.file_represent(value, 150, 150), _id='%s__file' % el_id, _style='margin-top:5px;'),
-                   DIV(INPUT(_type='checkbox', _onclick="""
-if(this.checked) {
-    if(!confirm("%(confirm)s")) { this.checked=false; } else { 
-        jQuery("#%(id)s__hidden").attr('value', '');
-        jQuery("#%(id)s a").html("");
-    }
-}""" % dict(confirm=current.T('Are you sure you want to delete this object?'), 
-                                   id=el_id), 
-                             _name=field.name + UploadWidget.ID_DELETE_SUFFIX),
-                       UploadWidget.DELETE_FILE, _style='margin-top:5px;'),
-                   INPUT(_type='hidden', _value=value,
-                         _name=field.name, _id='%s__hidden' % el_id, 
-                         requires=field.requires), 
-                   _id=el_id)
-        
-    def image_widget(self, field, value, download_url=None, **attributes):
-        attributes['file_type'] = 'image'
-        return self._file_widget(field, value, download_url=None, **attributes)
-               
-    def movie_widget(self, field, value, download_url=None, **attributes):
-        attributes['file_type'] = 'movie'
-        return self._file_widget(field, value, download_url=None, **attributes)
-          
     def _is_published(self, content):
         return (content is None) or bool(content.publish_on and 
                                          content.publish_on<=current.request.now)
+        
+    def _is_simple_form(self, fields):
+        return len(fields) == 1
         
     def render(self, name, *fields, **kwargs):
         request, response, session, T, settings = (

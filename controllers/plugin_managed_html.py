@@ -3,9 +3,6 @@
 from plugin_managed_html import ManagedHTML
 from gluon.storage import Storage
 
-from plugin_uploadify_widget import (
-    uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_LENGTH
-)
 ### setup core objects #########################################################
 managed_html = ManagedHTML(db)
 managed_html.settings.table_content_name = 'plugin_managed_html_content'
@@ -30,11 +27,14 @@ managed_html.settings.image_crud =LOAD(
 
 ### define tables ##############################################################
 managed_html.define_tables()
+managed_html.settings.image_comment = '<- upload an image (max file size=10k)'
+managed_html.settings.image_requires = [managed_html.is_length(10240, 1), managed_html.is_image()]
+managed_html.settings.movie_comment = '<- upload a movie (max file size=200k)'
+managed_html.settings.movie_requires = [managed_html.is_length(204800, 1)] # TODO movie validation
+
 table_content = managed_html.settings.table_content
 table_file = managed_html.settings.table_file
-table_file.name.comment = '<- upload an image (max file size=10k)'
-table_file.name.requires = [IS_UPLOADIFY_LENGTH(10240, 1), IS_UPLOADIFY_IMAGE()]
-
+        
 ### populate records ###########################################################
 import datetime
 if db(table_content.created_on<request.now-datetime.timedelta(minutes=60)).count():
@@ -46,7 +46,7 @@ if db(table_content.created_on<request.now-datetime.timedelta(minutes=60)).count
 ### fake authentication ########################################################
 
 from gluon.storage import Storage
-session.auth = Storage(hmac_key='test')
+session.auth = Storage(hmac_key='test', user=Storage(email='user@test.com'))
 
 ### demo functions #############################################################
 
