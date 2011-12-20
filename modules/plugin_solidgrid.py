@@ -590,12 +590,9 @@ class SolidGrid(object):
                     _style='text-align:center;')}
             )
         
-        _size = 80 if showbuttontext else 25
-        _size = _size*(int(bool(details)) + int(bool(editable)) + int(bool(deletable)))
-        if _size:
-            
+        if details or editable or deletable:
             extracolumns.append(
-                {'label':'', 'width':'%spx' % (_size + 12), 
+                {'label':'', #'width':'%spx' % (_size + 12), 
                 'content':lambda row, rc: 
                      DIV(recordbutton('%(buttonview)s' % ui, T('View'),
                                 url(args=['view', tablename, row[field_id]]), showbuttontext)
@@ -608,7 +605,8 @@ class SolidGrid(object):
                                 _onclick="""
 if(confirm("%s")){return true;} else {jQuery(this).unbind('click').fadeOut();return false;}""" % 
                                           T('Sure you want to delete them?'),)
-                                    if deletable else '')}
+                                    if deletable else '',
+                         _style='white-space:nowrap;')}
             )
             
         if paginate:
