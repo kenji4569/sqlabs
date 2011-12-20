@@ -50,8 +50,7 @@ def build_tree_objects(initially_select):
         children = []
         if not mptt.is_leaf_node(node):
             initially_open.append(node_el_id)
-            for child in mptt.descendants_from_node(node)(
-                            table_node.level==node.level+1).select(orderby=mptt.desc):
+            for child in mptt.descendants_from_node(node)(table_node.level==node.level+1).select(orderby=mptt.desc):
                 children.append(_traverse(child))
         return dict(data=node.name, 
                     attr=dict(id=node_el_id, rel=node.node_type),
@@ -59,6 +58,36 @@ def build_tree_objects(initially_select):
                     )
     data = [_traverse(initially_select)]
     return data, initially_open
+
+def build_tree_objects_x(initially_select):
+    initially_open=[]
+    data = []
+    for child in mptt.descendants_from_node(initially_select,include_self=True).select(orderby=mptt.desc):
+        print "child_id", child.id
+        node_el_id = 'node_%s' % child.id
+        if not mptt.is_leaf_node(child):
+            initially_open.append(node_el_id)
+#        for depth in range(child.level):
+#            data = data[-1]['children']
+        if child.level == 0:
+            data.append(dict(data=child.name, 
+                         attr=dict(id=node_el_id, rel=child.node_type),
+                         children=[],
+                         ))        
+        if child.level == 1:
+            data[-1]["children"].append(dict(data=child.name, 
+                         attr=dict(id=node_el_id, rel=child.node_type),
+                         children=[],
+                         ))        
+        if child.level == 2:
+            data[-1]["children"][-1]["children"].append(dict(data=child.name, 
+                         attr=dict(id=node_el_id, rel=child.node_type),
+                         children=[],
+                         ))        
+        
+        return data, initially_open
+    
+
     
 def render_tree_crud_buttons(tablename):
     ui = dict(buttonadd='ui-icon-plusthick',

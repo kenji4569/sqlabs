@@ -189,7 +189,7 @@ class MPTTModel(object):
            ).update(rgt=table_node.rgt - tree_width)
         db(table_node.lft >= node.rgt)(table_node.tree_id == current_tree_id
            ).update(lft=table_node.lft - tree_width)
-        
+
 ############################ tree_manager #########################################
 
     def _calculate_inter_tree_move_values(self, node, target, position):
