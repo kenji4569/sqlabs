@@ -2,11 +2,11 @@
 <div>
   <h1>{{=response.title or ''}}</h1>
   <hr/>
-  
+
   <h3>Edit ohter page</h3>
     <a href="{{=URL('page2')}}">>> Page2</a>
   <br/><br/>
-  
+
   <hr/>
   <h2>Edit text</h2>
   <div style="width:100px;">
@@ -17,7 +17,7 @@
     {{_block()}}
   </div>
   <br/>
-  
+
   <h2>Edit image</h2>
   <div style="width:300px;">
     {{@managed_html.render('block3', Field('image', widget=managed_html.image_widget, comment='Upload Image'))
@@ -31,7 +31,7 @@
     {{_block()}}
   </div>
   <br/>
-  
+
   <h2>Edit html</h2>
   <div>
     {{@managed_html.render('block1', Field('html', 'text', comment='Input HTML'))
@@ -41,9 +41,9 @@
     {{_block()}}
   </div>
   <br/>
-  
+
   <hr/>
-  
+
   <h2>Drag us!</h2>
   <div style="border: 1px solid whiteSmoke; width:200px;">
     {{@managed_html.movable('block_type1')
@@ -65,7 +65,7 @@
       {{block_c()}}
     </div>
   </div>
-  
+
   <hr/>
   <h2>Drag another group</h2>
   <div>

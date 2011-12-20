@@ -172,6 +172,6 @@ table.elrte-authors td{border-bottom:1px solid #eee}
 .elrte-image-src-fm .ui-state-default{float:right}
 .el-dialogform-rtl .elrte-image-src-fm .ui-state-default{float:left}
 .elrte-image-preview{font-size:.7em;overflow:auto;height:240px;width:480px}
-.el-palette input[type="text"], 
+.el-palette input[type="text"],
 .el-paddinginput select, .el-paddinginput input[type="text"],
 .el-dialogform select, .el-dialogform input[type="text"] {width: auto;margin:0px 5px 0px 0px;}

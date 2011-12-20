@@ -3,7 +3,7 @@
  *
  *  VERSION: 4.1112
  *
- *  Copyright 2008-2010 Andrew M. Andrews III (www.AMA3.com). Some Rights 
+ *  Copyright 2008-2010 Andrew M. Andrews III (www.AMA3.com). Some Rights
  *  Reserved. This work licensed under the Creative Commons Attribution-
  *  Noncommercial-Share Alike 3.0 Unported License except in jurisdicitons
  *  for which the license has been ported by Creative Commons International,
@@ -42,7 +42,7 @@
 {
     border:0;
     font: inherit;
-    font-size: x-small; 
+    font-size: x-small;
     font-style:normal;
     font-weight:normal;
     list-style-type:none;
@@ -53,7 +53,7 @@
 
 /*
  *  .AnyTime-win simulates a "window" that might be a popup or inline.
- *  Styles should include background-color and border.  A window should 
+ *  Styles should include background-color and border.  A window should
  *  be sized according to its contents; therefore, width and height
  *  should NOT be specified.
  */
@@ -69,7 +69,7 @@
 }
 
 /*
- *  .AnyTime-pkr is the Date/Time picker, inserted into the page immediately 
+ *  .AnyTime-pkr is the Date/Time picker, inserted into the page immediately
  *  after the input (text field) to which it corresponds.  The picker
  *  attempts to size itself automatically based on its format fields;
  *  therefore, do NOT set width or height.  This is empty by default,
@@ -122,7 +122,7 @@
 
 /*
  *  .AnyTime-x-btn is a pseudo-button that, when clicked, causes the entire
- *  picker to disappear (the picker also disappears if the user clicks 
+ *  picker to disappear (the picker also disappears if the user clicks
  *  almost anywhere off of it, or presses ESC).  This is designed to have,
  *  at minumum, a border and float:right.
  */
@@ -437,14 +437,14 @@
 /*
  *  .AnyTime-hr-btn is a pseudo-button for selecting an hour.
  *  Style should include width.
- *  Each button also has a style of its own. 
+ *  Each button also has a style of its own.
  */
 
 .AnyTime-hr-btn
 {
   text-align:right;
   padding-right:0.25em;
-  width:3em;  
+  width:3em;
 }
 
 .AnyTime-hr0-btn,
@@ -503,7 +503,7 @@
  *  A width should be specified.
  *  Each button also has its own style.
  */
- 
+
 .AnyTime-min-ten-btn,
 .AnyTime-min-one-btn
 {
@@ -582,14 +582,14 @@
 
 /*
  *  .AnyTime-offs contains the UTC offset (timezone) selection pseudo-buttons.
- *  The container is designed to have clear:left, float:left and padding. 
+ *  The container is designed to have clear:left, float:left and padding.
  *  The two buttons have their own styles, and .AnyTime-off-select-btn should
  *  include a width.
  *  The width of the container and the .AnyTime-off-cur-btn should not be
  *  specified, as they are computed based on the width of the
  *  .AnyTime-off-select-btn and the .AnyTime-time container.
  */
- 
+
 .AnyTime-offs
 {
   clear:left;
@@ -613,7 +613,7 @@
  *  .AnyTime-yr-selector is an overlay (popup) for selecting a specific year.
  *  The picker attempts to size the overlay automatically, based on
  *  whether "era" buttons are displayed; therefore, do not set width.
- *  AnyTime-hdr-yr-selector is its title bar. 
+ *  AnyTime-hdr-yr-selector is its title bar.
  *  AnyTime-body-yr-selector is its body.
  */
 
@@ -627,7 +627,7 @@
 
 .AnyTime-body-yr-selector
 {
-  padding:1em;	
+  padding:1em;
 }
 
 /*
@@ -704,7 +704,7 @@
  *  .AnyTime-off-selector is an overlay (popup) for selecting a specific year.
  *  The picker attempts to size the overlay automatically, based on
  *  its contents; therefore, do not set width.
- *  .AnyTime-hdr-off-selector is its title bar. 
+ *  .AnyTime-hdr-off-selector is its title bar.
  *  .AnyTime-body-off-selector is its body.
  *  .AnyTime-off-off is the column of offset-selector pseudo-buttons.
  *  .AnyTime-off-off-btn is an offset-selector pseudo-button.
@@ -721,7 +721,7 @@
 
 .AnyTime-body-off-selector
 {
-  margin:0.5em;  
+  margin:0.5em;
 }
 .AnyTime-off-off
 {
@@ -761,7 +761,7 @@
  *  out-of-range.  Typically, this is to give it a "grayed-out" appearance.
  *  Note that color alone is not sufficient for color-blind users to
  *  differentiate the buttons, but since there's no harm in pressing these
- *  buttons, it's probably no big deal.  
+ *  buttons, it's probably no big deal.
  */
 
 .AnyTime-out-btn

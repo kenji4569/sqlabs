@@ -32,7 +32,7 @@ elRTE.prototype.i18Messages.hu = {
     'Paste'                   : 'Beillesztés',
     'Paste only text'         : 'Beillesztés csak szövegként',
     'Paste formatted text'    : 'Beillesztés formázott szövegként',
-    'Clean format'            : 'Formázás törlése', 
+    'Clean format'            : 'Formázás törlése',
     'Undo last action'        : 'Utolsó művelet visszavonása',
     'Redo previous action'    : 'Előző művelet újra',
     'Bold'                    : 'Félkövér',
@@ -110,13 +110,13 @@ elRTE.prototype.i18Messages.hu = {
     'Open file manger' : 'Fájlkezelő megnyitása',
     // copy
     'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'Ez a művelet le van tiltva a böngészőjében a biztonsági okból. Használja a parancsikont ehelyett.',
-    // format 
+    // format
     'Heading 1' : 'Címsor 1',
     'Heading 2' : 'Címsor 2',
     'Heading 3' : 'Címsor 3',
     'Heading 4' : 'Címsor 4',
     'Heading 5' : 'Címsor 5',
-    'Heading 6' : 'Címsor 6',    
+    'Heading 6' : 'Címsor 6',
     'Paragraph' : 'Bekezdés',
     'Address' : 'Cím',
     'Preformatted' : 'Előre formázott',
@@ -127,7 +127,7 @@ elRTE.prototype.i18Messages.hu = {
     'Normal (14pt)' : 'Normál (14pt)',
     'Large (18pt)'  : 'Nagy (18pt)',
     'Large (24pt)'  : 'Nagy (24pt)',
-    'Large (36pt)'  : 'Nagy (36pt)',                
+    'Large (36pt)'  : 'Nagy (36pt)',
     // bookmark
     'Bookmark name' : 'Horgony neve',
     // link
@@ -196,8 +196,8 @@ elRTE.prototype.i18Messages.hu = {
     'Ukranian localization' : 'Ukrán fordító',
     'Magyar localization' : 'Magyar fordító',
     'For more information about this software visit the' : 'További információkért a szoftverről keresse fel a ',
-    'elRTE website' : 'elRTE honlapját' 
-    
-    
+    'elRTE website' : 'elRTE honlapját'
+
+
 }
 })(jQuery);

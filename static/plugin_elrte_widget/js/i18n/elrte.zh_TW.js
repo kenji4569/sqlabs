@@ -112,7 +112,7 @@ elRTE.prototype.i18Messages.zh_TW = {
 	'Open file manger' : '開啟檔案管理員',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : '此動作被你的瀏覽器基於安全理由所禁止，請直接用快捷鍵。',
-	// format 
+	// format
 	'Heading 1'     : '標題 1',
 	'Heading 2'     : '標題 2',
 	'Heading 3'     : '標題 3',

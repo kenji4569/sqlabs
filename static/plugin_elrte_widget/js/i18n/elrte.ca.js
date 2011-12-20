@@ -108,7 +108,7 @@ elRTE.prototype.i18Messages.ca = {
 	'Open in' : 'Obre a',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'Per raons de seguretat aquesta operació no està disponible en el seu navegador. Utilitzi una drecera de teclat.',
-	// format 
+	// format
 	'Heading 1' : 'Encapçalament 1',
 	'Heading 2' : ' Encapçalament 2',
 	'Heading 3' : ' Encapçalament 3',

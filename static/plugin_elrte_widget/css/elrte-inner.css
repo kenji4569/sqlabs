@@ -1,11 +1,11 @@
 
-body.el-rte-rtl, body.el-rte-rtl * { direction:rtl; } 
+body.el-rte-rtl, body.el-rte-rtl * { direction:rtl; }
 
 body.el-rte-structure blockquote   { border:1px dotted #ccc; }
 body.el-rte-structure span         { outline:1px solid #ccc; }
 body.el-rte-structure table        { border:1px dotted #aaa; }
 body.el-rte-structure caption,
-body.el-rte-structure td, 
+body.el-rte-structure td,
 body.el-rte-structure th           { border:1px dotted #ccc; }
 
 body.el-rte-structure p            {
@@ -23,8 +23,8 @@ body.el-rte-structure div          {
 body.el-rte-structure a.elrte-anchor {
 	display:inline-block;
 	vertical-align:baseline;
-	width:12px; 
-	height:12px; 
+	width:12px;
+	height:12px;
 	border:1px dotted #ccc;
 	background: url('../images/elrte-toolbar.png') -564px -8px no-repeat;
 }

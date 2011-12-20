@@ -24,7 +24,7 @@ table.solidtable { width: 100%%; margin-bottom: 10px; border: 0; border-spacing:
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#e2e2e2, endColorstr=#d2d4d6);
     -ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#e2e2e2, endColorstr=#d2d4d6);
     border-bottom: 1px solid #DFE1E2;}
-    
+
     table.solidtable th span.icon svg path, table.solidtable th span.icon svg polygon, table.solidtable th span.icon svg rect, table.solidtable th span.icon svg circle {
       fill: #5e6469 !important; }
     table.solidtable th span.icon {
@@ -38,7 +38,7 @@ table.solidtable { width: 100%%; margin-bottom: 10px; border: 0; border-spacing:
     table.solidtable th a, table.solidtable th a:link, table.solidtable th a:visited {
       color: #5e6469;
       text-decoration: none;
-      display: block; 
+      display: block;
       max-height: 34px;
       overflow:hidden;}
     table.solidtable th a:hover { color: black; }
@@ -55,6 +55,6 @@ table.solidtable { width: 100%%; margin-bottom: 10px; border: 0; border-spacing:
   table.solidtable td {
     padding: 2px 5px 0px 5px;
     border-bottom: 1px solid #e8e8e8;
-    vertical-align: top; 
+    vertical-align: top;
     word-break: break-all;}
   table.solidtable tr.rowselected td { background: #fff0f0;  }

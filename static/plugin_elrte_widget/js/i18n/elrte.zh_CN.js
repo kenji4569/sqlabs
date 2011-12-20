@@ -111,7 +111,7 @@ elRTE.prototype.i18Messages.zh_CN = {
 	'Open in' : '打开到',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : '基于安全考虑，此动作无法在浏览器中进行，请直接按 Ctrl+V 试试。',
-	// format 
+	// format
 	'Heading 1' : '标题 1',
 	'Heading 2' : '标题 2',
 	'Heading 3' : '标题 3',
@@ -183,7 +183,7 @@ elRTE.prototype.i18Messages.zh_CN = {
 	'About elRTE'                  : '关于elRTE',
 	'Version'                      : '版本',
 	'Licence'                      : '许可证'
-	
-	
+
+
 }
 })(jQuery);

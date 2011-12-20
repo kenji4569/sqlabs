@@ -31,7 +31,7 @@ elRTE.prototype.i18Messages.ar = {
 	'Paste'                   : 'لصق',
 	'Paste only text'         : 'لصق النصوص فقط',
 	'Paste formatted text'    : 'لصق النصوص المنسقة',
-	'Clean format'            : 'إزالة التنسيقات', 
+	'Clean format'            : 'إزالة التنسيقات',
 	'Undo last action'        : 'التراجع عن أخر فعل',
 	'Redo previous action'    : 'تكرار أخر فعل ',
 	'Bold'                    : 'عريض',
@@ -46,8 +46,8 @@ elRTE.prototype.i18Messages.ar = {
 	'Align full'              : 'محاذاة بعرض الصفحة',
 	'Font color'              : 'لون الخط',
 	'Background color'        : 'لون الخلفية',
-	'Indent'                  : 'مسافة بادئة', 
-	'Outdent'                 : 'مسافة خاتمة', 
+	'Indent'                  : 'مسافة بادئة',
+	'Outdent'                 : 'مسافة خاتمة',
 	'Format'                  : 'النتسيق',
 	'Font size'               : 'قياس الخط',
 	'Font'                    : 'الخط',
@@ -108,13 +108,13 @@ elRTE.prototype.i18Messages.ar = {
 	'Open in' : '',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'هذه العملية معطلة لأسباب أمنية , استخدم الاختصار بدلاً عنها',
-	// format 
+	// format
 	'Heading 1' : 'عنوان رئيسي 1',
 	'Heading 2' : 'عنوان رئيسي 2',
 	'Heading 3' : 'عنوان رئيسي 3',
 	'Heading 4' : 'عنوان رئيسي 4',
 	'Heading 5' : 'عنوان رئيسي 5',
-	'Heading 6' : 'عنوان رئيسي 6',	
+	'Heading 6' : 'عنوان رئيسي 6',
 	'Paragraph' : 'مقطع نصي ',
 	'Address' : 'العنوان',
 	'Preformatted' : '',
@@ -125,7 +125,7 @@ elRTE.prototype.i18Messages.ar = {
 	'Normal (14pt)' : '',
 	'Large (18pt)'  : '',
 	'Large (24pt)'  : '',
-	'Large (36pt)'  : '',				
+	'Large (36pt)'  : '',
 	// bookmark
 	'Bookmark name' : 'اسم العلامة',
 	// link

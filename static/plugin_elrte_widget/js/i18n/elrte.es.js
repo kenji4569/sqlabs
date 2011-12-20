@@ -108,7 +108,7 @@ elRTE.prototype.i18Messages.es = {
 	'Open in' : 'Abrir en',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'Esta operación está desactivada en su navegador por razones de seguridad. Utilice en su lugar un comando de teclado.',
-	// format 
+	// format
 	'Heading 1' : 'Encabezado 1',
 	'Heading 2' : 'Encabezado 2',
 	'Heading 3' : 'Encabezado 3',
@@ -163,7 +163,7 @@ elRTE.prototype.i18Messages.es = {
 	'Cells'         : 'Celdas',
 	'Caption'       : 'Leyenda',
 	'Inner borders' : 'Bordes internos'
-	
-	
+
+
 }
 })(jQuery);

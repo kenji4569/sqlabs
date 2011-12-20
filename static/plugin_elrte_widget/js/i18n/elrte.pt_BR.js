@@ -108,7 +108,7 @@ elRTE.prototype.i18Messages.pt_BR = {
 	'Open in' : 'Abrir em',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'Esta operação está bloqueada em seu navegador. Utilice um atalho.',
-	// format 
+	// format
 	'Heading 1' : 'Cabeçalho 1',
 	'Heading 2' : 'Cabeçalho 2',
 	'Heading 3' : 'Cabeçalho 3',
@@ -162,6 +162,6 @@ elRTE.prototype.i18Messages.pt_BR = {
 	'Groups'        : 'Grupos',
 	'Cells'         : 'Células',
 	'Caption'       : 'Legenda',
-	'Inner borders' : 'Bordas internas'	
+	'Inner borders' : 'Bordas internas'
 }
 })(jQuery);

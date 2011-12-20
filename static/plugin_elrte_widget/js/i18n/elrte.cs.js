@@ -32,7 +32,7 @@ elRTE.prototype.i18Messages.cs = {
 	'Paste'                   : 'Vložit',
 	'Paste only text'         : 'Vložit pouze text',
 	'Paste formatted text'    : 'Vložit formátovaný text',
-	'Clean format'            : 'Vyčistit', 
+	'Clean format'            : 'Vyčistit',
 	'Undo last action'        : 'Zpět',
 	'Redo previous action'    : 'Znovu',
 	'Bold'                    : 'Tučné',
@@ -47,8 +47,8 @@ elRTE.prototype.i18Messages.cs = {
 	'Align full'              : 'Do bloku',
 	'Font color'              : 'Barva písma',
 	'Background color'        : 'Barva pozadí',
-	'Indent'                  : 'Odsadit', 
-	'Outdent'                 : 'Předsadit', 
+	'Indent'                  : 'Odsadit',
+	'Outdent'                 : 'Předsadit',
 	'Format'                  : 'Formát',
 	'Font size'               : 'Velikost',
 	'Font'                    : 'Písmo',
@@ -109,13 +109,13 @@ elRTE.prototype.i18Messages.cs = {
 	'Open in' : 'Otevřít v',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'Tato operace je ve vašem prohlížeči vypnutá kvůli bezpečnosti. Použijte klávesovou zkratku.',
-	// format 
+	// format
 	'Heading 1' : 'Nadpis 1',
 	'Heading 2' : 'Nadpis 2',
 	'Heading 3' : 'Nadpis 3',
 	'Heading 4' : 'Nadpis 4',
 	'Heading 5' : 'Nadpis 5',
-	'Heading 6' : 'Nadpis 6',	
+	'Heading 6' : 'Nadpis 6',
 	'Paragraph' : 'Odstavec',
 	'Address' : 'Adresa',
 	'Preformatted' : 'Předformátováno',
@@ -126,7 +126,7 @@ elRTE.prototype.i18Messages.cs = {
 	'Normal (14pt)' : 'Normální (14 pt)',
 	'Large (18pt)'  : 'Velké (18 pt)',
 	'Large (24pt)'  : 'Velké (24 pt)',
-	'Large (36pt)'  : 'Velké (36 pt)',				
+	'Large (36pt)'  : 'Velké (36 pt)',
 	// bookmark
 	'Bookmark name' : 'Jméno záložky',
 	// link
@@ -165,7 +165,7 @@ elRTE.prototype.i18Messages.cs = {
 	'Cells'         : 'Buňky',
 	'Caption'       : 'Popisek',
 	'Inner borders' : 'Vnitřní rámečky'
-	
-	
+
+
 }
 })(jQuery);

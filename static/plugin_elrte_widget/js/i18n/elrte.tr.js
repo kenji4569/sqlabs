@@ -32,7 +32,7 @@ elRTE.prototype.i18Messages.tr = {
 	'Paste'                   : 'Yapıştır',
 	'Paste only text'         : 'Yalnızca yazıyı yapıştır',
 	'Paste formatted text'    : 'Yazı biçimini yapıştır',
-	'Clean format'            : 'Biçimi temizle', 
+	'Clean format'            : 'Biçimi temizle',
 	'Undo last action'        : 'Son eylemi geri al',
 	'Redo previous action'    : 'Önceki eylemi geri dön',
 	'Bold'                    : 'Kalın',
@@ -110,7 +110,7 @@ elRTE.prototype.i18Messages.tr = {
 	'Open file manger' : 'Dosya yöneticisini aç',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'Bu işlem güvenlik nedeni üzerinde tarayıcınızda devre dışıdır. yerine kısayol kullanın.',
-	// format 
+	// format
 	'Heading 1'     : 'Başlık 1',
 	'Heading 2'     : 'Başlık 2',
 	'Heading 3'     : 'Başlık 3',
@@ -127,7 +127,7 @@ elRTE.prototype.i18Messages.tr = {
 	'Normal (14pt)' : 'Normal (14pt)',
 	'Large (18pt)'  : 'Büyük (18pt)',
 	'Large (24pt)'  : 'Büyük (24pt)',
-	'Large (36pt)'  : 'Büyük (36pt)',				
+	'Large (36pt)'  : 'Büyük (36pt)',
 	// bookmark
 	'Bookmark name' : 'Çapa adı',
 	// link

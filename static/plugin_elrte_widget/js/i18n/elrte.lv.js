@@ -31,7 +31,7 @@ elRTE.prototype.i18Messages.lv = {
 	'Paste'                   : 'Ievietot',
 	'Paste only text'         : 'Ievietot tikai tekstu',
 	'Paste formatted text'    : 'Ievietot formatētu tekstu',
-	'Clean format'            : 'Atcelt formatēšanu', 
+	'Clean format'            : 'Atcelt formatēšanu',
 	'Undo last action'        : 'Atcelt pēdējo darbību',
 	'Redo previous action'    : 'Atkārtot pēdējo darbību',
 	'Bold'                    : 'Treknraksts',
@@ -109,13 +109,13 @@ elRTE.prototype.i18Messages.lv = {
 	'Open file manger' : 'Atvērt failu pārvaldnieku',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'Dotā darbība jūsu pārlūkam ir liegta saistībā ar drošības aspektiem. Izmantojiet taustiņu kombināciju.',
-	// format 
+	// format
 	'Heading 1' : 'Virsraksts 1',
 	'Heading 2' : 'Virsraksts 2',
 	'Heading 3' : 'Virsraksts 3',
 	'Heading 4' : 'Virsraksts 4',
 	'Heading 5' : 'Virsraksts 5',
-	'Heading 6' : 'Virsraksts 6',	
+	'Heading 6' : 'Virsraksts 6',
 	'Paragraph' : 'Paragrāfs',
 	'Address' : 'Adrese',
 	'Preformatted' : '',
@@ -126,7 +126,7 @@ elRTE.prototype.i18Messages.lv = {
 	'Normal (14pt)' : 'Parasts (14pt)',
 	'Large (18pt)'  : 'Liels (18pt)',
 	'Large (24pt)'  : 'Ļoti liels(24pt)',
-	'Large (36pt)'  : 'Milzīgs (36pt)',				
+	'Large (36pt)'  : 'Milzīgs (36pt)',
 	// bookmark
 	'Bookmark name' : 'Grāmatzīmes vārds',
 	// link

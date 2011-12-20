@@ -38,7 +38,7 @@ elRTE.prototype.i18Messages.LANG_CODE = {
 	'Paste'                   : '',
 	'Paste only text'         : '',
 	'Paste formatted text'    : '',
-	'Clean format'            : '', 
+	'Clean format'            : '',
 	'Undo last action'        : '',
 	'Redo previous action'    : '',
 	'Bold'                    : '',
@@ -116,7 +116,7 @@ elRTE.prototype.i18Messages.LANG_CODE = {
 	'Open file manger' : '',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : '',
-	// format 
+	// format
 	'Heading 1'     : '',
 	'Heading 2'     : '',
 	'Heading 3'     : '',
@@ -133,7 +133,7 @@ elRTE.prototype.i18Messages.LANG_CODE = {
 	'Normal (14pt)' : '',
 	'Large (18pt)'  : '',
 	'Large (24pt)'  : '',
-	'Large (36pt)'  : '',				
+	'Large (36pt)'  : '',
 	// bookmark
 	'Bookmark name' : '',
 	// link

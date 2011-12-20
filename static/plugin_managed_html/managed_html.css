@@ -200,10 +200,10 @@ input[type="button"].managed_html_success_btn {
 
 /* -------------------------------------------------------------------------- */
 div.managed_html_spinner {
-  width:16px; 
-  height:16px; 
-  background: url(spinner.gif) no-repeat; 
-  position: absolute; 
+  width:16px;
+  height:16px;
+  background: url(spinner.gif) no-repeat;
+  position: absolute;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -306,7 +306,7 @@ margin-right: 0;
   margin-bottom: 0.5em;
   vertical-align: middle;
   text-align: left;}
-  
+
 .managed_html_dialog table.solidtable th, table.solidtable td {
   border-left: 1px solid #DDD;
   min-width: 60px;
@@ -321,35 +321,35 @@ margin-right: 0;
 .managed_html_dialog table.solidtable td {
   padding: 0px 5px 0px 5px;
   border-bottom: 1px solid #e8e8e8;
-  vertical-align: middle; 
+  vertical-align: middle;
   word-break: break-all;}
 .managed_html_dialog table.solidtable th a, table.solidtable th a:link, table.solidtable th a:visited {
   color: #5e6469;
   text-decoration: none;
-  display: block; 
+  display: block;
   max-height: 34px;
   overflow:hidden;}
 .managed_html_dialog table.solidtable th a:hover {
-  color: black; 
+  color: black;
 }
 .managed_html_dialog table.solidtable th a.orderby {
   background: url("orderby.png") no-repeat 0 4px;
-  padding-left: 13px; 
+  padding-left: 13px;
 }
 .managed_html_dialog table.solidtable th a.orderby-asc {
-  background-position: 0 -56px; 
+  background-position: 0 -56px;
 }
 .managed_html_dialog table.solidtable th a.orderby-desc {
-  background-position: 0 -26px; 
+  background-position: 0 -26px;
 }
 .managed_html_dialog table.solidtable th a.orderby-asc, table.solidtable th a.orderby-desc {
-  border-bottom: 1px solid #dfe1e2; 
+  border-bottom: 1px solid #dfe1e2;
 }
 .managed_html_dialog table.solidtable tr.even td { background: #f4f5f5; }
 .managed_html_dialog table.solidtable tr.rowselected td { background: #fff0f0; }
 
 
-.managed_html_dialog table.solidtable th.datetime, table.solidtable th.date, table.solidtable th.time, 
+.managed_html_dialog table.solidtable th.datetime, table.solidtable th.date, table.solidtable th.time,
 .managed_html_dialog table.solidtable th.reference {
   width: 95px;
 }
@@ -417,7 +417,7 @@ margin-right: 0;
   float: right;
   margin-bottom: 5px;
   font-size: 0.95em;
-  color: #b3bcc1; 
+  color: #b3bcc1;
 }
 
 .managed_html_dialog .index_footer {
@@ -428,7 +428,7 @@ margin-right: 0;
 }
 
 .managed_html_dialog div.paginator {
-  display: inline; margin-left: 10px; 
+  display: inline; margin-left: 10px;
   font-size: 1.0em; font-weight: bold; font-family: Helvetica, Arial, sans-serif;
 }
 .managed_html_dialog div.paginator a {
@@ -444,18 +444,18 @@ margin-right: 0;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#f9f9f9, endColorstr=#dddbdb);
   -ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#f9f9f9, endColorstr=#dddbdb);
   text-shadow: white 0 1px 0;
-  color: #777; 
+  color: #777;
 }
 .managed_html_dialog div.paginator a:hover {
   color: #444;
   box-shadow: 0 1px 3px #888888;
   -moz-box-shadow: 0 1px 3px #888888;
-  -webkit-box-shadow: 0 1px 3px #888888; 
+  -webkit-box-shadow: 0 1px 3px #888888;
 }
 .managed_html_dialog div.paginator a:active {
   box-shadow: inset 0 1px 2px #aaaaaa;
   -moz-box-shadow: inset 0 1px 2px #aaaaaa;
-  -webkit-box-shadow: inset 0 1px 2px #aaaaaa; 
+  -webkit-box-shadow: inset 0 1px 2px #aaaaaa;
 }
 .managed_html_dialog div.paginator em {
   box-shadow: 0 1px 2px #aaaaaa;
@@ -470,18 +470,18 @@ margin-right: 0;
   text-decoration: none;
   font-weight: bold;
   font-size: 1.0em;
-  color: #efefef; 
+  color: #efefef;
 }
 .managed_html_dialog div.paginator em:hover {
   color: #fff;
   box-shadow: 0 1px 3px #888888;
   -moz-box-shadow: 0 1px 3px #888888;
-  -webkit-box-shadow: 0 1px 3px #888888; 
+  -webkit-box-shadow: 0 1px 3px #888888;
 }
 .managed_html_dialog div.paginator em:active {
   box-shadow: inset 0 1px 2px black;
   -moz-box-shadow: inset 0 1px 2px black;
-  -webkit-box-shadow: inset 0 1px 2px black; 
+  -webkit-box-shadow: inset 0 1px 2px black;
 }
 .managed_html_dialog div.paginator a, div.paginator em {
   margin-right: 4px;
@@ -575,10 +575,10 @@ padding: .4em 1em .4em 1.8em;
 .managed_html_dialog a.ui-btn:hover {
   color: #3C3C3D;
   text-decoration: none;
-  border: 1px solid #fafafa;  
-  -webkit-box-shadow: 0px 0px 8px #007eff;  
-  -moz-box-shadow: 0px 0px 7px #007eff;  
-  box-shadow: 0px 0px 7px #007eff;  
+  border: 1px solid #fafafa;
+  -webkit-box-shadow: 0px 0px 8px #007eff;
+  -moz-box-shadow: 0px 0px 7px #007eff;
+  box-shadow: 0px 0px 7px #007eff;
 }
 
 .ui-icon-carat-1-n { background-position: 0 0; }

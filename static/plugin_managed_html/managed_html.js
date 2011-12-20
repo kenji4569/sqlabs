@@ -7,13 +7,13 @@
   }, function() {
     $(this).children('.managed_html_contents_ctrl').hide();
   });
-  
+
   $('.managed_html_content').hover(function(){
     $(this).addClass('managed_html_editing');
   }, function() {
     $(this).removeClass('managed_html_editing');
   });
-  
+
   // ---------------------------------------------------------------------------
   // top-bar
   // ---------------------------------------------------------------------------
@@ -22,7 +22,7 @@
   var edit_url = $("meta[name=managed_html_edit_url]").attr("content");
   var preview_url = $("meta[name=managed_html_preview_url]").attr("content");
   var live_url = $("meta[name=managed_html_live_url]").attr("content");
-  
+
   var height = 40;
   var padding = parseInt($('body').css('padding-top'));
   $('body').css('padding-top', (padding+height) + 'px');
@@ -41,10 +41,10 @@
       nav.append($('<li class="active"><a href="#">Preview</a></li>'));
   }
   nav.append($('<li><a href="#" onclick="managed_html_show_page_crud();">+ Page</a></li>'));
-  
+
   var secondary_nav = $('<ul class="managed_html_secondary_nav"></ul>');
   secondary_nav.append($('<li><a target="_blank" href="'+live_url+'" style="color:pink;">Check Live Site</a></li>'));
-  
+
   inner.append(brand);
   inner.append(nav);
   inner.append(secondary_nav);
@@ -79,7 +79,7 @@ function managed_html_web2py_trap_form(action,target) {
       if(!form.hasClass('no_trap'))
         form.submit(function(obj){
          var data = params2json(form.serializeArray());
-         
+
          // === For elrte editor widget ===
          var iframe = form.find('iframe');
          if (iframe.length>0) {
@@ -87,7 +87,7 @@ function managed_html_web2py_trap_form(action,target) {
             var value = form.find('iframe:first').contents().find('body').html();
             data[key] = value;
          }
-         
+
          jQuery('.flash').hide().html('');
          managed_html_web2py_ajax_page('post',action,data,target);
          return false;
@@ -105,23 +105,23 @@ function managed_html_web2py_ajax_page(method,action,data,target) {
       jQuery('#'+target).managed_html_spinner('remove');
       jQuery('.managed_html_spinner').hide(); // TODO
       var html=xhr.responseText;
-      var content=xhr.getResponseHeader('web2py-component-content'); 
-      var command=xhr.getResponseHeader('web2py-component-command'); 
+      var content=xhr.getResponseHeader('web2py-component-content');
+      var command=xhr.getResponseHeader('web2py-component-command');
       var flash=xhr.getResponseHeader('web2py-component-flash');
       var t = jQuery('#'+target);
-      if(content=='prepend') t.prepend(html); 
+      if(content=='prepend') t.prepend(html);
       else if(content=='append') t.append(html);
-      else if(content!='hide') t.html(html); 
+      else if(content!='hide') t.html(html);
       managed_html_web2py_trap_form(action,target);
       web2py_trap_link(target);
-      web2py_ajax_init();  
+      web2py_ajax_init();
       if(command) eval(command);
       if(flash) jQuery('.flash').html(flash).slideDown();
       }
     });
 }
 function managed_html_ajax_page(action, data, target) {
-  jQuery('.flash').hide().html(''); 
+  jQuery('.flash').hide().html('');
   managed_html_editing(target, data._action=='edit');
   managed_html_web2py_ajax_page('post', action, data, target);
 }
@@ -137,17 +137,17 @@ function managed_html_editing(target, true_or_fase) {
     ctrl_el.find('.managed_html_back_btn').hide();
     ctrl_el.find('.managed_html_submit_btn').hide();
     ctrl_el.find('.managed_html_main_comment').hide();
-    
+
     ctrl_el.find('.managed_html_edit_btn').show();
-    
+
     ctrl_el.find('.managed_html_contents_ctrl').hide();
   } else if (true_or_fase==true) {
     ctrl_el.find('.managed_html_back_btn').show();
     ctrl_el.find('.managed_html_submit_btn').show();
     ctrl_el.find('.managed_html_main_comment').show();
-    
+
     ctrl_el.find('.managed_html_edit_btn').hide();
-    
+
     ctrl_el.find('.managed_html_publish_now_btn').hide();
   }
 }
@@ -172,7 +172,7 @@ function managed_html_movable(name, indices, keyword, url, confirm_message) {
   function _get_index(_el) {return parseInt(_el.attr('id').split('_').slice(-1)[0]);}
   function _movable(el) {
     el.draggable({
-        opacity:0.5, cursor:"move", revert: 'invalid', snap: true, 
+        opacity:0.5, cursor:"move", revert: 'invalid', snap: true,
         start: function(event, ui){jQuery(event.target).css('background', 'pink');},
         stop: function(event, ui){
             jQuery(event.target).css('background', 'transparent');
@@ -214,7 +214,7 @@ function managed_html_movable(name, indices, keyword, url, confirm_message) {
               _movable(to_parent.children(".managed_html_name_" + name));
               from_parent.children(".managed_html_name_" + name);
               to_parent.children(".managed_html_name_" + name);
-                     
+
               $('.managed_html_block').unbind('hover').hover(function(){
                 $(this).children('.managed_html_contents_ctrl').show();
               }, function() {
@@ -226,9 +226,9 @@ function managed_html_movable(name, indices, keyword, url, confirm_message) {
                 $(this).removeClass('managed_html_editing');
               });
               $('.managed_html_block a').unbind("click").click(function(e) {e.preventDefault();});
-              
+
             },
-            error: function(r){ 
+            error: function(r){
               from_el.css({left:'0px', top:'0px'});
             },
             beforeSend:function(xhr) {
@@ -243,20 +243,20 @@ function managed_html_movable(name, indices, keyword, url, confirm_message) {
             }
           });
         }
-      }); 
+      });
     }
     _movable(jQuery(".managed_html_name_" + name));
 }
 
 /*
     Original by jquery.spinner.js
-    
+
     Spinner provides a simple approach for adding and removing a preloader
     for your web applications. Usage is as simple as calling $('elem').spinner() and
     subsequently $('elem').spinner.remove(). You may create your own preloader
     at http://www.ajaxload.info. Please note that if you use a custom preloader,
     you must pass in the new height and width as options.
-    
+
     Copyright (C) 2010 Corey Ballou
     Website: http://www.jqueryin.com
     Documentation: http://www.jqueryin.com/projects/spinner-jquery-preloader-plugin/
@@ -282,7 +282,7 @@ function managed_html_movable(name, indices, keyword, url, confirm_message) {
         return this.each(function() {
             var l=0, t=0, w=0, h=0, shim=0, $s;
             var $this = $(this);
-            
+
             // removal handling
             if (options == 'remove' || options == 'close') {
                 var $s = $this.data('spinner');
@@ -295,17 +295,17 @@ function managed_html_movable(name, indices, keyword, url, confirm_message) {
                     return;
                 }
             }
-            
+
             // retrieve element positioning
             var pos = $this.offset();
             w = $this.outerWidth();
             h = $this.outerHeight();
-            
+
             // calculate vertical centering
             if (h > opts.height) shim = Math.round((h - opts.height)/ 2);
             else if (h < opts.height) shim = 0 - Math.round((opts.height - h) / 2);
             t = pos.top + shim + 'px';
-            
+
             // calculate horizontal positioning
             if (opts.position == 'right') {
                 l = pos.left + w + 10 + 'px';
@@ -314,21 +314,21 @@ function managed_html_movable(name, indices, keyword, url, confirm_message) {
             } else {
                 l = pos.left + Math.round(.5 * w) - Math.round(.5 * opts.width) + 'px';
             }
-            
+
             // call start callback
             opts.onStart.call(this);
-            
+
             // hide element?
             if (opts.hide) $this.css('visibility', 'hidden');
-            
+
             // create the spinner and attach
             $s = $('<div class="managed_html_spinner" style="left: ' + l +'; top: ' + t + '; width: ' + opts.width + 'px; height: ' + opts.height + 'px; z-index: ' + opts.zIndex + ';"></div>').appendTo('body');
-            
+
             // removal handling
             $this.data('spinner', $s).data('opts', opts);
         });
     };
-    
+
     // default spinner options
     $.fn.managed_html_spinner.defaults = {
         position    : 'left'       // left, right, center

@@ -39,7 +39,7 @@ License: This file is released under BSD and MIT
 
 */
 
-/*     
+/*
   credit is left where credit is due.
   additionally, much inspiration was taken from these projects:
     yui.yahooapis.com/2.8.1/build/base/base.css
@@ -47,7 +47,7 @@ License: This file is released under BSD and MIT
     praegnanz.de/weblog/htmlcssjs-kickstart
 */
 
-/* 
+/*
   html5doctor.com Reset Stylesheet (Eric Meyer's Reset Reloaded + HTML5 baseline)
   v1.4 2009-07-27 | Authors: Eric Meyer & Richard Clark
   html5doctor.com/html-5-reset-stylesheet/
@@ -62,7 +62,7 @@ b, i,
 dl, dt, dd, ol, ul, li,
 fieldset, form, label, legend,
 table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, figcaption, figure, 
+article, aside, canvas, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section, summary,
 time, mark, audio, video {
   margin:0;
@@ -72,10 +72,10 @@ time, mark, audio, video {
   font-size:100%;
   vertical-align:baseline;
   background:transparent;
-}                  
+}
 
 article, aside, details, figcaption, figure,
-footer, header, hgroup, menu, nav, section { 
+footer, header, hgroup, menu, nav, section {
     display:block;
 }
 
@@ -122,27 +122,27 @@ body { font:13px/1.231 sans-serif; *font-size:small; } /* hack retained to prese
 select, input, textarea, button { font:99% sans-serif; }
 
 
-/* normalize monospace sizing 
+/* normalize monospace sizing
  * en.wikipedia.org/wiki/MediaWiki_talk:Common.css/Archive_11#Teletype_style_fix_for_Chrome
  */
 pre, code, kbd, samp { font-family: monospace, sans-serif; }
 
-/* 
- * minimal base styles 
+/*
+ * minimal base styles
  */
 
-/* #444 looks better than black: twitter.com/H_FJ/statuses/11800719859 */ 
+/* #444 looks better than black: twitter.com/H_FJ/statuses/11800719859 */
 body, select, input, textarea { color:#444; }
 
 /* Headers (h1,h2,etc) have no default font-size or margin,
-   you'll want to define those yourself. */ 
- 
-/* www.aestheticallyloyal.com/public/optimize-legibility/ */ 
+   you'll want to define those yourself. */
+
+/* www.aestheticallyloyal.com/public/optimize-legibility/ */
 h1,h2,h3,h4,h5,h6 { font-weight: bold; }
 
-/* always force a scrollbar in non-IE */ 
+/* always force a scrollbar in non-IE */
 html { overflow-y: scroll; }
- 
+
 /* Accessible focus treatment: people.opera.com/patrickl/experiments/keyboard/test */
 a:hover, a:active { outline: none; }
 
@@ -153,19 +153,19 @@ ul, ol { margin-left: 1.8em; }
 ol { list-style-type: decimal; }
 
 /* Remove margins for navigation lists */
-nav ul, nav li { margin: 0; } 
+nav ul, nav li { margin: 0; }
 
 small { font-size:85%; }
 strong, th { font-weight: bold; }
 
-td, td img { vertical-align:top; } 
+td, td img { vertical-align:top; }
 
 sub { vertical-align: sub; font-size: smaller; }
 sup { vertical-align: super; font-size: smaller; }
 
-pre { 
-  padding: 15px; 
-  
+pre {
+  padding: 15px;
+
   /* www.pathf.com/blogs/2008/05/formatting-quoted-code-in-blog-posts-css21-white-space-pre-wrap/ */
   white-space: pre; /* CSS2 */
   white-space: pre-wrap; /* CSS 2.1 */
@@ -187,41 +187,41 @@ input[type="checkbox"] { vertical-align: bottom; }
 /* hand cursor on clickable input elements */
 label, input[type=button], input[type=submit], button { cursor: pointer; }
 
-/* webkit browsers add a 2px margin outside the chrome of form elements */  
+/* webkit browsers add a 2px margin outside the chrome of form elements */
 button, input, select, textarea { margin: 0; }
 
 /* colors for form validity */
 input:valid, textarea:valid   {  }
-input:invalid, textarea:invalid { 
+input:invalid, textarea:invalid {
       border-radius: 1px;
-    -moz-box-shadow: 0px 0px 5px red; 
- -webkit-box-shadow: 0px 0px 5px red; 
+    -moz-box-shadow: 0px 0px 5px red;
+ -webkit-box-shadow: 0px 0px 5px red;
          box-shadow: 0px 0px 5px red;
 }
-.no-boxshadow input:invalid, 
+.no-boxshadow input:invalid,
 .no-boxshadow textarea:invalid { background-color: #f0dddd; }
 
 
 /* These selection declarations have to be separate.
-   No text-shadow: twitter.com/miketaylr/status/12228805301 
+   No text-shadow: twitter.com/miketaylr/status/12228805301
    Also: hot pink. */
 ::-moz-selection{ background: #555; color:#fff; text-shadow: none; }
-::selection { background:#555; color:#fff; text-shadow: none; } 
+::selection { background:#555; color:#fff; text-shadow: none; }
 
 /*  j.mp/webkit-tap-highlight-color */
-a:link { -webkit-tap-highlight-color: #555; } 
+a:link { -webkit-tap-highlight-color: #555; }
 
 
-/* make buttons play nice in IE:    
+/* make buttons play nice in IE:
    www.viget.com/inspire/styling-the-button-element-in-internet-explorer/ */
 button {  width: auto; overflow: visible; }
- 
-/* bicubic resizing for non-native sized IMG: 
+
+/* bicubic resizing for non-native sized IMG:
    code.flickr.com/blog/2008/11/12/on-ui-quality-the-little-things-client-side-image-resizing/ */
 .ie7 img { -ms-interpolation-mode: bicubic; }
 
-/* 
- * Non-semantic helper classes 
+/*
+ * Non-semantic helper classes
  */
 
 /* for image replacement */
@@ -229,12 +229,12 @@ button {  width: auto; overflow: visible; }
 
 /* Hide for both screenreaders and browsers
    css-discuss.incutio.com/wiki/Screenreader_Visibility */
-.hidden { display:none; } 
+.hidden { display:none; }
 
-/* Hide only visually, but have it available for screenreaders 
-   www.webaim.org/techniques/css/invisiblecontent/ 
+/* Hide only visually, but have it available for screenreaders
+   www.webaim.org/techniques/css/invisiblecontent/
    Solution from: j.mp/visuallyhidden - Thanks Jonathan Neal! */
-.visuallyhidden { position:absolute !important;    
+.visuallyhidden { position:absolute !important;
   clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
   clip: rect(1px, 1px, 1px, 1px); }
 
@@ -243,8 +243,8 @@ button {  width: auto; overflow: visible; }
 
 /* >> The Magnificent CLEARFIX: Updated to prevent margin-collapsing on child elements << j.mp/bestclearfix */
 .clearfix:before, .clearfix:after {
-  content: "\0020"; display: block; height: 0; visibility: hidden;    
-} 
+  content: "\0020"; display: block; height: 0; visibility: hidden;
+}
 
 .clearfix:after { clear: both; }
 /* Fix clearfix: blueprintcss.lighthouseapp.com/projects/15318/tickets/5-extra-margin-padding-bottom-of-page */
@@ -294,34 +294,34 @@ blockquote {
 
 input[type=text], input[type=password], textarea, select {
     margin: 2px 15px 2px 5px;
-    width: 280px;      
+    width: 280px;
     background: #fff;
     color: #555;
-    border: 1px solid #dedede; 
+    border: 1px solid #dedede;
     -moz-border-radius: 2px;
     -webkit-border-radius: 2px;
-    border-radius: 2px;       
+    border-radius: 2px;
     font-size: 12px;
 }
 
 input[type=text], input[type=password] {
-    height: 16px;  
+    height: 16px;
 }
 
 select[multiple=multiple] {
-    height: 90px;  
+    height: 90px;
 }
 
 input[type=submit], input[type=button], button {
     margin: 0px;
     /*width: 85px;*/
-    height: 22px;    
+    height: 22px;
     background: #eaeaea;
     color: #555;
     border: 1px solid #dedede;
     -moz-border-radius: 2px;
     -webkit-border-radius: 2px;
-    border-radius: 2px;    
+    border-radius: 2px;
 }
 input[type=submit]:disabled, input[type=button]:disabled, button:disabled {
     background: #ddd;
@@ -336,7 +336,7 @@ input:focus, textarea:focus { background: #fafafa; }
 
 p {text-indent:30px;}
 
-p, blockquote {    
+p, blockquote {
     margin-bottom: 10px;
 }
 
@@ -357,15 +357,15 @@ h6 {font-size: 0.8em;}
     margin: 0 auto;
     padding: 0;
 }
-#wrapper {margin: 0 auto;} 
-#wrapper {background-color: #fff; padding: 5px;} 
+#wrapper {margin: 0 auto;}
+#wrapper {background-color: #fff; padding: 5px;}
 #statusbar { margin: 5px 0px 20px 0px;}
-#footer {     
-    padding: 5px;    
+#footer {
+    padding: 5px;
 }
-#statusbar, #footer {    
-    background: #eaeaea; 
-    border-top: 1px #aaa solid;    
+#statusbar, #footer {
+    background: #eaeaea;
+    border-top: 1px #aaa solid;
 }
 #logo {
     width: 68px;
@@ -379,25 +379,25 @@ h6 {font-size: 0.8em;}
 #right_sidebar { width: 160px; float:right; display: none; }
 #left_sidebar { width: 160px; float:left; display: none; }
 #content { float: left; /*width: 740px;*//*width: 63%;*/ /*width: 640px; float:left;*/ } /* uncomment this if you are going to use sidebars */
- 
+
 .auth_navbar {
    top: 0px;
    float: right;
-   padding: 3px 10px 3px 10px; 
+   padding: 3px 10px 3px 10px;
 }
 
 /*********** web2py specific ***********/
 div.flash {
     font-weight: bold;
     display: none;
-    position: fixed;    
+    position: fixed;
     padding: 10px;
     top: 40px;
     right: 10px;
     min-width: 280px;
     opacity: 0.85;
-    margin: 0px 0px 10px 10px;    
-    color: #fff;    
+    margin: 0px 0px 10px 10px;
+    color: #fff;
     vertical-align: middle;
     cursor: pointer;
     background: #000;
@@ -416,8 +416,8 @@ div.error {
  * CSS 3 Buttons
  * http://github.com/michenriksen/css3buttons
  * created by Michael Henriksen
- * License: Unlicense 
- * 
+ * License: Unlicense
+ *
  * *******************/
 
 a.button { display: inline-block; padding: 3px 5px 3px 5px; font-family: 'lucida grande', tahoma, verdana, arial, sans-serif; font-size: 12px; color: #3C3C3D; text-shadow: 1px 1px 0 #FFFFFF; background: #ECECEC url('../images/css3buttons_backgrounds.png') 0 0 no-repeat; white-space: nowrap; overflow: visible; cursor: pointer; text-decoration: none; border: 1px solid #CACACA; -webkit-border-radius: 2px; -moz-border-radius: 2px; -webkit-background-clip: padding-box; border-radius: 2px; outline: none; position: relative; zoom: 1; *display: inline; }
@@ -655,9 +655,9 @@ max-height: 4.65em;
 float: left;
 border: 5px solid #fff;
 -moz-border-radius: 6px;
--webkit-border-radius: 6px; 
+-webkit-border-radius: 6px;
 box-shadow: 0 0 6px #979797;
--moz-box-shadow: 0 0 6px #979797;  
+-moz-box-shadow: 0 0 6px #979797;
 -webkit-box-shadow: 0 0 6px #979797;
 }
 
@@ -743,39 +743,39 @@ font-weight: bold;
  * Media queries for responsive design
  */
 
-@media all and (orientation:portrait) { 
+@media all and (orientation:portrait) {
   /* Style adjustments for portrait mode goes here */
-  
+
 }
 
-@media all and (orientation:landscape) { 
+@media all and (orientation:landscape) {
   /* Style adjustments for landscape mode goes here */
-  
+
 }
 
-/* Grade-A Mobile Browsers (Opera Mobile, iPhone Safari, Android Chrome)  
+/* Grade-A Mobile Browsers (Opera Mobile, iPhone Safari, Android Chrome)
    Consider this: www.cloudfour.com/css-media-query-for-mobile-is-fools-gold/ */
 @media screen and (max-device-width: 480px) {
-  
-  
+
+
   /* Uncomment if you don't want iOS and WinMobile to mobile-optimize the text for you
-     j.mp/textsizeadjust 
+     j.mp/textsizeadjust
   html { -webkit-text-size-adjust:none; -ms-text-size-adjust:none; } */
 }
 
 
-/* 
+/*
  * print styles
- * inlined to avoid required HTTP connection www.phpied.com/delay-loading-your-print-css/ 
+ * inlined to avoid required HTTP connection www.phpied.com/delay-loading-your-print-css/
  */
 @media print {
   * { background: transparent !important; color: #444 !important; text-shadow: none !important; }
   a, a:visited { color: #444 !important; text-decoration: underline; }
-  a:after { content: " (" attr(href) ")"; } 
+  a:after { content: " (" attr(href) ")"; }
   abbr:after { content: " (" attr(title) ")"; }
   .ir a:after { content: ""; }  /* Don't show links for images */
   pre, blockquote { border: 1px solid #999; page-break-inside: avoid; }
-  thead { display: table-header-group; } /* css-discuss.incutio.com/wiki/Printing_Tables */ 
+  thead { display: table-header-group; } /* css-discuss.incutio.com/wiki/Printing_Tables */
   tr, img { page-break-inside: avoid; }
   @page { margin: 0.5cm; }
   p, h2, h3 { orphans: 3; widows: 3; }

@@ -32,7 +32,7 @@ elRTE.prototype.i18Messages.jp = {
 	'Paste'                   : '貼り付け',
 	'Paste only text'         : 'テキストのみ貼り付け',
 	'Paste formatted text'    : 'フォーマットされたテキストの貼り付け',
-	'Clean format'            : 'フォーマット消去', 
+	'Clean format'            : 'フォーマット消去',
 	'Undo last action'        : '元に戻す',
 	'Redo previous action'    : 'やり直し',
 	'Bold'                    : '太字',
@@ -47,8 +47,8 @@ elRTE.prototype.i18Messages.jp = {
 	'Align full'              : '両端揃え',
 	'Font color'              : 'テキスト色',
 	'Background color'        : '背景色',
-	'Indent'                  : 'インデント', 
-	'Outdent'                 : 'アウトデント', 
+	'Indent'                  : 'インデント',
+	'Outdent'                 : 'アウトデント',
 	'Format'                  : 'フォーマット',
 	'Font size'               : 'サイズ',
 	'Font'                    : 'フォント',
@@ -109,7 +109,7 @@ elRTE.prototype.i18Messages.jp = {
 	'Open in' : 'Open in',
 	// copy
 	'This operation is disabled in your browser on security reason. Use shortcut instead.' : 'この機能はお使いのブラウザではセキュリティの観点からご利用できません。ショートカットをご利用ください。',
-	// format 
+	// format
 	'Heading 1' : '見出し1',
 	'Heading 2' : '見出し2',
 	'Heading 3' : '見出し3',
@@ -183,7 +183,7 @@ elRTE.prototype.i18Messages.jp = {
 	'Ukranian localization' : 'ウクライナ語化ローカライゼーション',
 	'For more information about this software visit the' : '次のURLにてこのソフトウェアのより詳しい情報を公開しています。',
 	'elRTE website' : 'elRTE ウェブサイト'
-	
-	
+
+
 }
 })(jQuery);
