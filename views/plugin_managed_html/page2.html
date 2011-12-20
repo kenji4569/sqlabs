@@ -19,16 +19,11 @@
   {{@managed_html.render('movie_block', 
       Field('movie', widget=managed_html.movie_widget, comment='Upload Movie'))
   def _block(content):}}
-    <script type="text/javascript" src="{{=URL('static', 'plugin_managed_html/jwplayer/jwplayer.js')}}"></script>
-    <div id="movie1">Loading the player ...</div> 
-    <script type="text/javascript"> 
-      jwplayer("movie1").setup({ 
-        flashplayer: "{{=URL('static', 'plugin_managed_html/jwplayer/player.swf')}}", 
-        {{if content.movie:}}
-          file: "{{=URL('static', 'plugin_managed_html/jwplayer/video.mp4')}}", 
-        {{pass}}
-        height: 270, width: 480 }); 
-    </script>
+    <video id="example_video_1" class="video-js" width="480" height="270"
+           controls="controls" preload="auto" 
+           src="{{=managed_html.settings.upload(content.movie)}}"
+           {{if content.thumbnail:}}poster="{{=managed_html.settings.upload(content.thumbnail)}}"{{pass}}>
+    </video>
   {{pass}}
   {{_block()}}
   </div>
