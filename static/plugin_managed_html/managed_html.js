@@ -40,7 +40,6 @@
   } else {
       nav.append($('<li class="active"><a href="#">Preview</a></li>'));
   }
-  nav.append($('<li><a href="#" onclick="managed_html_show_page_crud();">+ Page</a></li>'));
   
   var secondary_nav = $('<ul class="managed_html_secondary_nav"></ul>');
   secondary_nav.append($('<li><a target="_blank" href="'+live_url+'" style="color:pink;">Check Live Site</a></li>'));
@@ -51,11 +50,6 @@
   topbar.append(inner);
   $('body').prepend(topbar);
 })})(jQuery);
-
-// for top bar new button
-function managed_html_show_page_crud() {
-  eval($("meta[name=managed_html_show_page_crud]").attr("content"));
-}
 
 
 // ---------------------------------------------------------------------------
