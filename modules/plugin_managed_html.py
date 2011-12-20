@@ -306,7 +306,7 @@ if(this.checked) {
         from plugin_dialog import DIALOG
         image_chooser = DIALOG(title=T('Select an image'), close_button=T('close'),
             content=LOAD(url=URL(args=current.request.args, 
-                                 vars={FILE_GRID_KEYWORD % file_type:True}), ajax=True),
+                                 vars={FILE_GRID_KEYWORD % 'image':True}), ajax=True),
             onclose='jQuery(document.body).trigger("managed_html_file_selected", "");',
             _id='managed_html_file_chooser', _class='managed_html_dialog')
         # file_chooser = # TODO
