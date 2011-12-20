@@ -31,15 +31,15 @@ managed_html.settings.image_crud =LOAD(
 ### define tables ##############################################################
 managed_html.define_tables()
 table_content = managed_html.settings.table_content
-table_image = managed_html.settings.table_image
-table_image.name.comment = '<- upload an image (max file size=10k)'
-table_image.name.requires = [IS_UPLOADIFY_LENGTH(10240, 1), IS_UPLOADIFY_IMAGE()]
+table_file = managed_html.settings.table_file
+table_file.name.comment = '<- upload an image (max file size=10k)'
+table_file.name.requires = [IS_UPLOADIFY_LENGTH(10240, 1), IS_UPLOADIFY_IMAGE()]
 
 ### populate records ###########################################################
 import datetime
 if db(table_content.created_on<request.now-datetime.timedelta(minutes=60)).count():
     table_content.truncate()
-    table_image.truncate()
+    table_file.truncate()
     session.flash = 'the database has been refreshed'
     redirect(managed_html.edit_url('page1'))
 

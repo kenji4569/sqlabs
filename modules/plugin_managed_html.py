@@ -9,10 +9,10 @@ import os
 LIVE_MODE = '_managed_html_live'
 EDIT_MODE = '_managed_html_edit'
 PREVIEW_MODE = '_managed_html_preview'
+    
+IMAGE_GRID_KEYWORD = '_managed_html_image_grid'
 
 class ManagedHTML(object):
-
-    _image_grid_keyword = 'managed_html_image_grid'
 
     def __init__(self, db, keyword='_managed_html'):
         self.db, self.keyword = db, keyword
@@ -31,13 +31,10 @@ class ManagedHTML(object):
         settings.table_content_name = 'managed_html_content'
         settings.table_content = None
         
-        settings.table_image_name = 'managed_html_image'
-        settings.table_image = None
+        settings.table_file_name = 'managed_html_file'
+        settings.table_file = None
         
         settings.extra_fields = {}
-        
-        settings.text_widget = None
-        # settings.upload_widget = None
         
         settings.text_widget_cssfiles = [] # ex) [URL('static', 'css/base.css')]
         
@@ -85,8 +82,8 @@ class ManagedHTML(object):
                 *settings.extra_fields.get(settings.table_content_name, []))
         settings.table_content = db[settings.table_content_name]
             
-        if not settings.table_image_name in db.tables:
-            table = db.define_table(settings.table_image_name,
+        if not settings.table_file_name in db.tables:
+            table = db.define_table(settings.table_file_name,
                 Field('name', 'upload', autodelete=True),
                 # Field('original_name'),
                 Field('keyword'),
@@ -94,9 +91,9 @@ class ManagedHTML(object):
                 Field('extension', length=16, readable=False, writable=False),
                 Field('thumbnail', 'upload', autodelete=True, readable=False, writable=False),
                 migrate=migrate, fake_migrate=fake_migrate,
-                *settings.extra_fields.get(settings.table_image_name, []))
-        settings.table_image = db[settings.table_image_name]
-            
+                *settings.extra_fields.get(settings.table_file_name, []))
+        settings.table_file = db[settings.table_file_name]
+        
     def switch_mode(self):
         settings, request, response = self.settings, current.request, current.response
         self.view_mode = request.args(0)
@@ -115,9 +112,9 @@ class ManagedHTML(object):
         
         if self.view_mode in (EDIT_MODE, PREVIEW_MODE):
             if self.view_mode == EDIT_MODE:
-                if (self._image_grid_keyword in current.request.vars or 
-                        current.request.args(1) == self._image_grid_keyword):
-                    raise HTTP(200, self.image_grid())
+                if (IMAGE_GRID_KEYWORD in current.request.vars or 
+                        current.request.args(1) == IMAGE_GRID_KEYWORD):
+                    raise HTTP(200, self.file_grid(IMAGE_GRID_KEYWORD))
                 
                 response.meta.managed_html_preview_url = settings.URL(
                     args=[PREVIEW_MODE]+request.args[1:], vars=request.vars)
@@ -131,12 +128,12 @@ class ManagedHTML(object):
                 title=T('+ Page'), close_button=T('close'), 
                 content=settings.page_crud).show()
         
-    def image_grid(self):
+    def file_grid(self, request_keyword):
         from plugin_solidgrid import SolidGrid
         from plugin_uploadify_widget import (
             uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_LENGTH
         )
-        table_image = self.settings.table_image
+        table_file = self.settings.table_file
         request = current.request
         solidgrid = SolidGrid(renderstyle=True)
         
@@ -153,23 +150,23 @@ class ManagedHTML(object):
                 attributes['extra_vars'] = {'_signature': request.get_vars._signature,
                                             '_hmac_key': current.session.auth.hmac_key}
             return uploadify_widget(field, value, download_url, **attributes)
-        table_image.name.widget = _uploadify_widget
+        table_file.name.widget = _uploadify_widget
         
-        table_image.name.uploadfolder = self.settings.uploadfolder
+        table_file.name.uploadfolder = self.settings.uploadfolder
 
         extracolumns = [
             {'label': 'Select', 'width': '150px;',
                 'content':lambda row, rc: 
                  SPAN(solidgrid.recordbutton('ui-icon-seek-next', 'Select',
                             '#', _onclick="""
-jQuery(document.body).trigger('managed_html_image_selected', '%s');return false;
+jQuery(document.body).trigger('managed_html_file_selected', '%s');return false;
                             """ % row.name, _class='ui-btn'))},
-             {'label': 'Image', 'width': '150px;',
+             {'label': 'Thumbnail', 'width': '150px;',
               'content':lambda row, rc: DIV(
                 self.file_represent(row.thumbnail),
                 _style='word-break:break-all;')}
         ]
-        main_table = table_image
+        main_table = table_file
         grid = solidgrid(main_table, 
             fields=[main_table.ALL],
             columns=[extracolumns[0], extracolumns[1], 
@@ -179,17 +176,17 @@ jQuery(document.body).trigger('managed_html_image_selected', '%s');return false;
             details=False,
             showid=False,
             searchable=[main_table.keyword, main_table.extension],
-            args=request.args[:1] + [self._image_grid_keyword],
+            args=request.args[:1] + [request_keyword],
             user_signature=user_signature,
             hmac_key=hmac_key,
             oncreate=self.oncreate_image,
-            formname='managed_html_image_grid_form',
+            formname='managed_html_%s_form' % request_keyword,
             upload=self.settings.upload,
         )
         return DIV(DIV(grid.gridbuttons), DIV(_style='clear:both;'), BR(), HR(),
                  DIV(grid.search_form, _class='well search_form') if hasattr(grid, 'search_form') else '',
                  DIV(grid), 
-                 _class='image_grid')
+                 _class='file_grid')
         
     def _post_js(self, name, action, target):
         data = {self.keyword:name, '_action':action}
@@ -209,7 +206,7 @@ jQuery(document.body).trigger('managed_html_image_selected', '%s');return false;
     def _is_simple_form(self, fields):
         return len(fields) == 1
         
-    def _get_elrte_widget(self):
+    def text_widget(self, field, value, **attributes):
         T = current.T
         try:
             lang = T.accepted_language.split('-')[0].replace('ja', 'jp')
@@ -218,16 +215,19 @@ jQuery(document.body).trigger('managed_html_image_selected', '%s');return false;
         
         from plugin_dialog import DIALOG
         image_chooser = DIALOG(title=T('Select an image'), close_button=T('close'),
-                               content=self.settings.image_crud)
-        file_chooser = DIALOG(title=T('Select a file'), close_button=T('close'),
-                              content=self.settings.file_crud, ajax=True)
+            content=LOAD(url=URL(args=current.request.args, vars={IMAGE_GRID_KEYWORD:True}), ajax=True),
+            onclose='jQuery(document.body).trigger("managed_html_file_selected", "");',
+            _id='managed_html_file_chooser', _class='managed_html_dialog')
+        # file_chooser = DIALOG(title=T('Select a file'), close_button=T('close'),
+                                # content=self.settings.file_crud, ajax=True)
                               
         fm_open = """function(callback, kind) {
 if (kind == 'elfinder') {%s;} else {%s;}
-jQuery(document.body).bind('managed_html_file_selected managed_html_image_selected', function(e, filename) {
+jQuery(document.body).bind('managed_html_file_selected managed_html_file_selected', function(e, filename) {
     callback('%s'.replace('__filename__', filename)); jQuery('.managed_html_dialog').hide(); 
 });
-}""" % (file_chooser.show(), image_chooser.show(), self.settings.upload('__filename__')) # TODO setting for managed_html_file_selected
+}""" % ('', #file_chooser.show(), 
+        image_chooser.show(), self.settings.upload('__filename__')) # TODO setting for managed_html_file_selected
 
         from plugin_elrte_widget import ElrteWidget
         widget =  ElrteWidget(lang=lang, cssfiles=self.settings.text_widget_cssfiles,
@@ -242,19 +242,15 @@ jQuery(document.body).bind('managed_html_file_selected managed_html_image_select
             _files.append(URL('static','plugin_elrte_widget/js/i18n/elrte.%s.js' % lang))  
         
         widget.settings.files = _files
-        return widget
+        return widget(field, value, **attributes)
         
-    def file_represent(self, filename, nx=80, ny=80):
+    def file_represent(self, filename, nx=80, ny=80): # TODO set self.settings.thumbnail_size
         if not filename:
             return A('', _href='#')
         extension = filename.split('.')[-1].lower()
         return A(IMG(_src=self.settings.upload(filename), _style='max-width:%spx;max-height:%spx;' % (nx, ny)) # TODO setting
                         if extension in ('png', 'jpg', 'jpeg', 'gif', 'bmp') else 'file',
                       _href=self.settings.upload(filename), _target='_blank')
-        
-    def get_thumbnail(self, filename):
-        root, ext = os.path.splitext(filename)
-        return '%s_thumbnail%s' % (root, ext)
         
     def oncreate_image(self, form):
         request = current.request
@@ -268,49 +264,33 @@ jQuery(document.body).bind('managed_html_file_selected managed_html_image_select
                 # # print img.size # TODO
                 
                 # img.thumbnail((nx, ny), Image.ANTIALIAS)
-                # thumbnail = self.get_thumbnail(filename)
+                
+                # root, ext = os.path.splitext(filename)
+                # thumbnail = '%s_thumbnail%s' % (root, ext)
+                
                 # img.save(os.path.join(self.settings.uploadfolder, thumbnail))
                 thumbnail = filename
                 
                 extension = filename and filename.split('.')[-1]
                 extension = extension and extension.lower()
-                self.db(self.settings.table_image.id==form.vars.id).update(
+                self.db(self.settings.table_file.id==form.vars.id).update(
                     name=filename, extension=extension, thumbnail=thumbnail,
                 )
         
-    #def get_uploadify_widget(self, name):
-        # def _uploadify_widget(field, value, download_url=None, **attributes):
-            # settings = self.settings
-            # attributes['extra_vars'] = {self.keyword:name, '_action':'edit'}
-            
-            # def _custom_store(file,filename,path):
-                # return settings.table_image.name.store(file,filename,path)
-            # field.custom_store = _custom_store
-            
-            # if not settings.upload_widget:       
-                # from plugin_uploadify_widget import (
-                    # uploadify_widget, IS_UPLOADIFY_IMAGE, IS_UPLOADIFY_LENGTH
-                # )
-                # settings.upload_widget = uploadify_widget
-
-            # return settings.upload_widget(field, value, download_url, **attributes)
-        # return _uploadify_widget
-            
     def image_widget(self, field, value, download_url=None, **attributes):
         T = current.T
         el_id = '%s_%s' % (field._tablename, field.name)
         
         from plugin_dialog import DIALOG
         image_chooser = DIALOG(title=T('Select an image'), close_button=T('close'),
-            content=LOAD(url=URL(args=current.request.args, vars={self._image_grid_keyword:True}), ajax=True),
-            onclose="""
-jQuery(document.body).trigger("managed_html_image_selected", "");""",
-            _id='managed_html_image_chooser', _class='managed_html_dialog')
+            content=LOAD(url=URL(args=current.request.args, vars={IMAGE_GRID_KEYWORD:True}), ajax=True),
+            onclose='jQuery(document.body).trigger("managed_html_file_selected", "");',
+            _id='managed_html_file_chooser', _class='managed_html_dialog')
                
         from gluon.sqlhtml import UploadWidget
         return DIV(INPUT(_type='button', _value='Select', 
                          _onclick="""
-jQuery(document.body).one('managed_html_image_selected', function(e, filename) {
+jQuery(document.body).one('managed_html_file_selected', function(e, filename) {
 if(filename!="") {
     var url = "%(upload)s".replace('__filename__', filename);
     jQuery("#%(id)s__hidden").attr('value', filename);
@@ -388,14 +368,8 @@ jQuery(function(){
                         if type(virtual_record[field.name]) == unicode:
                             virtual_record[field.name] = virtual_record[field.name].encode('utf-8', 'ignore')
                         
-                        # if field.type == 'upload':
-                            # field.uploadfolder = field.uploadfolder or settings.uploadfolder
-                            # settings.table_image.name.uploadfolder = field.uploadfolder
-                            # field.widget = self.file_widget  # self.get_uploadify_widget(name)
-                        if field.type == 'text':
-                            if not settings.text_widget:       
-                                settings.text_widget = self._get_elrte_widget() # , fm_open=None
-                            field.widget = field.widget or settings.text_widget
+                        if field.type == 'text':   
+                            field.widget = field.widget or self.text_widget
                         elif field.type.startswith('list:'):
                             if field.name+'[]' in request.vars:
                                 request.vars[field.name] = [v for v in request.vars[field.name+'[]'] if v]
@@ -414,7 +388,7 @@ jQuery(function(){
                         for field in fields:
                             field_value = form.vars[field.name]
                             #if field.type == 'upload' and field_value:
-                                # field_value.replace('no_table.image.', '%s.name.' % settings.table_image)
+                                # field_value.replace('no_table.image.', '%s.name.' % settings.table_file)
                             data[field.name] = field_value
                             
                         #content.update_record(data=json.dumps(data))
@@ -423,7 +397,7 @@ jQuery(function(){
                         
                         # for field in fields:
                             # if field.type == 'upload':
-                                # settings.table_image.insert(name=field_value)
+                                # settings.table_file.insert(name=field_value)
                         
                         response.flash = T('Edited')
                         response.js = 'managed_html_published("%s", false);' % el_id
