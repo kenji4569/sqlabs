@@ -27,10 +27,6 @@ class ManagedHTML(object):
         settings.home_url = '/'
         settings.home_label = 'Home'
         
-        settings.page_crud = ''
-        settings.image_crud = ''
-        settings.file_crud = ''
-        
         settings.table_content_name = 'managed_html_content'
         settings.table_content = None
         
@@ -129,12 +125,6 @@ class ManagedHTML(object):
             elif self.view_mode == PREVIEW_MODE:
                 response.meta.managed_html_edit_url = settings.URL(
                     args=[EDIT_MODE]+request.args[1:], vars=request.vars)
-            
-            from plugin_dialog import DIALOG
-            T = current.T
-            response.meta.managed_html_show_page_crud = DIALOG(
-                title=T('+ Page'), close_button=T('close'), 
-                content=settings.page_crud).show()
                 
     def is_image(self, *args, **kwargs):
         from plugin_uploadify_widget import IS_UPLOADIFY_IMAGE
@@ -319,8 +309,7 @@ if(this.checked) {
                                  vars={FILE_GRID_KEYWORD % file_type:True}), ajax=True),
             onclose='jQuery(document.body).trigger("managed_html_file_selected", "");',
             _id='managed_html_file_chooser', _class='managed_html_dialog')
-        # file_chooser = DIALOG(title=T('Select a file'), close_button=T('close'),
-                                # content=self.settings.file_crud, ajax=True)
+        # file_chooser = # TODO
                               
         fm_open = """function(callback, kind) {
 if (kind == 'elfinder') {%s;} else {%s;}
