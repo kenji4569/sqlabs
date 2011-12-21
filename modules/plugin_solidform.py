@@ -181,3 +181,9 @@ class SOLIDFORM(SQLFORM):
         return SOLIDFORM(DAL(None).define_table(table_name, *flat_fields), 
                          fields=structured_fields, **attributes)
     
+    @staticmethod
+    def formstyle(id,a,td_b,c):
+        if c:
+            td_b.components = td_b.components + [DIV(c, _class='notation')]
+        return TR(TD(a,_class='w2p_fl'), td_b,_id=id)
+    
