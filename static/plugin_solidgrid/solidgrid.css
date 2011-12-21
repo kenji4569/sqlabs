@@ -50,6 +50,7 @@ table.solidtable th a:hover {
 table.solidtable th a.orderby {
   background: url("orderby.png") no-repeat 0 4px;
   padding-left: 13px; 
+  font-weight: bold;
 }
 table.solidtable th a.orderby-asc {
   background-position: 0 -56px; 
@@ -481,14 +482,46 @@ a.ui-btn:hover {
 
 /*********************/
 
-.btn{cursor:pointer;display:inline-block;background-color:#e6e6e6;background-repeat:no-repeat;background-image:-webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), color-stop(25%, #ffffff), to(#e6e6e6));background-image:-webkit-linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);background-image:-moz-linear-gradient(top, #ffffff, #ffffff 25%, #e6e6e6);background-image:-ms-linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);background-image:-o-linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);background-image:linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);padding:5px 14px 6px;text-shadow:0 1px 1px rgba(255, 255, 255, 0.75);color:#333;font-size:13px;line-height:normal;border:1px solid #ccc;border-bottom-color:#bbb;-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px;-webkit-box-shadow:inset 0 1px 0 rgba(255, 255, 255, 0.2),0 1px 2px rgba(0, 0, 0, 0.05);-moz-box-shadow:inset 0 1px 0 rgba(255, 255, 255, 0.2),0 1px 2px rgba(0, 0, 0, 0.05);box-shadow:inset 0 1px 0 rgba(255, 255, 255, 0.2),0 1px 2px rgba(0, 0, 0, 0.05);-webkit-transition:0.1s linear all;-moz-transition:0.1s linear all;-ms-transition:0.1s linear all;-o-transition:0.1s linear all;transition:0.1s linear all;}.btn:hover{background-position:0 -15px;color:#333;text-decoration:none;}
-.btn:focus{outline:1px dotted #666;}
+.btn, .search_form input[type=submit], .web2py_grid input[type=submit]{
+  text-decoration: none;cursor:pointer;display:inline-block;background-color:#e6e6e6;background-repeat:no-repeat;background-image:-webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), color-stop(25%, #ffffff), to(#e6e6e6));background-image:-webkit-linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);background-image:-moz-linear-gradient(top, #ffffff, #ffffff 25%, #e6e6e6);background-image:-ms-linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);background-image:-o-linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);background-image:linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);padding:5px 14px 6px;text-shadow:0 1px 1px rgba(255, 255, 255, 0.75);color:#333;font-size:13px;line-height:normal;border:1px solid #ccc;border-bottom-color:#bbb;-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px;-webkit-box-shadow:inset 0 1px 0 rgba(255, 255, 255, 0.2),0 1px 2px rgba(0, 0, 0, 0.05);-moz-box-shadow:inset 0 1px 0 rgba(255, 255, 255, 0.2),0 1px 2px rgba(0, 0, 0, 0.05);box-shadow:inset 0 1px 0 rgba(255, 255, 255, 0.2),0 1px 2px rgba(0, 0, 0, 0.05);-webkit-transition:0.1s linear all;-moz-transition:0.1s linear all;-ms-transition:0.1s linear all;-o-transition:0.1s linear all;transition:0.1s linear all;}
+.btn:hover, .search_form input[type=submit]:hover, .web2py_grid input[type=submit]:hover{
+  background-position:0 -15px;color:#333;text-decoration:none;}
+.btn:focus {outline:1px dotted #666;}
+.search_form input[type=submit], .web2py_grid input[type=submit]{
+  height: 30px;
+}
 
-a.btn {
+.search_form label {
+  line-height: 30px;
+}
+
+.web2py_grid input[type=submit] {
+  width: auto;
+  height: auto;
+  color: white;
+  background-color: #0064CD;
+  background-repeat: repeat-x;
+  background-image: -khtml-gradient(linear, left top, left bottom, from(#049cdb), to(#0064cd));
+  background-image: -moz-linear-gradient(top, #049cdb, #0064cd);
+  background-image: -ms-linear-gradient(top, #049cdb, #0064cd);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #049cdb), color-stop(100%, #0064cd));
+  background-image: -webkit-linear-gradient(top, #049cdb, #0064cd);
+  background-image: -o-linear-gradient(top, #049cdb, #0064cd);
+  background-image: linear-gradient(top, #049cdb, #0064cd);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#049cdb', endColorstr='#0064cd', GradientType=0);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+  border-color: #0064CD #0064CD #003F81;
+  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+}
+.web2py_grid input[type=submit]:hover {
+  color: white;
+} 
+
+.web2py_grid a.btn {
   height: 20px;
   text-decoration: none;
 }
-a.btn .ui-button-text{
+.web2py_grid a.btn .ui-button-text{
   line-height: 20px;
 }
 

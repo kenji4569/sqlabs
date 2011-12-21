@@ -52,9 +52,9 @@ class ManagedHTML(object):
             if a and not c and not f: (f,a,c)=(a,c,f)
             elif a and c and not f: (c,f,a)=(a,c,f)
         if c != 'static':
-            mode = current.request.args(0)
-            if mode in (EDIT_MODE, PREVIEW_MODE):
-                return self._mode_url(mode, a, c, f, r, args, vars, **kwds)
+            _arg0 = current.request.args(0)
+            if _arg0 and (EDIT_MODE in _arg0 or PREVIEW_MODE in _arg0):
+                return self._mode_url(_arg0, a, c, f, r, args, vars, **kwds)
         return self.settings.URL(a, c, f, r, args, vars, **kwds)
         
     def _mode_url(self, mode, a=None, c=None, f=None, r=None, args=None, vars=None, **kwds):
@@ -73,7 +73,7 @@ class ManagedHTML(object):
         return self._mode_url(PREVIEW_MODE, a, c, f, r, args, vars, **kwds)
     
     def define_tables(self, migrate=True, fake_migrate=False):
-        db, settings = self.db, self.settings
+        db, settings, T = self.db, self.settings, current.T
         
         if not settings.table_content_name in db.tables:
             table = db.define_table(settings.table_content_name,
@@ -86,11 +86,11 @@ class ManagedHTML(object):
             
         if not settings.table_file_name in db.tables:
             table = db.define_table(settings.table_file_name,
-                Field('name', 'upload', autodelete=True),
+                Field('name', 'upload', label=T('File'), autodelete=True),
                 # Field('original_name'),
-                Field('keyword'),
-                Field('description', 'text'),
-                Field('extension', length=16, readable=False, writable=False),
+                Field('keyword', label=T('Keyword')),
+                Field('description', 'text', label=T('Description')),
+                Field('extension', label=T('Extension'), length=16, readable=False, writable=False),
                 Field('thumbnail', 'upload', autodelete=True, readable=False, writable=False),
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_file_name, []))
@@ -98,22 +98,25 @@ class ManagedHTML(object):
         
     def switch_mode(self):
         settings, request, response = self.settings, current.request, current.response
-        self.view_mode = request.args(0)
-        if self.view_mode not in (EDIT_MODE, PREVIEW_MODE):
+        _arg0 = request.args(0)
+        self.view_mode = _arg0
+        if not (_arg0 and (EDIT_MODE in _arg0 or PREVIEW_MODE in _arg0)):
             self.view_mode = LIVE_MODE
             return
-           
-        response.files.append(URL('static', 'plugin_managed_html/managed_html.css'))
-        response.files.append(URL('static', 'plugin_managed_html/managed_html.js'))
-        response.files.append(URL('static', 'plugin_managed_html/jquery-ui-1.8.16.custom.min.js'))
+        else:
+            response.files.append(URL('static', 'plugin_managed_html/managed_html.css'))
+            response.files.append(URL('static', 'plugin_managed_html/managed_html.js'))
+            response.files.append(URL('static', 'plugin_managed_html/jquery-ui-1.8.16.custom.min.js'))
+            
+            response.meta.managed_html_home_url = settings.home_url
+            response.meta.managed_html_home_label = settings.home_label
+            
+            response.meta.managed_html_live_url = settings.URL(args=request.args[1:], vars=request.vars, scheme='http')
         
-        response.meta.managed_html_home_url = settings.home_url
-        response.meta.managed_html_home_label = settings.home_label
-        
-        response.meta.managed_html_live_url = settings.URL(args=request.args[1:], vars=request.vars, scheme='http')
-        
-        if self.view_mode in (EDIT_MODE, PREVIEW_MODE):
-            if self.view_mode == EDIT_MODE:
+            if EDIT_MODE in self.view_mode:
+                from plugin_solidgrid import SolidGrid
+                self.solidgrid = SolidGrid(renderstyle=True)
+                
                 for file_type in ('image', 'movie'):
                     _grid_keyword = FILE_GRID_KEYWORD % file_type
                     if (_grid_keyword in current.request.vars or 
@@ -121,10 +124,13 @@ class ManagedHTML(object):
                         raise HTTP(200, self._file_grid(file_type=file_type))
                 
                 response.meta.managed_html_preview_url = settings.URL(
-                    args=[PREVIEW_MODE]+request.args[1:], vars=request.vars)
+                    args=[self.view_mode.replace(EDIT_MODE, PREVIEW_MODE)]+
+                         request.args[1:], vars=request.vars)
+                
             elif self.view_mode == PREVIEW_MODE:
                 response.meta.managed_html_edit_url = settings.URL(
-                    args=[EDIT_MODE]+request.args[1:], vars=request.vars)
+                    args=[self.view_mode.replace(PREVIEW_MODE, EDIT_MODE)]+
+                          request.args[1:], vars=request.vars)
                 
     def is_image(self, *args, **kwargs):
         from plugin_uploadify_widget import IS_UPLOADIFY_IMAGE
@@ -135,11 +141,10 @@ class ManagedHTML(object):
         return IS_UPLOADIFY_LENGTH(*args, **kwargs)
         
     def _file_grid(self, file_type):
-        from plugin_solidgrid import SolidGrid
+        T = current.T
         table_file = self.settings.table_file
         request = current.request
-        solidgrid = SolidGrid(renderstyle=True)
-        
+       
         if request.vars._hmac_key:
             hmac_key = request.vars._hmac_key
             user_signature = False
@@ -192,19 +197,19 @@ class ManagedHTML(object):
                        'movie': MOVIE_EXTENSIONS,
                        }.get(file_type)
         extracolumns = [
-            {'label': 'Select', 'width': '150px;',
+            {'label': '', 'width': '150px;',
                 'content':lambda row, rc: 
-                 SPAN(solidgrid.recordbutton('ui-icon-seek-next', 'Select',
+                 SPAN(self.solidgrid.recordbutton('ui-icon-seek-next', T('Select'),
                             '#', _onclick="""
 jQuery(document.body).trigger('managed_html_file_selected', ['%s', '%s']);return false;
                             """ % (row.name, row.thumbnail), _class='ui-btn'))},
-             {'label': 'File', 'width': '150px;',
+             {'label': T('File'), 'width': '150px;',
               'content':lambda row, rc: DIV(
                 self._file_represent(row.name, row.thumbnail),
                 _style='word-break:break-all;')}
         ]
         main_table = table_file
-        grid = solidgrid((main_table.extension.belongs(_extensions)), 
+        grid = self.solidgrid((main_table.extension.belongs(_extensions)), 
             fields=[main_table.ALL],
             columns=[extracolumns[0], extracolumns[1], 
                      main_table.keyword, main_table.description, main_table.extension], 
@@ -222,7 +227,7 @@ jQuery(document.body).trigger('managed_html_file_selected', ['%s', '%s']);return
         )
         return DIV(DIV(grid.gridbuttons), DIV(_style='clear:both;'), BR(), HR(),
                  DIV(grid.search_form, _class='well search_form') if hasattr(grid, 'search_form') else '',
-                 DIV(grid), 
+                 DIV(DIV(_style='clear:both;'), grid), 
                  _class='file_grid')
         
     def _file_represent(self, filename, thumbnail, max_width=80, max_height=80): # TODO set self.settings.thumbnail_size
@@ -240,11 +245,11 @@ jQuery(document.body).trigger('managed_html_file_selected', ['%s', '%s']);return
         el_id = '%s_%s' % (field._tablename, field.name)
         
         from plugin_dialog import DIALOG
-        image_chooser = DIALOG(title=T('Select'), close_button=T('close'),
+        image_chooser = DIALOG(title=T('Select %s' % file_type), close_button=T('close'),
             content=LOAD(url=URL(args=current.request.args, 
                                  vars={FILE_GRID_KEYWORD % file_type:True}), ajax=True),
             onclose='jQuery(document.body).trigger("managed_html_file_selected", "");',
-            _id='managed_html_file_chooser', _class='managed_html_dialog')
+            _id='managed_html_%s_chooser' % file_type, _class='managed_html_dialog')
                
         
         _record = self.db(self.settings.table_file.name==value
@@ -308,7 +313,7 @@ if(this.checked) {
             content=LOAD(url=URL(args=current.request.args, 
                                  vars={FILE_GRID_KEYWORD % 'image':True}), ajax=True),
             onclose='jQuery(document.body).trigger("managed_html_file_selected", "");',
-            _id='managed_html_file_chooser', _class='managed_html_dialog')
+            _id='managed_html_image_chooser', _class='managed_html_dialog')
         # file_chooser = # TODO
                               
         fm_open = """function(callback, kind) {
@@ -364,7 +369,7 @@ jQuery(document.body).bind('managed_html_file_selected managed_html_file_selecte
         
         def _render(func):
             def _func(content):
-                if self.view_mode == EDIT_MODE:
+                if EDIT_MODE in self.view_mode:
                     response.write(XML("""<script>
 jQuery(function(){
     $('#%s a').unbind("click").click(function(e) {e.preventDefault();});
@@ -373,7 +378,7 @@ jQuery(function(){
                 
                 func(Storage(content and content.data and json.loads(content.data) or {}))
                 
-                if self.view_mode == EDIT_MODE:
+                if EDIT_MODE in self.view_mode:
                     # if not content or not content.data:
                     response.write(XML('<div style="height:7px;background:white;">&nbsp;</div><div style="clear:both;"></div>'))
                     response.write(XML('</div>'))
@@ -462,7 +467,7 @@ jQuery(function(){
             def wrapper(*args, **kwds):
                 content = self._get_content(name, cache=kwargs.get('cache'))
                 
-                if self.view_mode == EDIT_MODE:
+                if EDIT_MODE in self.view_mode:
                     is_published = self._is_published(content)
                     
                     response.write(XML('<div id="%s" class="managed_html_block  %s">' %
@@ -564,7 +569,7 @@ jQuery(function(){
                         
                         # is_published = bool(content.publish_on and content.publish_on<=request.now)
                         
-                    if self.view_mode == EDIT_MODE:
+                    if EDIT_MODE in self.view_mode:
                         response.write(XML("""
 <script>jQuery(function(){managed_html_movable("%s", [%s], "%s", "%s", "%s")})</script>""" % 
                             (name, ','.join([str(i) for i, f in self._movables[name]]),
@@ -574,7 +579,7 @@ jQuery(function(){
                     
                 _block_index, _func = self._movables[name].pop(0)
                 
-                if self.view_mode == EDIT_MODE:
+                if EDIT_MODE in self.view_mode:
                     el_id = 'managed_html_block_%s_%s' % (name, _block_index)
                     inner_el_id = 'managed_html_inner_%s_%s' % (name, _block_index)
                     
