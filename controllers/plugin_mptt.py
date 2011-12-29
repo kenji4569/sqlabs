@@ -31,8 +31,7 @@ def output():
         if not vars.name or vars.name == '---':
             raise HTTP(406)
         node_id = mptt.insert_node(vars.target, name=vars.name)
-        target = mptt._load_node(vars.target)
-        print "level", target.level
+        node = mptt._load_node(node_id)
         raise HTTP(200, node_id)
         
     elif action=='edit':
@@ -62,10 +61,7 @@ def output():
         vars = request.post_vars
         record = table_node(vars.id)
         parent_record = table_node(vars.parent)
-        print "id", vars.id
-        print "position", vars.position
         position = int(vars.position)
-        print "parent", vars.parent
         
         target_child = mptt._load_node(mptt.get_first_child(parent_record))
         if target_child:
@@ -87,10 +83,9 @@ def output():
     data = []
     initially_open = []
     for i, root_node in enumerate(root_nodes):
-        _data, _initially_open = build_tree_objects_x(root_node)
+        _data, _initially_open = build_tree_objects(root_node)
         data.append(_data)
         initially_open += _initially_open
-    print data, initially_open
 
     response.view = 'plugin_mptt/index.html'
     response.files.append(URL('static', 'plugin_mptt/jstree/jquery.hotkeys.js'))
@@ -102,7 +97,6 @@ def output():
                 initially_open=initially_open,
                 tree_crud_buttons=render_tree_crud_buttons(str(table_node)))
     
-
 
 ### unit tests #################################################################
 
@@ -600,7 +594,6 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         
         self.move_action(position, record, parent_record, target_child)
 
-        print self.get_all_nodes()
         self.asserTree(self.get_all_nodes(),
                        """node1 None 1 0 1 14
                           node2 node1 1 1 2 7
@@ -614,19 +607,6 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
                           node10 node9 2 1 4 5
                           node11 node9 2 1 6 7""")
 
-                        # name, parent, tree_id, level, left, right
-                        # node1 -      1 0 1 16   node1
-                        # node2 node1  1 1 2 9    +-- node2
-                        # node3 node2  1 2 3 4    |   |-- node3
-                        # node4 node2  1 2 5 6    |   |-- node4
-                        # node5 node2  1 2 7 8    |   +-- node5
-                        # node6 node1  1 1 10 15  +-- node6
-                        # node7 node6  1 2 11 12      |-- node7
-                        # node8 node6  1 2 13 14      +-- node8
-                        # node9 -      2 0 1 6    node9
-                        # node10 node9 2 1 2 3    |-- node10
-                        # node11 node9 2 1 4 5    +-- node11
-                        
 def run_test(TestCase):
     import cStringIO
     stream = cStringIO.StringIO()

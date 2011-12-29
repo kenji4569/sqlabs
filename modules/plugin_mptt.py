@@ -13,6 +13,7 @@ def update_args(func):
         for arg in args:
             if isinstance(arg, Row):
                 table_node = self.settings.table_node
+                print arg[table_node.id]
                 latest_node = self.db(table_node.id == arg[table_node.id]).select().first()
                 arg.lft = latest_node.lft
                 arg.rgt = latest_node.rgt
@@ -172,8 +173,9 @@ class MPTTModel(object):
         node2 = self._load_node(node2)
         return (node1.lft > node2.lft) and (node1.rgt < node2.rgt)
         
-    @update_args        
     def delete_node(self, node):
+        import pdb
+        pdb.set_trace()
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
         
@@ -323,44 +325,6 @@ class MPTTModel(object):
                                   **extra_vars)
             else:
                 raise ValueError
-            
-    # def update_node(self, node_id, target_id, position='last-child', **extra_vars):
-        # db, table_node = self.db, self.settings.table_node
-        # node = self._load_node(node)
-        # target = self._load_node(target)
-        
-        # if self.is_root_node(target) and position in ('left','right'):
-            # target_tree_id = target.tree_id
-            # if position == 'left':
-                # tree_id = target_tree_id
-                # space_target = target_tree_id - 1
-            # else:
-                # tree_id = target_tree_id + 1
-                # space_target = target_tree_id
-                
-            # self._create_tree_space(space_target)
-            
-            # node.update_record(lft=1,
-                           # rgt=2,
-                           # level=0,
-                           # tree_id=tree_id,
-                           # parent=None)
-        # else:
-            # node.update_record(lft=0,
-                               # level=0)
-
-            # space_target, level, left, parent, right_shift = (
-                # self._calculate_inter_tree_move_values(node_id, target_id, position))
-            # parent = db(table_node.id == parent).select().first()
-            # tree_id = parent.tree_id
-            
-            # self._create_space(2, space_target, tree_id)
-            
-            # node.update_record(lft=node.lft - left,
-                               # rgt=node.rgt - left + 1,
-                               # level=node.level - level,
-                               # tree_id=tree_id,
-                               # parent=parent)
             
     @update_args            
     def move_node(self, node, target, position='last-child'):
