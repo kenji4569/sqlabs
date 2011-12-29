@@ -13,7 +13,6 @@ def update_args(func):
         for arg in args:
             if isinstance(arg, Row):
                 table_node = self.settings.table_node
-                print arg[table_node.id]
                 latest_node = self.db(table_node.id == arg[table_node.id]).select().first()
                 arg.lft = latest_node.lft
                 arg.rgt = latest_node.rgt
@@ -174,8 +173,6 @@ class MPTTModel(object):
         return (node1.lft > node2.lft) and (node1.rgt < node2.rgt)
         
     def delete_node(self, node):
-        import pdb
-        pdb.set_trace()
         db, table_node = self.db, self.settings.table_node
         node = self._load_node(node)
         

@@ -17,8 +17,8 @@ tree_crud_buttons.find('#edit_node_button').click(function(){
   var data = tree_crud_buttons.data('data'),
       el = data.rslt.obj,
       pos = el.position();
-  pos.top -= 5;
-  pos.left += 155;
+  pos.top -= 45;
+  pos.left += 105;
   tree_crud_buttons.css(pos);
   tree_el.jstree("rename"); return false;
 });
@@ -44,7 +44,7 @@ tree_el.jstree({
       "types" : {
         "root" : {
           "icon" : { 
-            "image" : "{{=URL('static', 'jstree/_drive.png')}}" 
+            "image" : "{{=URL('static', 'plugin_mptt/jstree/_drive.png')}}" 
           },
         }
       }
@@ -62,7 +62,7 @@ tree_el.jstree({
     tree_crud_buttons.data('data', data);
     
     var pos = el.position();
-    pos.top -= 5;
+    pos.top -= 20;
     pos.left += 105;
     tree_crud_buttons.css(pos);
     if (data.rslt.obj.find('li').length > 0) {

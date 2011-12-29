@@ -91,7 +91,7 @@ def output():
     response.files.append(URL('static', 'plugin_mptt/jstree/jquery.hotkeys.js'))
     response.files.append(URL('static', 'plugin_mptt/jstree/jquery.jstree.js'))
     response.files.append(URL('static', 'plugin_mptt/main.css'))
-    response.files.append(URL('static', 'plugin_mptt/bootstrap.min.css'))
+    # response.files.append(URL('static', 'plugin_mptt/bootstrap.min.css'))
 
     return dict(url=url, data=data,
                 initially_open=initially_open,

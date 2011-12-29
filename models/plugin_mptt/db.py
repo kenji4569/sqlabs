@@ -38,7 +38,7 @@ def recordbutton(buttonclass, buttontext, buttonurl, showbuttontext=True, **attr
     if showbuttontext:
         inner = SPAN(buttontext, _class='ui-button-text') 
     else:
-        inner = SPAN(XML('&nbsp'), _style='padding:6px;')
+        inner = SPAN(XML('&nbsp'), _style='padding: 0px 7px 0px 6px;')
     return A(SPAN(_class='ui-icon ' + buttonclass), 
              inner, 
              _title=buttontext, _href=buttonurl, _class='ui-btn', **attr)
