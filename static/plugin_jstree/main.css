@@ -1,26 +1,15 @@
-.ui-icon {
-width: 16px;
-height: 16px;
-background-image: url(../images/ui-icons_222222_256x240.png);
-display: block;
-text-indent: -99999px;
-overflow: hidden;
-background-repeat: no-repeat;
-position: absolute;
-margin-top: 1px;
-}
 
 /*********  tree *********/
-.jstree {
+div.plugin_jstree .jstree {
 border: 1px solid silver;
 }
 
-div.tree_crud_button {
+div.plugin_jstree .tree_crud_button {
 padding: 5px;
 margin: 0;
 vertical-align: middle;
 }
-div.tree_crud_button .close {
+div.plugin_jstree .tree_crud_button .close {
 margin-top:5px;
 margin-right: 5px;
 float:left;
@@ -28,7 +17,7 @@ float:left;
 
 
 /*********** ui ***********/
-.ui-icon {
+div.plugin_jstree .ui-icon {
   width: 16px;
   height: 16px;
   background-image: url(ui-icons_222222_256x240.png);
@@ -39,17 +28,17 @@ float:left;
   position:absolute;
   margin-top: 1px;
 }
-tr .ui-icon {
+div.plugin_jstree tr .ui-icon {
   margin-top: 0px;
 }
-.ui-button-text {
+div.plugin_jstree .ui-button-text {
 padding: .4em 1em .4em 2.1em;
 }
-tr .ui-button-text {
+div.plugin_jstree tr .ui-button-text {
 padding: .4em 1em .4em 1.8em;
 }
 
-.ui-btn {
+div.plugin_jstree .ui-btn {
   margin:2px;
   margin-right: 5px;
   display: inline-block;
@@ -63,16 +52,16 @@ padding: .4em 1em .4em 1.8em;
   border-radius: 2px;
   zoom: 1;
 }
-a.ui-btn {
+div.plugin_jstree a.ui-btn {
   text-decoration:none;
   font-size: 8px;
   line-height: 18px;
 }
-a.ui-btn span {
+div.plugin_jstree a.ui-btn span {
   text-decoration:none;
   font-size: 8px;
 }
-a.ui-btn:hover {
+div.plugin_jstree a.ui-btn:hover {
   color: #3C3C3D;
   text-decoration: none;
   border: 1px solid #fafafa;  
@@ -80,23 +69,23 @@ a.ui-btn:hover {
   -moz-box-shadow: 0px 0px 7px #007eff;  
   box-shadow: 0px 0px 7px #007eff;  
 }
-a.close, a.close:active, a.close:visited {
-margin-top: 5px;
-margin-right: 5px;
-float: left;
+div.plugin_jstree a.close, div.plugin_jstree a.close:active, div.plugin_jstree a.close:visited {
+  margin-top: 5px;
+  margin-right: 5px;
+  float: left;
 
-color: black;
-font-size: 20px;
-font-weight: bold;
-line-height: 13.5px;
-text-shadow: 0 1px 0 white;
-filter: alpha(opacity=30);
--khtml-opacity: 0.3;
--moz-opacity: 0.3;
-opacity: 0.3;
-text-decoration: none;
+  color: black;
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 13.5px;
+  text-shadow: 0 1px 0 white;
+  filter: alpha(opacity=30);
+  -khtml-opacity: 0.3;
+  -moz-opacity: 0.3;
+  opacity: 0.3;
+  text-decoration: none;
 }
-a.close:hover {
+div.plugin_jstree a.close:hover {
 text-decoration: none;
 filter: alpha(opacity=70);
 -khtml-opacity: 0.7;
@@ -281,27 +270,13 @@ opacity: 0.7;
 .ui-icon-grip-diagonal-se { background-position: -80px -224px; }
 
 /* --------------------------------------------------------------------------- */
-.btn.info, .alert-message.info {
-background-color: #339BB9;
-background-repeat: repeat-x;
-background-image: -khtml-gradient(linear, left top, left bottom, from(#5bc0de), to(#339bb9));
-background-image: -moz-linear-gradient(top, #5bc0de, #339bb9);
-background-image: -ms-linear-gradient(top, #5bc0de, #339bb9);
-background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #5bc0de), color-stop(100%, #339bb9));
-background-image: -webkit-linear-gradient(top, #5bc0de, #339bb9);
-background-image: -o-linear-gradient(top, #5bc0de, #339bb9);
-background-image: linear-gradient(top, #5bc0de, #339bb9);
-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#5bc0de', endColorstr='#339bb9', GradientType=0);
-text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-border-color: #339BB9 #339BB9 #22697D;
-border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-}
 
-.btn.danger, .alert-message.danger, .btn.danger:hover, .alert-message.danger:hover, .btn.error, .alert-message.error, .btn.error:hover, .alert-message.error:hover, .btn.success, .alert-message.success, .btn.success:hover, .alert-message.success:hover, .btn.info, .alert-message.info, .btn.info:hover, .alert-message.info:hover {
+
+div.plugin_jstree .alert-message.info, div.plugin_jstree .btn.info:hover, div.plugin_jstree .alert-message.info:hover {
 color: white;
 }
 
-.btn.info, .alert-message.info {
+div.plugin_jstree .btn.info, div.plugin_jstree .alert-message.info {
 background-color: #339BB9;
 background-repeat: repeat-x;
 background-image: -khtml-gradient(linear, left top, left bottom, from(#5bc0de), to(#339bb9));
@@ -317,7 +292,7 @@ border-color: #339BB9 #339BB9 #22697D;
 border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
 }
 
-.alert-message {
+.plugin_jstree .alert-message {
 position: relative;
 padding: 7px 15px;
 margin-bottom: 18px;
@@ -344,4 +319,11 @@ border-radius: 4px;
 -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
 -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
 box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.jstree_spinner {
+  width:16px; 
+  height:16px; 
+  background: url(spinner.gif) no-repeat; 
+  position: absolute; 
 }

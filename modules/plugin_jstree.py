@@ -118,6 +118,9 @@ class JsTree(object):
             check_authorization()
             vars = request.post_vars
             node = self.tree_model.get_node(vars.id)
+            if self.tree_model.is_root_node(node):
+                raise HTTP(406)
+            
             parent_node = self.tree_model.get_node(vars.parent)
             position = int(vars.position)
             

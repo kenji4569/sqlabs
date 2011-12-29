@@ -24,7 +24,7 @@ mptt.define_tables()
 table_node = mptt.settings.table_node
 
 ### populate records ###########################################################
-deleted = db(table_node.created_on<request.now-datetime.timedelta(minutes=1)).delete()
+deleted = db(table_node.created_on<request.now-datetime.timedelta(minutes=30)).delete()
 if deleted:
     table_node.truncate()
     session.flash = 'the database has been refreshed'
