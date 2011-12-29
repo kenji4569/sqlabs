@@ -176,9 +176,9 @@ The program is originated in %s.
         short_description='A tree crud using jsTree, fully integrated with the MPTT plugin',
         long_description=XML("""
 The plugin allows you to create, read, update, delete and further move tree structured data 
-by using %s, in which %s is fully integrated.
-""" % (A('jsTree', _href='http://www.jstree.com/'),
-       A('the MPTT plugin', _href=URL('plugin_mptt', 'index')))),
+in a fancy ui by using %s. Then, %s could be then injected into the jsTree plugin as a base tree model.
+""" % (A('jsTree library', _href='http://www.jstree.com/'),
+       A('The MPTT plugin', _href=URL('plugin_mptt', 'index')))),
     ),
     
     plugin_comment_cascade=dict(
