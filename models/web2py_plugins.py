@@ -143,7 +143,7 @@ This plugin a form object which makes table rows permutable using %s, and submit
         label='Solid Grid',
         short_description=('A yet another grid. (EXPERIMENTAL)'),
         long_description=XML(("""
-A yet another grid using SOLIDFORM and SOLIDTABLE.
+A yet another grid using SOLIDFORM and SOLIDTABLE.  (EXPERIMENTAL)
 """) )
     ),
     plugin_dialog=dict(
@@ -157,8 +157,19 @@ A simple dialog.
         label='Managed HTML',
         short_description=('An extreme WYSIWYG CMS. (EXPERIMENTAL)'),
         long_description=XML(("""
-A WYSIWYG CMS. Just take a look!
+A WYSIWYG CMS. Just take a look!  (EXPERIMENTAL)
 """) )
+    ),
+    
+    plugin_mptt=dict(
+        label='MPTT (Tree Model)',
+        short_description='Modified Preorder Tree Traversal (MPTT) implemntation original by django-mptt',
+        long_description='',
+    ),
+    plugin_jstree=dict(
+        label='Tree Crud by JsTree',
+        short_description='',
+        long_description='',
     ),
     
     plugin_comment_cascade=dict(
@@ -177,27 +188,6 @@ A WYSIWYG CMS. Just take a look!
         long_description=T("""A manager for direct messaging between users as in Facebook."""),
     ),
     
-    plugin_mptt=dict(
-        label='Modified Preorder Tree Traversal',
-        show_image=False,
-        short_description='',
-        long_description='',
-        status='under-construction',
-    ),
-    plugin_treeviewer=dict(
-        label='Tree Viewer',
-        show_image=False,
-        short_description='',
-        long_description='',
-        status='under-construction',
-    ),
-    plugin_revision_crud=dict(
-        label='Revision CRUD',
-        show_image=False,
-        short_description='',
-        long_description='',
-        status='under-construction',
-    ),
     plugin_generic_menu=dict(
         label='Generic Menu',
         show_image=False,
@@ -219,8 +209,8 @@ A WYSIWYG CMS. Just take a look!
         long_description='',
         status='under-construction',
     ),
-    plugin_crontools=dict(
-        label='Cron Tools',
+    plugin_analytics=dict(
+        label='Ananlytics Integration',
         show_image=False,
         short_description='',
         long_description='',
@@ -243,13 +233,13 @@ A WYSIWYG CMS. Just take a look!
     
     plugin_catalog=dict(
         label='Catalog',
-        short_description='A minimum set of catalog models for shopping',
-        long_description="""A minimum set of catalog models for shopping (Now Developping)""",
+        short_description='A catalog manager shopping (EXPERIMENTAL)',
+        long_description="""A minimum set of catalog models for shopping (EXPERIMENTAL)""",
     ),
     plugin_checkout=dict(
         label='Checkout',
         show_image=False,
-        short_description='A minimum set of checkout models for shopping',
+        short_description='A checkout manager for shopping',
         long_description="""A minimum set of checkout models for shopping (Now Developping)""",
         status='under-construction',
     ),

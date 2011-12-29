@@ -652,6 +652,7 @@ filter: alpha(opacity=75);
 -moz-opacity:0.75;
 opacity:0.75;
 max-height: 4.65em;
+max-width: 95px;
 float: left;
 border: 5px solid #fff;
 -moz-border-radius: 6px;

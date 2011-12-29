@@ -1,103 +1,32 @@
 # -*- coding: utf-8 -*-
 
+from plugin_mptt import MPTT
+import unittest
+import re
+import datetime
+
+db = DAL('sqlite:memory:')
+
+### setup core objects #########################################################
+mptt = MPTT(db)
+mptt.settings.table_node_name = 'plugin_mptt_node'
+mptt.settings.extra_fields = {
+    'plugin_mptt_node': 
+        [Field('name')],
+}
+
+### define tables ##############################################################'
+mptt.define_tables()
+table_node = mptt.settings.table_node
+
 ### demo functions #############################################################
 def index():
-    # TODO
-    # response.files = ..
-    
-    return dict(output=A('output', _href=URL('output')),
-                unit_tests=[A('test all', _href=URL('test')),
+    return dict(unit_tests=[A('test all', _href=URL('test')),
                             A('test reading', _href=URL('test', args='reading')),
                             A('test reparenting', _href=URL('test', args='reparenting')),
                             A('test deletion', _href=URL('test', args='deletion')),
                             A('test moving', _href=URL('test', args='moving'))])
-                            
-def output():
-    def url(**b):
-        b['args'] = b.get('args',[])
-        b['user_signature'] = False
-        b['hmac_key'] = 'test'
-        return URL(**b)
-    
-    def check_authorization():
-        if not URL.verify(request, user_signature=False, hmac_key='test'):
-            raise HTTP(403)
-            
-    action = request.args and request.args[-1]     
-  
-    if action=='new':
-        check_authorization()
-        vars = request.post_vars
-        if not vars.name or vars.name == '---':
-            raise HTTP(406)
-        node_id = mptt.insert_node(vars.target, name=vars.name)
-        node = mptt._load_node(node_id)
-        raise HTTP(200, node_id)
-        
-    elif action=='edit':
-        check_authorization()
-        vars = request.post_vars
-        if not vars.name or vars.name == '---':
-            raise HTTP(406)
-        record = table_node(vars.id)
-        if not record:
-            raise HTTP(404)
-        if record.name == vars.name:
-            raise HTTP(406)
-        record.update_record(name=vars.name)
-        raise HTTP(200)
-        
-    elif action=='delete':
-        check_authorization()
-        vars = request.post_vars
-        record = table_node(vars.id)
-        if not mptt.is_leaf_node(record) or not record:
-            raise HTTP(404)
-        mptt.delete_node(record)
-        raise HTTP(200)
-        
-    elif action=='move':
-        check_authorization()
-        vars = request.post_vars
-        record = table_node(vars.id)
-        parent_record = table_node(vars.parent)
-        position = int(vars.position)
-        
-        target_child = mptt._load_node(mptt.get_first_child(parent_record))
-        if target_child:
-            tmp = None
-            end_flag = False
-            for i in range(position):
-                tmp = mptt.get_next_sibling(target_child)
-                if tmp is False:
-                    mptt.move_node(record,target_child,'right')
-                    end_flag = True
-                target_child = tmp
-            if end_flag is False:  
-                mptt.move_node(record,target_child,'left')
-        else:
-            mptt.move_node(record,parent_record)
-        raise HTTP(200)
-
-    root_nodes = mptt.roots().select()
-    data = []
-    initially_open = []
-    for i, root_node in enumerate(root_nodes):
-        _data, _initially_open = build_tree_objects(root_node)
-        data.append(_data)
-        initially_open += _initially_open
-
-    response.view = 'plugin_mptt/index.html'
-    response.files.append(URL('static', 'plugin_mptt/jstree/jquery.hotkeys.js'))
-    response.files.append(URL('static', 'plugin_mptt/jstree/jquery.jstree.js'))
-    response.files.append(URL('static', 'plugin_mptt/main.css'))
-    # response.files.append(URL('static', 'plugin_mptt/bootstrap.min.css'))
-
-    return dict(url=url, data=data,
-                initially_open=initially_open,
-                tree_crud_buttons=render_tree_crud_buttons(str(table_node)))
-    
-
+           
 ### unit tests #################################################################
 
 class TreeTestMixin():
@@ -464,7 +393,7 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         position = 0
         record = self.node5
         parent_record = self.node2
-        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        target_child = mptt.get_first_child(parent_record)
         
         self.move_action(position, record, parent_record, target_child)
 
@@ -485,7 +414,7 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         position = 1
         record = self.node5
         parent_record = self.node2
-        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        target_child = mptt.get_first_child(parent_record)
         
         self.move_action(position, record, parent_record, target_child)        
         
@@ -506,7 +435,7 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         position = 0
         record = self.node5
         parent_record = self.node4
-        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        target_child = mptt.get_first_child(parent_record)
         
         self.move_action(position, record, parent_record, target_child)
         
@@ -527,7 +456,7 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         position = 1
         record = self.node5
         parent_record = self.node6
-        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        target_child = mptt.get_first_child(parent_record)
         
         self.move_action(position, record, parent_record, target_child)
 
@@ -548,7 +477,7 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         position = 1
         record = self.node5
         parent_record = self.node1
-        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        target_child = mptt.get_first_child(parent_record)
         
         self.move_action(position, record, parent_record, target_child)
         
@@ -569,7 +498,7 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         position = 2
         record = self.node5
         parent_record = self.node6
-        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        target_child = mptt.get_first_child(parent_record)
         
         self.move_action(position, record, parent_record, target_child)
         
@@ -590,7 +519,7 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         position = 0
         record = self.node5
         parent_record = self.node9
-        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        target_child = mptt.get_first_child(parent_record)
         
         self.move_action(position, record, parent_record, target_child)
 

@@ -1,13 +1,11 @@
-{{extend 'layout.html'}}
 {{from gluon.contrib import simplejson as json}}
-<div class="container" style="padding:0;">
-  <div class="well">
-    <div id="tree" class="jstree" style="min-height:100px;background:white;">
-    </div>
-    {{=tree_crud_buttons}}
-    <script type="text/javascript"><!--
+<div class="plugin_jstree">
+<div id="{{=element_id}}" class="jstree" style="min-height:100px;background:white;">
+</div>
+{{=tree_crud_buttons}}
+<script type="text/javascript"><!--
 (function($) { $(function () {
-var tree_el = $("#tree");
+var tree_el = $("#{{=element_id}}");
 
 var tree_crud_buttons = $("#tree_crud_buttons");
 tree_crud_buttons.find('#add_node_button').click(function(){
@@ -23,7 +21,7 @@ tree_crud_buttons.find('#edit_node_button').click(function(){
   tree_el.jstree("rename"); return false;
 });
 tree_crud_buttons.find('#delete_node_button').click(function(){
-  if(confirm("{{=T('Sure you want to delete them?')}}")){
+  if(confirm("{{=T('Sure you want to delete it?')}}")){
     tree_el.jstree("remove");
   }
   return false;
@@ -44,7 +42,7 @@ tree_el.jstree({
       "types" : {
         "root" : {
           "icon" : { 
-            "image" : "{{=URL('static', 'plugin_mptt/jstree/_drive.png')}}" 
+            "image" : "{{=URL('static', 'plugin_jstree/jstree/_drive.png')}}" 
           },
         }
       }
@@ -122,6 +120,10 @@ tree_el.jstree({
       $.jstree.rollback(data.rlbk);
       return;
     }
+    if (!confirm("{{=T('Sure you want to move it?')}}")) {
+      $.jstree.rollback(data.rlbk);
+      return;
+    }
     $.post("{{=url(args=['move'])}}",
       {
         "id"   : data.rslt.o.attr("id").split("_")[1],
@@ -141,6 +143,4 @@ tree_el.jstree({
   });
 });})(jQuery);
 --></script>
-
-  </div>
 </div>
