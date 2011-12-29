@@ -1,126 +1,32 @@
 # -*- coding: utf-8 -*-
 
+from plugin_mptt import MPTT
+import unittest
+import re
+import datetime
+
+db = DAL('sqlite:memory:')
+
+### setup core objects #########################################################
+mptt = MPTT(db)
+mptt.settings.table_node_name = 'plugin_mptt_node'
+mptt.settings.extra_fields = {
+    'plugin_mptt_node': 
+        [Field('name')],
+}
+
+### define tables ##############################################################'
+mptt.define_tables()
+table_node = mptt.settings.table_node
+
 ### demo functions #############################################################
 def index():
-    # TODO
-    # response.files = ..
-    
-    return dict(output=A('output', _href=URL('output')),
-                unit_tests=[A('test all', _href=URL('test')),
+    return dict(unit_tests=[A('test all', _href=URL('test')),
                             A('test reading', _href=URL('test', args='reading')),
                             A('test reparenting', _href=URL('test', args='reparenting')),
                             A('test deletion', _href=URL('test', args='deletion')),
                             A('test moving', _href=URL('test', args='moving'))])
-                            
-def output():
-    def url(**b):
-        b['args'] = b.get('args',[])
-        b['user_signature'] = False
-        b['hmac_key'] = 'test'
-        return URL(**b)
-    
-    def check_authorization():
-        if not URL.verify(request, user_signature=False, hmac_key='test'):
-            raise HTTP(403)
-            
-    action = request.args and request.args[-1]     
-  
-    if action=='new':
-        check_authorization()
-        vars = request.post_vars
-        if not vars.name or vars.name == '---':
-            raise HTTP(406)
-        node_id = mptt.insert_node(vars.target, name=vars.name)
-        raise HTTP(200, node_id)
-        
-    elif action=='edit':
-        check_authorization()
-        vars = request.post_vars
-        if not vars.name or vars.name == '---':
-            raise HTTP(406)
-        record = table_node(vars.id)
-        if not record:
-            raise HTTP(404)
-        if record.name == vars.name:
-            raise HTTP(406)
-        record.update_record(name=vars.name)
-        raise HTTP(200)
-        
-    elif action=='delete':
-        check_authorization()
-        vars = request.post_vars
-        record = table_node(vars.id)
-        if not mptt.is_leaf_node(record) or not record:
-            raise HTTP(404)
-        mptt.delete_node(record)
-        raise HTTP(200)
-        
-    elif action=='move':
-        check_authorization()
-        vars = request.post_vars
-        record = table_node(vars.id)
-        parent_record = table_node(vars.parent)
-        print "id", vars.id
-        print "position", vars.position
-        position = int(vars.position)
-        print "parent", vars.parent
-        
-        target_child = mptt._load_node(mptt.get_first_child(parent_record))
-        if target_child:
-            tmp = None
-            end_flag = False
-            for i in range(position):
-                tmp = mptt.get_next_sibling(target_child)
-                if tmp is False:
-                    mptt.move_node(record,target_child,'right')
-                    end_flag = True
-                target_child = tmp
-            if end_flag is False:  
-                mptt.move_node(record,target_child,'left')
-        else:
-            mptt.move_node(record,parent_record)
-        raise HTTP(200)
-
-    root_nodes = mptt.roots().select()
-    data = []
-    initially_open = []
-    for i, root_node in enumerate(root_nodes):
-        _data, _initially_open = build_tree_objects(root_node)
-        data.append(_data)
-        initially_open += _initially_open
-
-    root_nodes = mptt.roots().select()
-    tree = []
-    initially_open = []
-    for root_node in root_nodes:
-        descendants = mptt.descendants_from_node(root_node)(
-              table_node.level <= root_node.level+4).select(orderby=table_node.desc)
-        for node in descendants:
-            tree_str = "tree" + "[-1][1]" * (node.level-1) + ".append((node, []))"
-            exec tree_str
-#            if node.level == 1:
-#                tree.append((node, []))
-#            elif node.level == 2:
-#                tree[-1][1].append((node, []))
-#            elif node.level == 3:
-#                tree[-1][1][-1][1].append((node, []))
-#            elif node.level == 4:
-#                tree[-1][1][-1][1][-1][1].append((node, []))
-    response.categories = tree                    
-        
-
-    response.view = 'plugin_mptt/index.html'
-    response.files.append(URL('static', 'plugin_mptt/jstree/jquery.hotkeys.js'))
-    response.files.append(URL('static', 'plugin_mptt/jstree/jquery.jstree.js'))
-    response.files.append(URL('static', 'plugin_mptt/main.css'))
-    response.files.append(URL('static', 'plugin_mptt/bootstrap.min.css'))
-
-    return dict(url=url, data=data,
-                initially_open=initially_open,
-                tree_crud_buttons=render_tree_crud_buttons(str(table_node)))
-    
-
-
+           
 ### unit tests #################################################################
 
 class TreeTestMixin():
@@ -487,7 +393,7 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         position = 0
         record = self.node5
         parent_record = self.node2
-        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        target_child = mptt.get_first_child(parent_record)
         
         self.move_action(position, record, parent_record, target_child)
 
@@ -508,7 +414,7 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         position = 1
         record = self.node5
         parent_record = self.node2
-        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        target_child = mptt.get_first_child(parent_record)
         
         self.move_action(position, record, parent_record, target_child)        
         
@@ -529,7 +435,7 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         position = 0
         record = self.node5
         parent_record = self.node4
-        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        target_child = mptt.get_first_child(parent_record)
         
         self.move_action(position, record, parent_record, target_child)
         
@@ -550,7 +456,7 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         position = 1
         record = self.node5
         parent_record = self.node6
-        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        target_child = mptt.get_first_child(parent_record)
         
         self.move_action(position, record, parent_record, target_child)
 
@@ -571,7 +477,7 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         position = 1
         record = self.node5
         parent_record = self.node1
-        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        target_child = mptt.get_first_child(parent_record)
         
         self.move_action(position, record, parent_record, target_child)
         
@@ -592,7 +498,7 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         position = 2
         record = self.node5
         parent_record = self.node6
-        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        target_child = mptt.get_first_child(parent_record)
         
         self.move_action(position, record, parent_record, target_child)
         
@@ -613,11 +519,10 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
         position = 0
         record = self.node5
         parent_record = self.node9
-        target_child = mptt._load_node(mptt.get_first_child(parent_record))
+        target_child = mptt.get_first_child(parent_record)
         
         self.move_action(position, record, parent_record, target_child)
 
-        print self.get_all_nodes()
         self.asserTree(self.get_all_nodes(),
                        """node1 None 1 0 1 14
                           node2 node1 1 1 2 7
@@ -631,19 +536,6 @@ class JsTreeMovingTestCase(unittest.TestCase, TreeTestMixin):
                           node10 node9 2 1 4 5
                           node11 node9 2 1 6 7""")
 
-                        # name, parent, tree_id, level, left, right
-                        # node1 -      1 0 1 16   node1
-                        # node2 node1  1 1 2 9    +-- node2
-                        # node3 node2  1 2 3 4    |   |-- node3
-                        # node4 node2  1 2 5 6    |   |-- node4
-                        # node5 node2  1 2 7 8    |   +-- node5
-                        # node6 node1  1 1 10 15  +-- node6
-                        # node7 node6  1 2 11 12      |-- node7
-                        # node8 node6  1 2 13 14      +-- node8
-                        # node9 -      2 0 1 6    node9
-                        # node10 node9 2 1 2 3    |-- node10
-                        # node11 node9 2 1 4 5    +-- node11
-                        
 def run_test(TestCase):
     import cStringIO
     stream = cStringIO.StringIO()

@@ -16,6 +16,15 @@ db.define_table('product',
           requires = IS_IN_SET(['circle', 'square', 'triangle'], multiple=True)),
 )
 
+from plugin_multiselect_widget import multiselect_widget
+def rhmultiselect_widget(field, value, **attributes):
+    attributes['label_register'] = 'select'
+    attributes['label_delete'] = 'remove'
+    attributes['reversed'] = True
+    attributes['arrangement'] = 'horizontal'
+    attributes['width'] = 275
+    return multiselect_widget(field, value, **attributes)
+
 ################################ The core ######################################
 # Inject the horizontal multiple select widget 
 db.product.colors.widget = hmultiselect_widget
