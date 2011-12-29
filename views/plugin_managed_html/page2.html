@@ -8,9 +8,23 @@
   <div style="width:100px;">
     {{@managed_html.render('page2_block1', Field('text', comment='Input Text'))
       def _block(content):}}
-      {{=content.text}}
+      {{=content.text or ''}}
     {{pass}}
     {{_block()}}
   </div>
   <br/>
+  
+  <h4>Movie Block</h4>
+  <div>
+  {{@managed_html.render('movie_block', 
+      Field('movie', widget=managed_html.movie_widget, comment='Upload Movie'))
+  def _block(content):}}
+    <video id="example_video_1" class="video-js" width="480" height="270"
+           controls="controls" preload="auto" 
+           src="{{=managed_html.settings.upload(content.movie)}}"
+           {{if content.thumbnail:}}poster="{{=managed_html.settings.upload(content.thumbnail)}}"{{pass}}>
+    </video>
+  {{pass}}
+  {{_block()}}
+  </div>
 </div>

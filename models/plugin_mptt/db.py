@@ -21,17 +21,15 @@ mptt.settings.extra_fields = {
 ### define tables ##############################################################'
 mptt.define_tables()
 table_node = mptt.settings.table_node
+NodeParent = table_node.with_alias('node_parent')
+parent_left = NodeParent.on(NodeParent.id==table_node.parent)
 
-### populate records ###########################################################
 deleted = db(table_node.created_on<request.now-datetime.timedelta(minutes=10)).delete()
 if deleted:
     table_node.truncate()
     session.flash = 'the database has been refreshed'
     redirect(URL('index'))
 
-if not mptt.roots().count():
-    mptt.insert_node(None, name='master', node_type='root')
-        
 ### helper functions ##########################################################
 
 def recordbutton(buttonclass, buttontext, buttonurl, showbuttontext=True, **attr):
@@ -95,9 +93,15 @@ def render_tree_crud_buttons(tablename):
               buttonedit='ui-icon-pencil')
     return DIV(
         A('x', _class='close', _href='#', _onclick='jQuery(this).parent().hide();'),
+
+        SOLIDFORM.recordbutton('%(buttonadd)s' % ui, T('Add'), '#', False, _id='add_node_button'), 
+        SOLIDFORM.recordbutton('%(buttonedit)s' % ui, T('Edit'),'#', False, _id='edit_node_button'),
+        SOLIDFORM.recordbutton('%(buttondelete)s' % ui, T('Delete'),'#', False, _id='delete_node_button'),
+
         recordbutton('%(buttonadd)s' % ui, T('Add'), '#', False, _id='add_node_button'), 
         recordbutton('%(buttonedit)s' % ui, T('Edit'),'#', False, _id='edit_node_button'),
         recordbutton('%(buttondelete)s' % ui, T('Delete'),'#', False, _id='delete_node_button'),
+
         _id='tree_crud_buttons', _style='display:none;position:absolute;',
         _class='tree_crud_button alert-message info',
     )

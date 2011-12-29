@@ -108,9 +108,11 @@ class SOLIDTABLE(SQLTABLE):
                     class_ = field and field.type or ''
                     if c not in headers:
                         headers[c] = {'label': label, 'class': class_}
-                    elif 'label' not in headers[c]:
-                        headers[c]['label'] = label
-                        headers[c]['class'] = class_
+                    else:
+                        if 'label' not in headers[c]:
+                            headers[c]['label'] = label
+                        if 'class' not in headers[c]:
+                            headers[c]['class'] = class_
                     
         for inner in columns or self.sqlrows.colnames:
             if type(inner) in (list, tuple):
@@ -178,7 +180,7 @@ class SOLIDTABLE(SQLTABLE):
             if callable(self.orderby):
                 label = self.orderby(col, label)
             else:
-                label = A(label, _href=self.th_link+'?orderby=' + col) # from SQLTABLE
+                label = A(label, _href=self.th_link+'?orderby=' + col, _class='w2p_trap') # from SQLTABLE
         return TH(label,**attrcol)
         
     def _apply_colclass(self, attrcol, header):
@@ -249,7 +251,7 @@ class SOLIDTABLE(SQLTABLE):
                     href = self.linkto(r, 'table', tablename)
                 except TypeError:
                     href = '%s/%s/%s' % (self.linkto, tablename, r_old)
-                r = A(r, _href=href)
+                r = A(r, _href=href, _class='w2p_trap')
             elif field.type.startswith('reference'):
                 if self.linkto:
                     ref = field.type[10:]
@@ -261,7 +263,7 @@ class SOLIDTABLE(SQLTABLE):
                             tref,fref = ref.split('.')
                             if hasattr(self.sqlrows.db[tref],'_primarykey'):
                                 href = '%s/%s?%s' % (self.linkto, tref, urllib.urlencode({fref:r}))
-                    r = A(represent(field, r, record), _href=str(href))
+                    r = A(represent(field, r, record), _href=str(href), _class='w2p_trap')
                 elif field.represent:
                     r = represent(field, r, record)
             elif self.linkto and hasattr(field._table,'_primarykey') and fieldname in field._table._primarykey:
@@ -272,7 +274,7 @@ class SOLIDTABLE(SQLTABLE):
                                   and isinstance(record[tablename], Row)) and
                              (k, record[tablename][k])) or (k, record[k]) \
                                 for k in field._table._primarykey ] ))
-                r = A(r, _href='%s/%s?%s' % (self.linkto, tablename, key))
+                r = A(r, _href='%s/%s?%s' % (self.linkto, tablename, key), _class='w2p_trap')
             elif field.type.startswith('list:'):
                 r = represent(field, r or [], record)
             elif field.represent:
@@ -281,7 +283,7 @@ class SOLIDTABLE(SQLTABLE):
                 r = 'DATA'
             elif field.type == 'upload':
                 if self.upload and r:
-                    r = A('file', _href='%s/%s' % (self.upload, r))
+                    r = A('file', _href='%s/%s' % (self.upload, r), _class='w2p_trap')
                 elif r:
                     r = 'file'
                 else:
@@ -355,7 +357,7 @@ class OrderbySelector(object):
         
     def __call__(self, column, label):
         if str(column) == str(self.current_field):
-            return A(label, _href=self._url(self.next_orderby), _class='orderby '+self.current_class)
+            return A(label, _href=self._url(self.next_orderby), _class='w2p_trap orderby '+self.current_class)
         
         for orderby in self.orderbys:
             if orderby.op == orderby.db._adapter.INVERT:
@@ -363,7 +365,7 @@ class OrderbySelector(object):
             else:
                 _column = orderby
             if str(column) == str(_column):
-                return A(label, _href=self._url(orderby), _class='orderby')
+                return A(label, _href=self._url(orderby), _class='w2p_trap orderby')
                 
         return label
         

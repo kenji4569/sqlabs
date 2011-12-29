@@ -193,7 +193,11 @@ file_el.uploadify({
     inp = SPAN(input_el, file_input_el)
     
     if download_url and value:
-        url = download_url + '/' + value
+        if type(download_url) == str:
+            url = download_url + '/' + value
+        else:
+            url = download_url(value)
+            
         (br, image) = ('', '')
         if UploadWidget.is_image(value):
             br = BR()

@@ -1,4 +1,7 @@
 (function($) {$(function(){
+  // ---------------------------------------------------------------------------
+  // block events
+  // ---------------------------------------------------------------------------
   $('.managed_html_block').hover(function(){
     $(this).children('.managed_html_contents_ctrl').show();
   }, function() {
@@ -11,7 +14,9 @@
     $(this).removeClass('managed_html_editing');
   });
   
-  // --- build top-bar ---
+  // ---------------------------------------------------------------------------
+  // top-bar
+  // ---------------------------------------------------------------------------
   var home_url = $("meta[name=managed_html_home_url]").attr("content");
   var home_label = $("meta[name=managed_html_home_label]").attr("content");
   var edit_url = $("meta[name=managed_html_edit_url]").attr("content");
@@ -46,39 +51,10 @@
   $('body').prepend(topbar);
 })})(jQuery);
 
-function managed_html_editing(target, true_or_fase) {
-  var el = jQuery('#'+target);
-  var ctrl_el = el.parent();
-  if (true_or_fase==false) {
-    ctrl_el.find('.managed_html_back_btn').hide();
-    ctrl_el.find('.managed_html_submit_btn').hide();
-    ctrl_el.find('.managed_html_main_comment').hide();
-    
-    ctrl_el.find('.managed_html_edit_btn').show();
-    
-    ctrl_el.find('.managed_html_contents_ctrl').hide();
-  } else if (true_or_fase==true) {
-    ctrl_el.find('.managed_html_back_btn').show();
-    ctrl_el.find('.managed_html_submit_btn').show();
-    ctrl_el.find('.managed_html_main_comment').show();
-    
-    ctrl_el.find('.managed_html_edit_btn').hide();
-    
-    ctrl_el.find('.managed_html_publish_now_btn').hide();
-  }
-}
 
-function managed_html_published(target, true_or_fase) {
-  var el = jQuery('#'+target);
-  var ctrl_el = el.parent();
-  if (true_or_fase==false) {
-    el.addClass('managed_html_block_pending');
-    ctrl_el.find('.managed_html_publish_now_btn').show();
-  } else if (true_or_fase==true) {
-    el.removeClass('managed_html_block_pending');
-    ctrl_el.find('.managed_html_publish_now_btn').hide();
-  }
-}
+// ---------------------------------------------------------------------------
+// custom ajax functions
+// ---------------------------------------------------------------------------
 
 function managed_html_web2py_trap_form(action,target) {
   function params2json(d) {
@@ -117,9 +93,11 @@ function managed_html_web2py_ajax_page(method,action,data,target) {
     'beforeSend':function(xhr) {
       jQuery('#'+target).managed_html_spinner();
       xhr.setRequestHeader('web2py-component-location',document.location);
-      xhr.setRequestHeader('web2py-component-element',target);},
+      xhr.setRequestHeader('web2py-component-element',target);
+    },
     'complete':function(xhr,text){
       jQuery('#'+target).managed_html_spinner('remove');
+      jQuery('.managed_html_spinner').hide(); // TODO
       var html=xhr.responseText;
       var content=xhr.getResponseHeader('web2py-component-content'); 
       var command=xhr.getResponseHeader('web2py-component-command'); 
@@ -129,26 +107,70 @@ function managed_html_web2py_ajax_page(method,action,data,target) {
       else if(content=='append') t.append(html);
       else if(content!='hide') t.html(html); 
       managed_html_web2py_trap_form(action,target);
+      web2py_trap_link(target);
       web2py_ajax_init();  
       if(command) eval(command);
       if(flash) jQuery('.flash').html(flash).slideDown();
       }
     });
 }
-
 function managed_html_ajax_page(action, data, target) {
   jQuery('.flash').hide().html(''); 
   managed_html_editing(target, data._action=='edit');
   managed_html_web2py_ajax_page('post', action, data, target);
 }
 
-function managed_html_movable(name, indices, keyword, url) {
+// ---------------------------------------------------------------------------
+// for block action control
+// ---------------------------------------------------------------------------
+
+function managed_html_editing(target, true_or_fase) {
+  var el = jQuery('#'+target);
+  var ctrl_el = el.parent();
+  if (true_or_fase==false) {
+    ctrl_el.find('.managed_html_back_btn').hide();
+    ctrl_el.find('.managed_html_submit_btn').hide();
+    ctrl_el.find('.managed_html_main_comment').hide();
+    
+    ctrl_el.find('.managed_html_edit_btn').show();
+    
+    ctrl_el.find('.managed_html_contents_ctrl').hide();
+  } else if (true_or_fase==true) {
+    ctrl_el.find('.managed_html_back_btn').show();
+    ctrl_el.find('.managed_html_submit_btn').show();
+    ctrl_el.find('.managed_html_main_comment').show();
+    
+    ctrl_el.find('.managed_html_edit_btn').hide();
+    
+    ctrl_el.find('.managed_html_publish_now_btn').hide();
+  }
+}
+
+function managed_html_published(target, true_or_fase) {
+  var el = jQuery('#'+target);
+  var ctrl_el = el.parent();
+  if (true_or_fase==false) {
+    el.addClass('managed_html_block_pending');
+    ctrl_el.find('.managed_html_publish_now_btn').show();
+  } else if (true_or_fase==true) {
+    el.removeClass('managed_html_block_pending');
+    ctrl_el.find('.managed_html_publish_now_btn').hide();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// for movable blocks
+// ---------------------------------------------------------------------------
+
+function managed_html_movable(name, indices, keyword, url, confirm_message) {
   function _get_index(_el) {return parseInt(_el.attr('id').split('_').slice(-1)[0]);}
   function _movable(el) {
     el.draggable({
         opacity:0.5, cursor:"move", revert: 'invalid', snap: true, 
         start: function(event, ui){jQuery(event.target).css('background', 'pink');},
-        stop: function(event, ui){jQuery(event.target).css('background', 'transparent');}})
+        stop: function(event, ui){
+            jQuery(event.target).css('background', 'transparent');
+        }})
       .droppable({
         accept: ".managed_html_name_" + name,
         activeClass: "managed_html_movable_hover",
@@ -158,7 +180,7 @@ function managed_html_movable(name, indices, keyword, url) {
           var to_el = jQuery(this);
           var from_parent = from_el.parent();
           var to_parent = to_el.parent();
-          if (!confirm('Sure you want to move them?')) {
+          if (!confirm(confirm_message)) {
             from_el.css({left:'0px', top:'0px'});
             return;
           }
@@ -186,6 +208,19 @@ function managed_html_movable(name, indices, keyword, url) {
               _movable(to_parent.children(".managed_html_name_" + name));
               from_parent.children(".managed_html_name_" + name);
               to_parent.children(".managed_html_name_" + name);
+                     
+              $('.managed_html_block').unbind('hover').hover(function(){
+                $(this).children('.managed_html_contents_ctrl').show();
+              }, function() {
+                $(this).children('.managed_html_contents_ctrl').hide();
+              });
+              $('.managed_html_content').unbind('hover').hover(function(){
+                $(this).addClass('managed_html_editing');
+              }, function() {
+                $(this).removeClass('managed_html_editing');
+              });
+              $('.managed_html_block a').unbind("click").click(function(e) {e.preventDefault();});
+              
             },
             error: function(r){ 
               from_el.css({left:'0px', top:'0px'});
