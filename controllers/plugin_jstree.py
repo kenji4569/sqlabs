@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-# Authors: Yusuke Kishita <yuusuuke.kishiita@gmail.com>, Kenji Hosoda <hosoda@s-cubism.jp>
-# Original by: http://www.jstree.com/
 
 from plugin_jstree import JsTree
 from plugin_mptt import MPTT
@@ -17,6 +15,7 @@ mptt.settings.extra_fields = {
          Field('created_on', 'datetime', default=request.now)],
 }
 
+### inject the mptt tree model to the jstree plugin ###
 jstree = JsTree(tree_model=mptt, renderstyle=True)
 
 ### define tables ##############################################################'

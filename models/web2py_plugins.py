@@ -164,12 +164,21 @@ A WYSIWYG CMS. Just take a look!  (EXPERIMENTAL)
     plugin_mptt=dict(
         label='MPTT (Tree Model)',
         short_description='Modified Preorder Tree Traversal (MPTT) implemntation original by django-mptt',
-        long_description='',
+        long_description=XML("""
+A web2py implemntation of %s, 
+which manages tree structured data stored in db with faster selects. 
+The program is originated in %s.
+"""  % (A('Modified Preorder Tree Traversal (MPTT) algorithm', _href='http://www.sitepoint.com/hierarchical-data-database/'), 
+        A('django-mptt', _href='https://github.com/django-mptt/django-mptt/').xml())),
     ),
     plugin_jstree=dict(
-        label='Tree Crud by JsTree',
-        short_description='',
-        long_description='',
+        label='Tree Crud',
+        short_description='A tree crud using jsTree, fully integrated with the MPTT plugin',
+        long_description=XML("""
+The plugin allows you to create, read, update, delete and further move tree structured data 
+by using %s, in which %s is fully integrated.
+""" % (A('jsTree', _href='http://www.jstree.com/'),
+       A('the MPTT plugin', _href=URL('plugin_mptt', 'index')))),
     ),
     
     plugin_comment_cascade=dict(
