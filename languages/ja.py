@@ -63,6 +63,7 @@
 'CMS based on Web2py.': 'Web2pyベースのCMSです。',
 'Calendar': 'カレンダー',
 'Cannot be empty': '空にすることはできません',
+'Check to delete:': 'Check to delete:',
 'Choose date': '日付を選択',
 'Choose date time': '日時を選択',
 'Choose time': '時刻を選択',

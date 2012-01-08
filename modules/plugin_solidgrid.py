@@ -4,35 +4,40 @@
 from gluon import *
 from gluon.storage import Storage
 
+def _gridbutton(buttonclass, buttontext, buttonurl, **attr):
+    if '_class' not in attr:
+        attr['_class'] = 'btn w2p_trap'
+    return A(SPAN(_class='ui-icon  %s' % buttonclass),
+             SPAN(buttontext, _class='ui-button-text'),
+             _href=buttonurl, _style='float:left;margin-right:20px;', **attr)
+
+def _recordbutton(buttonclass, buttontext, buttonurl, showbuttontext=True, **attr):
+    if showbuttontext:
+        inner = SPAN(buttontext, _class='ui-button-text') 
+    else:
+        inner = SPAN(XML('&nbsp'), _style='padding:6px;')
+    if '_class' not in attr:
+        attr['_class'] = 'ui-btn w2p_trap'
+        
+    return A(SPAN(_class='ui-icon ' + buttonclass), 
+             inner, 
+            _title=buttontext, _href=buttonurl, **attr)
+                
 class SolidGrid(object):
 
     def __init__(self, renderstyle=False):
+        settings = self.settings = Storage()
+        settings.gridbutton = _gridbutton
+        settings.recordbutton = _recordbutton
+        
         if renderstyle:
             _url = URL('static','plugin_solidgrid/solidgrid.css')
             if _url not in current.response.files:
                 current.response.files.append(_url)
 
-    def gridbutton(self, buttonclass, buttontext, buttonurl, **attr):
-        if '_class' not in attr:
-            attr['_class'] = 'btn w2p_trap'
-        return A(SPAN(_class='ui-icon  %s' % buttonclass),
-                 SPAN(buttontext, _class='ui-button-text'),
-                 _href=buttonurl, _style='float:left;margin-right:20px;', **attr)
-    
-    def recordbutton(self, buttonclass, buttontext, buttonurl, showbuttontext=True, **attr):
-        if showbuttontext:
-            inner = SPAN(buttontext, _class='ui-button-text') 
-        else:
-            inner = SPAN(XML('&nbsp'), _style='padding:6px;')
-        if '_class' not in attr:
-            attr['_class'] = 'ui-btn w2p_trap'
-            
-        return A(SPAN(_class='ui-icon ' + buttonclass), 
-                 inner, 
-                _title=buttontext, _href=buttonurl, **attr)
-    
-    def build_query_by_form(slef, db, form, queries={}, field_sep='___',
+    def _build_query_by_form(self, db, form, queries={}, field_sep='___',
                               exclude_var_pattern='^.+_page$', formname='form'):
+        
         request = current.request
         if form.accepts(request.vars, keepvalues=True, formname=formname):
             new_vars = request.get_vars.copy()
@@ -252,8 +257,8 @@ class SolidGrid(object):
         from plugin_solidform import SOLIDFORM
         from plugin_solidtable import SOLIDTABLE, OrderbySelector
         from plugin_paginator import Paginator, PaginateSelector, PaginateInfo
-        gridbutton = self.gridbutton
-        recordbutton = self.recordbutton
+        gridbutton = self.settings.gridbutton
+        recordbutton = self.settings.recordbutton
         
         request, session, T = current.request, current.session, current.T
         
@@ -509,9 +514,10 @@ class SolidGrid(object):
                 self.inline(search_form, 'no_table', 
                     [f.name for f in _from_to], LABEL(_from_to[0].label), SPAN(' - '))
             
-            subquery = self.build_query_by_form(db, search_form, 
+            subquery = self._build_query_by_form(db, search_form, 
                             queries=search_queries,
-                            field_sep=field_sep, formname='search_%s' % formname)
+                            field_sep=field_sep, 
+                            formname='search_%s' % formname)
         else:
             subquery = None
             

@@ -25,7 +25,8 @@ db.product.category_2.widget = suggest_widget(
     db.category.name, 
     id_field=db.category.id, limitby=(0,10), min_length=1,
     user_signature=True, 
-    keyword='_autocomplete_category_2_%(fieldname)s') 
+    keyword='_autocomplete_category_2_%(fieldname)s',
+    ) 
 ################################################################################
      
 def index():

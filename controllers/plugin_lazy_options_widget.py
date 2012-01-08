@@ -36,7 +36,11 @@ db.product.color.widget = lazy_options_widget(
                   lambda category_id: (db.color.category==category_id), 
                   request.vars.category,
                   orderby=db.color.id,
-                  user_signature=True)
+                  user_signature=True,
+                  # If you want to process ajax requests at the time of the object construction (not at the form rendered),
+                  # specify your target field in the following:
+                  field=db.product.color, 
+                  )
 ################################################################################
      
 def index():
