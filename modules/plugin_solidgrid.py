@@ -218,13 +218,17 @@ class SolidGrid(object):
                 searchable=True, # EXTENDED ex) [table.id, table.name, ...]
                 sortable=True, # EXTENDED ex) [table.id, table.name, ...]
                 paginate=(10, 25, 50, 100), # EXTENDED
-                deletable=True,
-                editable=True,# EXTENDED ex) [['id', 'name'], 'profile', ...]
-                details=True,# EXTENDED ex) [['id', 'name'], 'profile', ...]
+                
+                deletable=True, # EXTENDED ex) lambda record_id: deleted
+                editable=True,# EXTENDED ex) [['id', 'name'], 'profile', ...] or lambda record: edit_form
+                details=True,# EXTENDED ex) [['id', 'name'], 'profile', ...] or lambda record: view_form
                 selectable=None, # TODO 
-                create=True, # EXTENDED ex) [['id', 'name'], 'profile', ...]
+                create=True, # EXTENDED ex) [['id', 'name'], 'profile', ...] or lambda: create_form
                 csv=True,
+                
                 links=None,
+                links_in_grid=True,
+             
                 upload = '<default>',
                 args=[],
                 user_signature = True,
@@ -351,11 +355,18 @@ class SolidGrid(object):
                 raise HTTP(200,stream,**response.headers)
         
         gridbuttons = [gridbutton('%(buttonback)s' % ui, T('Back'), referrer)]
+        def _add_link_gridbuttons(record):
+            if record and links:
+                for link in links:
+                    if isinstance(link,dict):
+                         gridbuttons.append(link['body'](record))
+                    elif link(record):
+                         gridbuttons.append(link(record))
+                     
         
         if create and len(request.args)>1 and request.args[-2]=='new':
             check_authorization()
             table = db[request.args[-1]]
-            self.mark_not_empty(virtualtable or table)
             if orderby:
                 inverted = (orderby.op == orderby.db._adapter.INVERT)
                 field = orderby.first if inverted else orderby
@@ -363,17 +374,23 @@ class SolidGrid(object):
                 last_value = (last[field] or 0) if last else 0
                 table[field.name].default = (-1 if inverted else 1) + last_value
                  
-            create_form = SOLIDFORM(virtualtable or table, 
-                    fields=create if type(create) in (list, tuple) else None,
-                    showid=showid,
-                    _class='web2py_form',
-                    submit_button=T('Create'),
-                    ).process(# next=referrer, for web2py-bug
-                              onvalidation=onvalidation,
-                              onsuccess=oncreate,                          
-                              formname=formname)
+            self.mark_not_empty(virtualtable or table)
+            
+            if type(create) == type(lambda:None):
+                create_form = create()
+            else:
+                create_form = SOLIDFORM(virtualtable or table, 
+                        fields=create if type(create) in (list, tuple) else None,
+                        showid=showid,
+                        _class='web2py_form',
+                        submit_button=T('Create'),
+                        ).process(# next=referrer, for web2py-bug
+                                  onvalidation=onvalidation,
+                                  onsuccess=oncreate,                          
+                                  formname=formname)
+            
             self.unmark_not_empty(table)
-            res = DIV(create_form,_class=_class)
+            res = DIV(create_form, _class=_class)
             res.create_form = create_form
             res.gridbuttons = gridbuttons
             return res
@@ -382,21 +399,26 @@ class SolidGrid(object):
             check_authorization()
             table = db[request.args[-2]]
             record = table(request.args[-1]) or redirect(URL('error'))
-            form = SOLIDFORM(virtualtable or table, virtualrecord or record, 
-                             fields=details if type(details) in (list, tuple) else
-                                        create if type(create) in (list, tuple) else None, 
-                             upload=upload,
-                             readonly=True,
-                             showid=showid,
-                             _class='web2py_form')
-            res = DIV(form,_class=_class)
+            
+            if type(details) == type(lambda:None):
+                view_form = details(record)
+            else:
+                view_form = SOLIDFORM(virtualtable or table, virtualrecord or record, 
+                                 fields=details if type(details) in (list, tuple) else
+                                            create if type(create) in (list, tuple) else None, 
+                                 upload=upload,
+                                 readonly=True,
+                                 showid=showid,
+                                 _class='web2py_form')
+            res = DIV(view_form, _class=_class)
             res.record = record # CUSTOM
-            res.view_form = form # CUSTOM
+            res.view_form = view_form # CUSTOM
             if editable:
                 gridbuttons.append(
                     gridbutton('%(buttonedit)s' % ui, T('Edit'), 
                                   url(args=['edit', tablename, record.id]))
                 )
+            _add_link_gridbuttons(record)
             res.gridbuttons = gridbuttons
             return res
             
@@ -405,21 +427,27 @@ class SolidGrid(object):
             table = db[request.args[-2]]
             record = table(request.args[-1]) or redirect(URL('error'))
             self.mark_not_empty(virtualtable or table)
-            edit_form = SOLIDFORM(virtualtable or table, virtualrecord or record,
+            
+            if type(editable) == type(lambda:None):
+                edit_form = editable(record)
+            else:
+                edit_form = SOLIDFORM(virtualtable or table, virtualrecord or record,
                                 fields=editable if type(editable) in (list, tuple) else
                                             create if type(create) in (list, tuple) else None, 
                                 upload=upload,
-                                deletable=deletable,
+                                deletable=deletable is True,
                                 showid=showid,
                                 delete_label=T('Check to delete:'),
                                 submit_button=T('Update'),
-                                _class='web2py_form')
+                                _class='web2py_form').process(
+                                    formname=formname,
+                                    onvalidation=onvalidation,
+                                    onsuccess=onupdate,
+                                    # #next=referrer, for web2py-bug
+                                    )
+            
             self.unmark_not_empty(table)
-            edit_form.process(formname=formname,
-                              onvalidation=onvalidation,
-                              onsuccess=onupdate,
-                              # #next=referrer, for web2py-bug
-                              )
+                
             res = DIV(edit_form,_class=_class)
             res.record = record # CUSTOM
             res.edit_form = edit_form
@@ -428,19 +456,24 @@ class SolidGrid(object):
                     gridbutton('%(buttonview)s' % ui, T('View'), 
                                   url(args=['view', tablename, record.id]))
                 )
+            _add_link_gridbuttons(record)
             res.gridbuttons = gridbuttons
             return res
             
         elif deletable and len(request.args)>2 and request.args[-3]=='delete':
             check_authorization()
             table = db[request.args[-2]]
-            ret = db(table.id==request.args[-1]).delete()
-            if ondelete:
-                ondelete(table, request.args[-1], ret)
+            if type(deletable) == type(lambda:None):
+                deletable(request.args[-1])
+            else:
+                ret = db(table.id==request.args[-1]).delete()
+                if ondelete:
+                    ondelete(table, request.args[-1], ret)
             redirect(url())
             
         elif csv and len(request.args)>0 and request.args[-1]=='csv':
             check_authorization()
+            # TODO
             return dict()
             
         elif request.vars.records and not isinstance(request.vars.records, list):
@@ -545,6 +578,17 @@ class SolidGrid(object):
            
         extracolumns = extracolumns or []
         
+        _links_in_row_buttons = []
+        def _get_link_extracolumn(link):
+            return {'label':link['header'], 'class':ui.get('default',''),
+                    'content':lambda row, rc: link['body'](row)}
+        if links and links_in_grid:
+            for link in links:
+                if isinstance(link, dict):
+                    extracolumns.append(_get_link_extracolumn(link))
+                else:
+                    _links_in_row_buttons.append(link)
+        
         if permutable:
             if len(request.args)>2 and request.args[-3] in ('up', 'down'):
                 check_authorization()
@@ -596,23 +640,26 @@ class SolidGrid(object):
                     _style='text-align:center;')}
             )
         
-        if details or editable or deletable:
+        if details or editable or deletable or _links_in_row_buttons:
             extracolumns.append(
                 {'label':'', #'width':'%spx' % (_size + 12), 
                 'content':lambda row, rc: 
-                     DIV(recordbutton('%(buttonview)s' % ui, T('View'),
+                     DIV(_style='white-space:nowrap;',
+                         *([link(row) or '' for link in _links_in_row_buttons] + 
+                           [recordbutton('%(buttonview)s' % ui, T('View'),
                                 url(args=['view', tablename, row[field_id]]), showbuttontext)
                                     if details else '',
-                         recordbutton('%(buttonedit)s' % ui, T('Edit'),
+                          recordbutton('%(buttonedit)s' % ui, T('Edit'),
                                 url(args=['edit', tablename, row[field_id]]), showbuttontext)
                                     if editable else '',
-                         recordbutton('%(buttondelete)s' % ui, T('Delete'),
+                          recordbutton('%(buttondelete)s' % ui, T('Delete'),
                                 url(args=['delete', tablename, row[field_id]]), showbuttontext,
                                 _onclick="""
 if(confirm("%s")){return true;} else {jQuery(this).unbind('click').fadeOut();return false;}""" % 
                                           T('Sure you want to delete them?'),)
                                     if deletable else '',
-                         _style='white-space:nowrap;')}
+                          ])
+                         )}
             )
             
         if paginate:
