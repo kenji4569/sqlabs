@@ -4,7 +4,7 @@ from plugin_rating_widget import RatingWidget
 db = DAL('sqlite:memory:')
 db.define_table('product', 
     Field('rating', 'integer', 
-          requires=IS_IN_SET(range(1,5)), # "requires" is necessary for the rating widget
+          requires=IS_IN_SET(range(1,6)), # "requires" is necessary for the rating widget
 ))
 
 ################################ The core ######################################
