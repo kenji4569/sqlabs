@@ -255,7 +255,6 @@ in a fancy ui by using %s. Then, %s could be then injected into the jsTree plugi
     
     plugin_rating_widget=dict(
         label='Rating Widget',
-        show_image=False,
         short_description='A rating widget using jquery.rating.js',
         long_description="""A rating widget using jquery.rating.js""",
     ),
