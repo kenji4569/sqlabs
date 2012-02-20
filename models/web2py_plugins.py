@@ -197,7 +197,7 @@ A simple dialog.
         long_description=XML(trans(en="""
 A WYSIWYG CMS. Just take a look!  (EXPERIMENTAL)
 """,                           ja="""
-見たまま編集ができるCMSです。一度見てみてください。 (EXPERIMENTAL)
+見たまま編集ができるCMSです。 (EXPERIMENTAL)
 """) )
     ),
     

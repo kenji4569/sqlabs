@@ -3,23 +3,36 @@
 # Authors: Kenji Hosoda <hosoda@s-cubism.jp>
 from gluon import *
 from gluon.storage import Storage, Messages
+from gluon.validators import Validator
 import gluon.contrib.simplejson as json
 import os
+# from plugin_uploadify_widget import IS_UPLOADIFY_IMAGE as IS_IMAGE
+# from plugin_uploadify_widget import IS_UPLOADIFY_LENGTH as IS_LENGTH
 
 LIVE_MODE = '_managed_html_live'
 EDIT_MODE = '_managed_html_edit'
 PREVIEW_MODE = '_managed_html_preview'
-    
-FILE_GRID_KEYWORD = '_managed_html_%s_grid'
 
 IMAGE_EXTENSIONS = ('png', 'jpg', 'jpeg', 'gif', 'bmp')
-MOVIE_EXTENSIONS = ('flv', 'mp4')
+MOVIE_EXTENSIONS = ('flv', 'mp4', 'm4v', 'avi', 'wmv')
+FILE_EXTENSIONS = None
 
+class IS_HTML(Validator):
+    def __call__(self, value):
+        from BeautifulSoup import BeautifulSoup
+        from plugin_elrte_widget import strip
+        return (strip(str(BeautifulSoup(value))), None)
+    
 class ManagedHTML(object):
 
     def __init__(self, db, keyword='_managed_html'):
         self.db, self.keyword = db, keyword
-    
+        self.file_grid_keyword = '_managed_html_%s_grid'
+        self.page_grid_keyword = '_managed_html_page_grid'
+        self.history_grid_keyword = '_managed_html_history_grid'
+        
+        self.contents_cache = {}
+        
         settings = self.settings = Storage()
         
         settings.URL = URL
@@ -40,8 +53,13 @@ class ManagedHTML(object):
         settings.uploadfolder = os.path.join(self.db._adapter.folder, '..', 'uploads')
         settings.upload = lambda filename: URL('download', args=[filename]) # TODO
         
-        settings.image_comment = None
-        settings.image_requires = None
+        settings.page_grid = None
+        # settings.page_original_url = ''
+        
+        settings.editable = True
+        settings.publishable = True
+        
+        settings.content_types = Storage()
         
         messages = self.messages = Messages(current.T)
         
@@ -66,12 +84,6 @@ class ManagedHTML(object):
             args = [mode] + args
         return self.settings.URL(a, c, f, r, args=args, vars=vars, **kwds)
         
-    def edit_url(self, a=None, c=None, f=None, r=None, args=None, vars=None, **kwds):
-        return self._mode_url(EDIT_MODE, a, c, f, r, args, vars, **kwds)
-    
-    def preview_url(self, a=None, c=None, f=None, r=None, args=None, vars=None, **kwds):
-        return self._mode_url(PREVIEW_MODE, a, c, f, r, args, vars, **kwds)
-    
     def define_tables(self, migrate=True, fake_migrate=False):
         db, settings, T = self.db, self.settings, current.T
         
@@ -86,7 +98,8 @@ class ManagedHTML(object):
             
         if not settings.table_file_name in db.tables:
             table = db.define_table(settings.table_file_name,
-                Field('name', 'upload', label=T('File'), autodelete=True),
+                Field('name', 'upload', unique=True, 
+                       label=T('File'), autodelete=True),
                 # Field('original_name'),
                 Field('keyword', label=T('Keyword')),
                 Field('description', 'text', label=T('Description')),
@@ -96,51 +109,186 @@ class ManagedHTML(object):
                 *settings.extra_fields.get(settings.table_file_name, []))
         settings.table_file = db[settings.table_file_name]
         
+    def _get_content(self, name, cache=None, id=None):
+        
+        if self.view_mode == LIVE_MODE:
+            loaded_record = self.contents_cache.get(name)
+            if loaded_record:
+                return loaded_record
+            table_content = self.settings.table_content
+            return self.db(table_content.name==name)(table_content.publish_on<=current.request.now
+                          ).select(orderby=~table_content.id, cache=cache).first()
+        else:
+            table_content = self.settings.table_content
+            query = (table_content.name==name)
+            if id:
+                query &= (table_content.id==id)
+            record = self.db(query).select(orderby=~table_content.id).first()
+            
+            self.contents_cache[name] = record
+            return record
+        
+    def _is_published(self, content):
+        return (content is None) or bool(content.publish_on and 
+                                         content.publish_on<=current.request.now)
+        
+    def load_contents(self, content_names):
+        if not content_names:
+            return
+        table_content = self.settings.table_content
+        # records = self.db(
+            # table_content.name.belongs(content_names))(
+            # table_content.publish_on!=None
+            # ).select(table_content.ALL,
+                     # table_content.publish_on.max(),
+                     # groupby=table_content.name)
+        
+        max_id = table_content.id.max()
+        _ids = [r[max_id] for r in self.db(
+                        table_content.name.belongs(content_names))(
+                        table_content.publish_on<=current.request.now
+                          ).select(max_id, groupby=table_content.name)]
+        if _ids:
+            records = self.db(table_content.id.belongs(_ids)).select(table_content.ALL)
+            for r in records:
+                self.contents_cache[r.name] = r
+        
     def switch_mode(self):
-        settings, request, response = self.settings, current.request, current.response
+        settings, request, response, T = self.settings, current.request, current.response, current.T
+        
         _arg0 = request.args(0)
-        self.view_mode = _arg0
         if not (_arg0 and (EDIT_MODE in _arg0 or PREVIEW_MODE in _arg0)):
             self.view_mode = LIVE_MODE
             return
         else:
-            response.files.append(URL('static', 'plugin_managed_html/managed_html.css'))
-            response.files.append(URL('static', 'plugin_managed_html/managed_html.js'))
-            response.files.append(URL('static', 'plugin_managed_html/jquery-ui-1.8.16.custom.min.js'))
+            self.view_mode = _arg0
+            if request.args and request.args[-1] == 'managed_html.js':
+                # Return javascript
+                response.headers['Content-Type'] = 'text/javascript; charset=utf-8;'
+                raise HTTP(200, response.render('plugin_managed_html/managed_html_ajax.js', 
+                            dict(
+                                home_url=settings.home_url,
+                                home_label=settings.home_label,
+                                edit_url=settings.URL(args=[self.view_mode.replace(PREVIEW_MODE, EDIT_MODE)]+
+                                                            request.args[1:-1], vars=request.vars) 
+                                            if self.view_mode == PREVIEW_MODE else '',
+                                preview_url=settings.URL(args=[self.view_mode.replace(EDIT_MODE, PREVIEW_MODE)]+
+                                                                 request.args[1:-1], vars=request.vars) 
+                                            if EDIT_MODE in self.view_mode else '',
+                                live_url=self.settings.URL(args=request.args[1:-1], vars=request.vars, scheme='http'),
+                                show_page_grid=self._show_page_grid_js() if settings.page_grid else '',
+                            )), 
+                           **response.headers)
+                           
+            response.files.append(URL(args=((request.args or []) + ['managed_html.js'])))
+                          
+            self.use_grid(args=request.args[:2])
+               
+
+    def use_grid(self, args):
+        settings, request, response, T = self.settings, current.request, current.response, current.T
+        
+        from plugin_solidgrid import SolidGrid
+        self.solidgrid = SolidGrid(renderstyle=True)
+        
+        for file_type in ('image', 'movie', 'file'):
+            _grid_keyword = self.file_grid_keyword % file_type
+            if (_grid_keyword in request.vars or 
+                    (_grid_keyword in request.args)):
+                if not self.settings.editable:
+                    raise HTTP(400)
+                raise HTTP(200, self._file_grid(file_type=file_type, args=args))
+        
+        if ((self.history_grid_keyword in request.vars) or 
+                (self.history_grid_keyword in request.args)):
+            if not self.settings.editable:
+                raise HTTP(400)
+            raise HTTP(200, self._history_grid(args=args))
+                
+        _files = [
+            URL('static', 'plugin_managed_html/managed_html.css'),
+            URL('static', 'plugin_managed_html/jquery.spinner.js'),
+                     URL('static','plugin_elrte_widget/js/jquery-ui-1.8.16.custom.min.js'),
+        ]
+        response.files[:0] = [f for f in _files if f not in response.files]
             
-            response.meta.managed_html_home_url = settings.home_url
-            response.meta.managed_html_home_label = settings.home_label
+    def _show_page_grid_js(self):
+        from plugin_dialog import DIALOG
+        T = current.T
+        return DIALOG(title=T('+ Page'), close_button=T('close'),
+                        content=self.settings.page_grid,
+                        _class='managed_html_dialog').show(reload=True) 
+    
+    def _show_history_grid_js(self, content_name, collection=False):
+        from plugin_dialog import DIALOG
+        T = current.T
+        request = current.request
+        
+        _post_js = self._post_content_js if not collection else self._post_collection_js
+        
+        return """
+jQuery(document.body).one('managed_html_history_selected', function(e, content_id) {
+    eval('%(post)s'.replace("__placeholder__", content_id));
+    jQuery('.managed_html_dialog').hide();
+}); %(show)s; return false;""" % dict(
+            post=_post_js(content_name, 'revert', content_id='__placeholder__'),
+            show=DIALOG(title=T('History'), close_button=T('close'),
+                      content=LOAD(url=URL(args=(request.args or []) + ['history'], 
+                                           vars={self.history_grid_keyword: content_name}), ajax=True),
+                      _class='managed_html_dialog'
+                      ).show(reload=True))
+                    
+    def _history_grid(self, args):
+        T = current.T
+        request = current.request
+        
+        table_content = self.settings.table_content
+        
+        table_content.publish_on.label = T('Publish on')
+        table_content.publish_on.represent = lambda v: v and v or '---'
+        
+        def _represent(v):
+            if not v:
+                return '---'
+            data = json.loads(v)
+            if type(data) == dict:
+                return DIV([DIV(DIV(k), TEXTAREA(v, _rows=3, _cols=50, _style='width:90%;')) 
+                            for k,v in data.items()])
+            elif type(data) == list:
+                return DIV([DIV(k, ':', v) for k, v in data])
             
-            response.meta.managed_html_live_url = settings.URL(args=request.args[1:], vars=request.vars, scheme='http')
+        table_content.data.represent = _represent
+                
+        extracolumns = [
+            {'label': '', 'width': '150px;',
+                'content':lambda row, rc: 
+                 SPAN(self.solidgrid.settings.recordbutton('ui-icon-circle-arrow-w', T('Revert'),
+                            '#', _onclick="""
+jQuery(document.body).trigger('managed_html_history_selected', ['%s']);return false;
+                            """ % (row.id), _class='ui-btn'))},
+        ]
         
-            if EDIT_MODE in self.view_mode:
-                from plugin_solidgrid import SolidGrid
-                self.solidgrid = SolidGrid(renderstyle=True)
-                
-                for file_type in ('image', 'movie'):
-                    _grid_keyword = FILE_GRID_KEYWORD % file_type
-                    if (_grid_keyword in current.request.vars or 
-                            current.request.args(1) == _grid_keyword):
-                        raise HTTP(200, self._file_grid(file_type=file_type))
-                
-                response.meta.managed_html_preview_url = settings.URL(
-                    args=[self.view_mode.replace(EDIT_MODE, PREVIEW_MODE)]+
-                         request.args[1:], vars=request.vars)
-                
-            elif self.view_mode == PREVIEW_MODE:
-                response.meta.managed_html_edit_url = settings.URL(
-                    args=[self.view_mode.replace(PREVIEW_MODE, EDIT_MODE)]+
-                          request.args[1:], vars=request.vars)
-                
-    def is_image(self, *args, **kwargs):
-        from plugin_uploadify_widget import IS_UPLOADIFY_IMAGE
-        return IS_UPLOADIFY_IMAGE(*args, **kwargs)
+        content_name = request.vars.get(self.history_grid_keyword, request.args(2))
+        query = (table_content.name==content_name)
+        grid = self.solidgrid(
+            query,
+            columns=[extracolumns[0], table_content.publish_on, table_content.data],
+            extracolumns=extracolumns,
+            create=False,
+            editable=False,
+            details=False,
+            showid=False,
+            searchable=False,
+            sortable=[~table_content.id],
+            csv=False,
+            args=args + [self.history_grid_keyword, content_name],
+        )
         
-    def is_length(self, *args, **kwargs):
-        from plugin_uploadify_widget import IS_UPLOADIFY_LENGTH
-        return IS_UPLOADIFY_LENGTH(*args, **kwargs)
-        
-    def _file_grid(self, file_type):
+        return DIV(DIV(grid.gridbuttons), DIV(_style='clear:both;'), BR(), HR(),
+                 DIV(DIV(_style='clear:both;'), grid), 
+                 _class='history_grid')
+              
+    def _file_grid(self, file_type, args):
         T = current.T
         table_file = self.settings.table_file
         request = current.request
@@ -171,54 +319,52 @@ class ManagedHTML(object):
                 filename = request.vars.name.filename
                 if filename:
                     extension = filename.split('.')[-1].lower()
+                    thumbnail = ''
                     if extension in (IMAGE_EXTENSIONS + MOVIE_EXTENSIONS):
-                        thumbnail = ''
                         if extension in IMAGE_EXTENSIONS:
-                            # (nx, ny) = 80, 80 # TODO setting
+                            # TODO
+                            # (nx, ny) = 80, 80
                             # from PIL import Image
                             # img = Image.open(os.path.join(self.settings.uploadfolder, filename))
-                            
                             # # print img.size # TODO
-                            
                             # img.thumbnail((nx, ny), Image.ANTIALIAS)
-                            
                             # root, ext = os.path.splitext(filename)
                             # thumbnail = '%s_thumbnail%s' % (root, ext)
-                            
                             # img.save(os.path.join(self.settings.uploadfolder, thumbnail))
                             thumbnail = filename
                         
-                        self.db(self.settings.table_file.id==form.vars.id).update(
-                            name=filename, extension=extension, thumbnail=thumbnail,
-                        )
+                    self.db(self.settings.table_file.id==form.vars.id).update(
+                        name=filename, extension=extension, thumbnail=thumbnail,
+                    )
             
-        _grid_keyword = FILE_GRID_KEYWORD % file_type
+        _grid_keyword = self.file_grid_keyword % file_type
         _extensions = {'image': IMAGE_EXTENSIONS,
                        'movie': MOVIE_EXTENSIONS,
+                       'file': FILE_EXTENSIONS,
                        }.get(file_type)
         extracolumns = [
             {'label': '', 'width': '150px;',
                 'content':lambda row, rc: 
-                 SPAN(self.solidgrid.recordbutton('ui-icon-seek-next', T('Select'),
+                 SPAN(self.solidgrid.settings.recordbutton('ui-icon-seek-next', T('Select'),
                             '#', _onclick="""
 jQuery(document.body).trigger('managed_html_file_selected', ['%s', '%s']);return false;
                             """ % (row.name, row.thumbnail), _class='ui-btn'))},
              {'label': T('File'), 'width': '150px;',
               'content':lambda row, rc: DIV(
-                self._file_represent(row.name, row.thumbnail),
+                DIV(self._file_represent(row.name, row.thumbnail)),
+                TEXTAREA(self.settings.upload(row.name), _rows=1),
                 _style='word-break:break-all;')}
         ]
         main_table = table_file
-        grid = self.solidgrid((main_table.extension.belongs(_extensions)), 
+        grid = self.solidgrid((main_table.extension.belongs(_extensions) if _extensions else main_table), 
             fields=[main_table.ALL],
             columns=[extracolumns[0], extracolumns[1], 
                      main_table.keyword, main_table.description, main_table.extension], 
             extracolumns=extracolumns,
             editable=['keyword', 'description'],
-            details=False,
-            showid=False,
+            details=False, csv=False, showid=False,
             searchable=[main_table.keyword, main_table.extension],
-            args=request.args[:1] + [_grid_keyword],
+            args=args + [_grid_keyword],
             user_signature=user_signature,
             hmac_key=hmac_key,
             oncreate=_oncreate,
@@ -245,9 +391,9 @@ jQuery(document.body).trigger('managed_html_file_selected', ['%s', '%s']);return
         el_id = '%s_%s' % (field._tablename, field.name)
         
         from plugin_dialog import DIALOG
-        image_chooser = DIALOG(title=T('Select %s' % file_type), close_button=T('close'),
-            content=LOAD(url=URL(args=current.request.args, 
-                                 vars={FILE_GRID_KEYWORD % file_type:True}), ajax=True),
+        file_chooser = DIALOG(title=T('Select %s' % file_type), close_button=T('close'),
+            content=LOAD(url=URL(args=(current.request.args or []) + ['file_chooser'], 
+                                 vars={self.file_grid_keyword % file_type:True}), ajax=True),
             onclose='jQuery(document.body).trigger("managed_html_file_selected", "");',
             _id='managed_html_%s_chooser' % file_type, _class='managed_html_dialog')
                
@@ -274,7 +420,7 @@ if(name!="") {
     }
     jQuery('.managed_html_dialog').hide();
 }
-}); %(show)s; return false;""" % dict(id=el_id, show=image_chooser.show(),
+}); %(show)s; return false;""" % dict(id=el_id, show=file_chooser.show(),
                                       upload=self.settings.upload('__filename__'))), 
                    DIV(self._file_represent(value, thumbnail, 150, 150), _id='%s__file' % el_id, 
                        _style='margin-top:5px;'),
@@ -310,88 +456,93 @@ if(this.checked) {
         
         from plugin_dialog import DIALOG
         image_chooser = DIALOG(title=T('Select an image'), close_button=T('close'),
-            content=LOAD(url=URL(args=current.request.args, 
-                                 vars={FILE_GRID_KEYWORD % 'image':True}), ajax=True),
+            content=LOAD(url=URL(args=(current.request.args or []) + ['image_chooser'], 
+                                 vars={self.file_grid_keyword % 'image':True}), ajax=True),
             onclose='jQuery(document.body).trigger("managed_html_file_selected", "");',
             _id='managed_html_image_chooser', _class='managed_html_dialog')
-        # file_chooser = # TODO
+        file_chooser = DIALOG(title=T('Select a file'), close_button=T('close'),
+            content=LOAD(url=URL(args=(current.request.args or []) + ['file_chooser'], 
+                                 vars={self.file_grid_keyword % 'file':True}), ajax=True),
+            onclose='jQuery(document.body).trigger("managed_html_file_selected", "");',
+            _id='managed_html_file_chooser', _class='managed_html_dialog')
                               
         fm_open = """function(callback, kind) {
 if (kind == 'elfinder') {%s;} else {%s;}
-jQuery(document.body).bind('managed_html_file_selected managed_html_file_selected', function(e, filename) {
-    callback('%s'.replace('__filename__', filename)); jQuery('.managed_html_dialog').hide(); 
-});
-}""" % ('', #file_chooser.show(), 
+jQuery(document.body).one('managed_html_file_selected', function(e, filename) {
+if(filename != "") {
+    var data = '%s'.replace('__filename__', filename);
+    if (kind == 'elfinder') {
+        data = '<a href="'+data+'" >FILE</a>';
+    }
+    callback(data); jQuery('.managed_html_dialog').hide(); 
+}});
+}""" % (file_chooser.show(), 
         image_chooser.show(), self.settings.upload('__filename__')) # TODO setting for managed_html_file_selected
 
         from plugin_elrte_widget import ElrteWidget
-        widget =  ElrteWidget(lang=lang, cssfiles=self.settings.text_widget_cssfiles,
-                              fm_open=fm_open)
-        
-        _files = [URL('static','plugin_elrte_widget/css/elrte.min.css'),
-                 URL('static','plugin_elrte_widget/css/elrte-inner.css'),
-                 URL('static','plugin_elrte_widget/css/smoothness/jquery-ui-1.8.13.custom.css'),
-                 # URL('static','plugin_elrte_widget/js/jquery-ui-1.8.13.custom.min.js'), # do not use elrte's jquery-ui
-                 URL('static','plugin_elrte_widget/js/elrte.min.js')]
-        if lang:
-            _files.append(URL('static','plugin_elrte_widget/js/i18n/elrte.%s.js' % lang))  
-        
-        widget.settings.files = _files
+        widget =  ElrteWidget()
+        widget.settings.lang = lang
+        widget.settings.cssfiles = self.settings.text_widget_cssfiles
+        widget.settings.fm_open = fm_open
         return widget(field, value, **attributes)
-        
-    def _post_js(self, name, action, target):
+       
+    def _post_js(self, target, name, action, **attrs):
         data = {self.keyword:name, '_action':action}
-        return """managed_html_ajax_page("%(url)s", %(data)s, "%(target)s");
-               """ % dict(url=URL(args=current.request.args, vars=current.request.get_vars), 
+        data.update(**attrs)
+        return 'managed_html_ajax_page("%(url)s", %(data)s, "%(target)s");' % dict(
+                          url=URL(args=current.request.args), # , vars=current.request.get_vars
                           data=json.dumps(data), target=target)
+       
+    def _post_content_js(self, name, action, **attrs):
+        return self._post_js('managed_html_content_%s' % name, name, action, **attrs)
 
-    def _get_content(self, name, cache=None):
-        table_content = self.settings.table_content
-        query = (table_content.name==name)
-        if self.view_mode == LIVE_MODE:
-            return self.db(query)(table_content.publish_on<=current.request.now
-                                 ).select(orderby=~table_content.publish_on, cache=cache).first()
-        else:
-            return self.db(query).select(orderby=~table_content.id).first()
-        
-    def _is_published(self, content):
-        return (content is None) or bool(content.publish_on and 
-                                         content.publish_on<=current.request.now)
-        
-    def _is_simple_form(self, fields):
-        return len(fields) == 1
-        
-    def render(self, name, *fields, **kwargs):
+    def content_block(self, name, *fields, **kwargs):
         request, response, session, T, settings = (
             current.request, current.response, current.session, current.T, self.settings)
-        el_id = 'managed_html_block_%s' % name
-        inner_el_id = 'managed_html_inner_%s' % name
+        el_id = 'managed_html_content_block_%s' % name
+        content_el_id = 'managed_html_content_%s' % name
         
-        def _render(func):
+        def _decorator(func):
             def _func(content):
                 if EDIT_MODE in self.view_mode:
                     response.write(XML("""<script>
 jQuery(function(){
-    $('#%s a').unbind("click").click(function(e) {e.preventDefault();});
-});</script>""" % inner_el_id))
-                    response.write(XML("<div onclick='%s'>" % self._post_js(name, 'edit', inner_el_id)))
-                
+    jQuery('#%s a').unbind("click").click(function(e) {e.preventDefault();});
+});</script>""" % content_el_id))
+
+                    response.write(XML('<div class="%s">&nbsp;</div>' %
+                                       ('managed_html_content_anchor' if self._is_published(content) 
+                                            else 'managed_html_content_anchor_pending')))
+
+                    response.write(XML("<div onclick='%s' class='managed_html_content_inner'>" % 
+                                        (self._post_content_js(name, 'edit') if settings.editable else '') ))
+                    
+                    _body_len = len(response.body.getvalue())
+                    
                 func(Storage(content and content.data and json.loads(content.data) or {}))
                 
                 if EDIT_MODE in self.view_mode:
-                    # if not content or not content.data:
-                    response.write(XML('<div style="height:7px;background:white;">&nbsp;</div><div style="clear:both;"></div>'))
+                    if len(response.body.getvalue()) == _body_len:
+                        response.write(XML('<div class="managed_html_empty_content">&nbsp;</div>'))
+                    
                     response.write(XML('</div>'))
                     
-            if (self.keyword in request.vars and 
-                    request.vars[self.keyword] == name):
-                # === Ajax request for the name ===
+            if (EDIT_MODE in self.view_mode and request.ajax and 
+                    self.keyword in request.vars and request.vars[self.keyword] == name):
+                    
                 import cStringIO
                 action = request.vars.get('_action')
-                if action == 'edit':
-                    content = self._get_content(name)
+                if action in ('edit', 'revert'):
+                    if not settings.editable:
+                        raise HTTP(400)
+                        
+                    if action == 'revert':
+                        response.flash = T('Reverted')
+                        content = self._get_content(name, id=request.vars.content_id)
+                    else:
+                        content = self._get_content(name)
+                        
                     if not content:
-                        #settings.table_content.insert(name=name)
                         content = self._get_content(name)
                     data = content and content.data and json.loads(content.data) or {}
                     
@@ -404,6 +555,12 @@ jQuery(function(){
                         
                         if field.type == 'text':   
                             field.widget = field.widget or self.text_widget
+                            field.requires = IS_HTML()
+                            
+                            # if field.name in request.vars:
+                                # from plugin_elrte_widget import strip
+                                # request.vars[field.name] = strip(request.vars[field.name])
+        
                         elif field.type.startswith('list:'):
                             if field.name+'[]' in request.vars:
                                 request.vars[field.name] = [v for v in request.vars[field.name+'[]'] if v]
@@ -421,17 +578,12 @@ jQuery(function(){
                         data = {}
                         for field in fields:
                             field_value = form.vars[field.name]
-                            #if field.type == 'upload' and field_value:
-                                # field_value.replace('no_table.image.', '%s.name.' % settings.table_file)
                             data[field.name] = field_value
                             
-                        #content.update_record(data=json.dumps(data))
-                        content_id = settings.table_content.insert(name=name, data=json.dumps(data))
+                        table_content = settings.table_content
+                        self.db(table_content.name==name)(table_content.publish_on==None).delete()
+                        table_content.insert(name=name, data=json.dumps(data))
                         content = self._get_content(name)
-                        
-                        # for field in fields:
-                            # if field.type == 'upload':
-                                # settings.table_file.insert(name=field_value)
                         
                         response.flash = T('Edited')
                         response.js = 'managed_html_published("%s", false);' % el_id
@@ -441,19 +593,21 @@ jQuery(function(){
                         _func(content)
                         raise HTTP(200, response.body.getvalue())
                         
-                    if self._is_simple_form(fields):
+                    if len(fields) == 1:
                         form.components = [form.custom.widget[fields[0].name]]
                         
                     form.components += [INPUT(_type='hidden', _name=self.keyword, _value=name),
                                INPUT(_type='hidden', _name='_action', _value='edit')]
-                    raise HTTP(200, form)
+                    raise HTTP(200, DIV(form, _class='managed_html_content_inner'))
                     
                 elif action in ('back', 'publish_now'):
                     content = self._get_content(name)
                     if action == 'publish_now':
+                        if not settings.publishable:
+                            raise HTTP(400)
                         content.update_record(publish_on=request.now)
                         response.js = 'managed_html_published("%s", true);' % el_id
-                        response.flash = current.T('Published')
+                        response.flash = T('Published')
                     elif action == 'back':
                         response.js = 'managed_html_published("%s", %s);' % (
                                         el_id, 'true' if self._is_published(content) else 'false')
@@ -461,6 +615,7 @@ jQuery(function(){
                     response.body = cStringIO.StringIO()
                     _func(content)
                     raise HTTP(200, response.body.getvalue())
+                   
                 else:
                     raise RuntimeError
                 
@@ -470,39 +625,51 @@ jQuery(function(){
                 if EDIT_MODE in self.view_mode:
                     is_published = self._is_published(content)
                     
-                    response.write(XML('<div id="%s" class="managed_html_block  %s">' %
-                                        (el_id, 'managed_html_block_pending' if not is_published else '')))
+                    response.write(XML('<div id="%s" class="managed_html_content_block %s">' %
+                                        (el_id, 'managed_html_content_block_pending' if not is_published else '')))
                     
                     # === write content ===
-                    response.write(XML("""<div id="%s" class="managed_html_content">""" % (inner_el_id)))
+                    response.write(XML('<div id="%s" class="managed_html_content">' % content_el_id))
                     _func(content)
-                    response.write(XML('<div style="clear:both;"></div></div>'))
+                    response.write(XML('</div>')) # <div style="clear:both;"></div>
                     
                     # === write action buttons ===
                     response.write(XML(DIV(DIV(
                         SPAN(INPUT(_value=T('Back'), _type='button', 
-                              _onclick=self._post_js(name, 'back', inner_el_id),
+                              _onclick=self._post_content_js(name, 'back'),
                               _class='managed_html_btn'),
                           _class='managed_html_back_btn',
-                          _style='display:none;'),
+                          _style='display:none;') if settings.editable else '',
                         SPAN(INPUT(_value=T('Submit'), _type='button', 
-                              _onclick='jQuery("#%s"+" form").submit()' % inner_el_id,
+                              _onclick='jQuery("#%s"+" form").submit()' % content_el_id,
                               _class='managed_html_btn managed_html_primary_btn'),
                           _class='managed_html_submit_btn',
-                          _style='display:none;'),
+                          _style='display:none;') if settings.editable else '',
                         SPAN(INPUT(_value=T('Edit'), _type='button', 
-                              _onclick=self._post_js(name, 'edit', inner_el_id),
+                              _onclick=self._post_content_js(name, 'edit'),
                               _class='managed_html_btn'),
-                           _class='managed_html_edit_btn'),
-                       SPAN(INPUT(_value=T('Publish Now'), _type='button', 
-                              _onclick=self._post_js(name, 'publish_now', inner_el_id),
+                           _class='managed_html_edit_btn') if settings.editable else '',
+                        SPAN(INPUT(_value=T('Publish Now'), _type='button', 
+                              _onclick=self._post_content_js(name, 'publish_now'),
                               _class='managed_html_btn managed_html_success_btn'),
                            _class='managed_html_publish_now_btn',
-                           _style='display:none;' if is_published else ''),
-                       SPAN(SPAN(fields[0].comment, _style='white-space:nowrap;margin-right:10px;'),
-                           _class='managed_html_main_comment',
-                           _style='display:none;') if self._is_simple_form(fields) and fields[0].comment else '',
-                    ), _class='managed_html_contents_ctrl')))
+                           _style='display:none;' if is_published else '') if settings.publishable else '',
+                        SPAN(INPUT(_value=T('History'), _type='button', 
+                              _onclick=self._show_history_grid_js(name),
+                              _class='managed_html_btn managed_html_info_btn'),
+                           _class='managed_html_history_btn',
+                           _style='display:none;')  if settings.editable else '',
+                       SPAN(SPAN(T('Move'), 
+                              _title=T('Drag me'),
+                              _class='managed_html_btn managed_html_warning_btn'),
+                           _class='managed_html_move_btn')  if kwargs.get('parent') else '',
+                       SPAN(INPUT(_value=T('Delete'), _type='button', 
+                              _onclick='if(confirm("%s")){%s;}' % (
+                                            T('Are you sure you want to delete this object?'), 
+                                            self._post_collection_js(kwargs['parent'], 'delete', content=name)), # 'alert("%s")' % kwargs['parent'],
+                              _class='managed_html_btn managed_html_danger_btn'),
+                           _class='managed_html_delete_btn')  if kwargs.get('parent') else '',
+                    ), _class='managed_html_content_ctrl')))
                     
                     response.write(XML('</div>'))
                     
@@ -511,11 +678,196 @@ jQuery(function(){
                     response.write(XML('<div id="%s">' % el_id))
                     _func(content)
                     response.write(XML('</div>'))
-                
             return wrapper
-        return _render
+        return _decorator
+        
+    def _show_add_form_js(self, name):
+        from plugin_dialog import DIALOG
+        T = current.T
+        request = current.request
+        return DIALOG(title=T('Select'), close_button=T('close'),
+                        content=LOAD(url=URL(args=request.args, 
+                                     vars={self.keyword:name, '_action':'show_add_form'}), 
+                                     ajax=True),
+                        _class='managed_html_dialog').show(reload=True)
+         
+    def _post_collection_js(self, name, action, **attrs):
+        return self._post_js('managed_html_collection_%s' % name, name, action, **attrs)
+                       
+    def _add_form(self, name):
+        T = current.T
+        form = SQLFORM.factory(
+            Field('content_type', 
+                  requires=IS_IN_SET(self.settings.content_types.keys(), zero=None)),
+            submit_button=T('Submit'),
+        )
+        
+        if form.validate():
+            current.response.flash = ''
+            return DIV(SCRIPT('jQuery(".managed_html_dialog").hide();' + 
+                              self._post_collection_js(name, 'add', content_type=form.vars.content_type)))
+            
+        return form
+        
+    def collection_block(self, name, **kwargs):
+        request, response, session, T, settings = (
+            current.request, current.response, current.session, current.T, self.settings)
+        el_id = 'managed_html_collection_block_%s' % name
+        collection_el_id = 'managed_html_collection_%s' % name
+        
+        def _decorator(func):
+            
+            def _func(collection):
+                if EDIT_MODE in self.view_mode:
+                    response.write(XML("<div class='managed_html_collection_inner'><div>"))
+                
+                _collection = []
+                from functools import partial
+                for content_type, content_name in collection and collection.data and json.loads(collection.data) or []:
+                    _content_func = settings.content_types.get(content_type, lambda name: '')
+                    _collection.append(partial(_content_func, content_name, parent=name))
+                func(_collection)
+                
+                if EDIT_MODE in self.view_mode:
+                    response.write(XML('<div class="%s">&nbsp;</div>' %
+                                        ('managed_html_collection_anchor' if collection and collection.publish_on 
+                                            else 'managed_html_collection_anchor_pending')))
+                    response.write(XML("""
+<script>jQuery(function(){managed_html_move("%s", "%s", "%s", "%s")})</script>""" % 
+                            (name, self.keyword, URL(args=request.args), # , vars=request.get_vars
+                             current.T('Sure you want to move them?'))))
+                    response.write(XML('</div></div>'))
+            
+            if (EDIT_MODE in self.view_mode and request.ajax and 
+                    self.keyword in request.vars and request.vars[self.keyword] == name):
+                
+                import cStringIO
+                table_content = settings.table_content
+                action = request.vars.get('_action')
+                response.js = 'managed_html_init_blocks();'
+                
+                if action in ('add', 'revert'):
+                    if not settings.editable:
+                        raise HTTP(400)
+                        
+                    collection = self._get_content(name, id=request.vars.content_id if action == 'revert' else None)
+                    if not collection:
+                        collection = self._get_content(name)
+                    data = collection and collection.data and json.loads(collection.data) or []
+                    
+                    if action == 'add':
+                        from gluon.utils import web2py_uuid
+                        new_content_name = web2py_uuid()
+                        data.append([request.vars.content_type, new_content_name])
+                        response.flash = T('Added')
+                        
+                    elif action == 'revert':
+                        response.flash = T('Reverted')
+                      
+                    response.js += 'managed_html_collection_published("%s", false);' % el_id
+                        
+                    self.db(table_content.name==name)(table_content.publish_on==None).delete()
+                    table_content.insert(name=name, data=json.dumps(data))
+                    collection = self._get_content(name)
+                        
+                    response.body = cStringIO.StringIO()
+                    _func(collection)
+                    raise HTTP(200, response.body.getvalue())
+                    
+                elif action in ('publish_now', 'delete', 'move'):
+                    collection = self._get_content(name)
+                    
+                    if action == 'publish_now':
+                        collection.update_record(publish_on=request.now)
+                        response.js += 'managed_html_collection_published("%s", true);' % el_id
+                        response.flash = T('Published')
+                    
+                    elif action in ('delete', 'move'):
+                        _data = json.loads(collection.data)
+                        
+                        if action == 'delete':
+                            _data = [c for c in _data if c[1] != request.vars.content]
+                            response.flash = T('Deleted')
+                        
+                        elif action == 'move':
+                            from_name = request.vars.get('from')
+                            to_name = request.vars.get('to')
+                            from_idx = to_idx = -1
+                            for i, c in enumerate(_data):
+                                if c[1] == from_name: 
+                                    from_idx = i
+                                elif c[1] == to_name:
+                                    to_idx = i
+
+                            if from_idx >= 0 and to_idx >=0:
+                                _tmp = _data[from_idx]
+                                _data[from_idx] = _data[to_idx]
+                                _data[to_idx] = _tmp
+                                response.flash = T('Moved')
+
+                        self.db(table_content.name==name)(table_content.publish_on==None).delete()
+                        table_content.insert(name=name, data=json.dumps(_data))
+                        collection = self._get_content(name)
+                        
+                        response.js += 'managed_html_collection_published("%s", false);' % el_id
+                        
+                    response.body = cStringIO.StringIO()
+                    _func(collection)
+                    raise HTTP(200, response.body.getvalue())
+                    
+                elif action == 'show_add_form':
+                    if not settings.editable:
+                        raise HTTP(400)
+                    raise HTTP(200, self._add_form(name))
+                    
+                else:
+                    raise RuntimeError
+                    
+            def wrapper(*args, **kwds):
+                #self.db(self.settings.table_content.name==name).delete()
+                
+                collection = self._get_content(name, cache=kwargs.get('cache'))
+                
+                if EDIT_MODE in self.view_mode:
+                    is_published = self._is_published(collection)
+                    
+                    response.write(XML('<div id="%s" class="managed_html_collection_block %s">' % 
+                                        (el_id, 'managed_html_collection_block_pending' if not is_published else '')))
+                    
+                    response.write(XML('<div id="%s" class="managed_html_collection">' % collection_el_id))
+                    
+                    _func(collection)
+                    
+                    response.write(XML('</div>'))
+                    
+                    # TODO refactoring
+                    response.write(XML(DIV(DIV(
+                                SPAN(INPUT(_value=T('Add'), _type='button', 
+                                      _onclick=self._show_add_form_js(name),
+                                      _class='managed_html_btn'),
+                                   _class='managed_html_edit_btn') if settings.editable else '',
+                                SPAN(INPUT(_value=T('Publish Now'), _type='button', 
+                                      _onclick=self._post_collection_js(name, 'publish_now'),
+                                      _class='managed_html_btn managed_html_success_btn'),
+                                   _class='managed_html_publish_now_btn',
+                                   _style='display:none;' if is_published else '') if settings.publishable else '',
+                                SPAN(INPUT(_value=T('History'), _type='button', 
+                                      _onclick=self._show_history_grid_js(name, collection=True),
+                                      _class='managed_html_btn managed_html_info_btn'),
+                                   _class='managed_html_history_btn')  if settings.editable else '',
+                            ), _class='managed_html_collection_ctrl')))
+                    
+                    response.write(XML('</div>'))
+                else:
+                    response.write(XML('<div id="%s">' % el_id))
+                    _func(collection)
+                    response.write(XML('</div>'))
+            return wrapper
+        return _decorator
         
     def movable(self, name):
+        # ! Deprecated. just for demo..
+        
         if not hasattr(self, '_movables'):
             from collections import defaultdict
             self._movables = defaultdict(list)
@@ -581,13 +933,13 @@ jQuery(function(){
                 
                 if EDIT_MODE in self.view_mode:
                     el_id = 'managed_html_block_%s_%s' % (name, _block_index)
-                    inner_el_id = 'managed_html_inner_%s_%s' % (name, _block_index)
+                    content_el_id = 'managed_html_content_%s_%s' % (name, _block_index)
                     
                     response.write(XML('<div id="%s" class="managed_html_block managed_html_block_movable">'% el_id))
                     
                     response.write(XML("""
 <div id="%s" class="managed_html_movable managed_html_name_%s">
-""" % (inner_el_id, name))) #  %s .. , 'managed_html_content_published' if is_published else ''
+""" % (content_el_id, name))) #  %s .. , 'managed_html_content_published' if is_published else ''
                     
                     _func(*args, **kwds)
                     
