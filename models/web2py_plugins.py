@@ -50,43 +50,53 @@ The lazy options widget receives js events and sends ajax requests to populate i
     plugin_anytime_widget=dict(
         label='Anytime Widget',
         short_description=T('A date-time picker widget using anytime.js'),
-        long_description=XML(T("""
+        long_description=XML(trans(en="""
 This plugin provides time, date and datetime picker widgets using %s.
+""",                               ja="""
+このプラグインは%sを使用して、時刻、日付、日時の選択ウィジェットを提供します。
 """) % A('anytime.js', _href='http://www.ama3.com/anytime/').xml() + 
 '<br/><span style="color:#D00;">NOTE: Confirm the anytime.js licence. The anytime.js is under the Creative Commons BY-NC-SA 3.0 License.</span>')
     ),
     plugin_color_widget=dict(
         label='Color Widget',
         short_description=T('A color picker widget using colorpicker.js'),
-        long_description=XML(T("""
+        long_description=XML(trans(en="""
 This plugin provides a color picker widget, using %s. Picked color is displayed in forms. 
+""",                               ja="""
+このプラグインは、%sを用いて色選択ウィジェットを提供します。選択した色はフォームに表示されます。
 """) % A('colorpicker.js', _href='http://www.eyecon.ro/colorpicker/').xml())
     ),
     
     plugin_elrte_widget=dict(
         label='elRTE WYSIWYG Widget',
         short_description=T('A WYSIWYG editor widget using elRTE.js'),
-        long_description=XML(T("""
+        long_description=XML(trans(en="""
 A WYSIWYG editor widget using %s. You can specify your language by a contructor argument, and include your image chooser.
+""",                               ja="""
+%sを使用したWYSIWYGエディターウィジェットです。コンストラクタの引数で使用言語を指定することができ、さらに独自の画像選択機能を組み込むことができます。
 """) % A('elRTE.js', _href='http://elrte.org/').xml())
     ),
     plugin_uploadify_widget=dict(
         label='Uploadify Widget',
         short_description=T('A file upload widget using uploadify.js'),
-        long_description=XML(T("""
+        long_description=XML(trans(en="""
 A file upload widget using %s.
 The uploadify turns a file input tag into a flash-based file uploader,
 which displays a progress bar and enables ajax upload. 
+""",                               ja="""
+%sを用いたファイルアップロードウィジェットです。uploadifyはファイルのインプタグをflashベースのファイルアップローダーに変換します。これにより、プログレスバーが表示され、ajaxアップロードが可能になります。
 """) % A('uploadify.js', _href='http://www.uploadify.com/').xml())
     ),
     
     plugin_tight_input_widget=dict(
         label='Tight Input Widget',
         short_description=T('A size-adjusted input widget'),
-        long_description=T("""
+        long_description=trans(en="""
 An input widget whose size is automatically adjusted to maximum length of its field value
  defined by validators such as IS_LENGTH and IS_INT_IN_RANGE.
 The widget works with string, integer, double, and, decimal fields.
+""",                               ja="""
+自動的にサイズが調整される入力ウィジェットです。IS_LENGTH や IS_INT_IN_RANGE のようなバリデータによって決まるフィールドの値の最大長に応じて変化します。string、integer、double、decimal フィールドに対応しています。
 """),
     ),
     

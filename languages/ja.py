@@ -1,17 +1,12 @@
 # coding: utf8
 {
-'\nA WYSIWYG editor widget using %s. You can specify your language by a contructor argument, and include your image chooser.\n': '%sを使用したWYSIWYGエディターウィジェットです。コンストラクタの引数で使用言語を指定することができ、さらに独自の画像選択機能を組み込むことができます。\r\n',
 '\nA custom %s for denser layout using multi-line columns. \nYou can specify structured fields corresponding to the layout.\nOther functionarities are same as SQLFORM, including facotry and readonly forms.\n': 'より密なレイアウトのための複合カラムを用いたカスタム%sです。レイアウトに対応する構造化したフィールドを指定することができます。他の機能はSQLFORMと同じで、factoryやreadonlyフォームも利用可能です。',
 '\nA custom %s for denser layout using multi-line rows. \nYou can specify structured fields corresponding to the layout.\nThe interface of the class keeps backward-compatible to the SQLTABLE,\nand enables more flexible customization.\n': 'より密なレイアウトのための複合行を用いたカスタム%sです。レイアウトに対応する構造化したフィールドを指定することができます。クラスのインタフェースはSQLTABLEと後方互換を保ちつつ、より柔軟なカスタマイズが可能です。\r\n',
-'\nA file upload widget using %s.\nThe uploadify turns a file input tag into a flash-based file uploader,\nwhich displays a progress bar and enables ajax upload. \n': '%sを用いたファイルアップロードウィジェットです。uploadifyはファイルのインプタグをflashベースのファイルアップローダーに変換します。これにより、プログレスバーが表示され、ajaxアップロードが可能になります。\r\n',
 '\nA standard paginator which can be used with SQLTABLE. The basic design is inspired by %s.\n': 'SQLTABLEとともに用いることができる標準的なページネーターです。基本的な設計は%sを参考にしています。\r\n',
-'\nAn input widget whose size is automatically adjusted to maximum length of its field value\n defined by validators such as IS_LENGTH and IS_INT_IN_RANGE.\nThe widget works with string, integer, double, and, decimal fields.\n': '自動的にサイズが調整される入力ウィジェットです。IS_LENGTH や IS_INT_IN_RANGE のようなバリデータによって決まるフィールドの値の最大長に応じて変化します。string、integer、double、decimal フィールドに対応しています。',
 '\nThe plugin provides a form object which is an extra table column composed of checkboxes to select multiple records,\nand submits selected record ids.\n': 'このプラグインは複数のレコードを選択するためのチェックボックスからなる追加のテーブルカラムとしてフォームオブジェクトを提供します。このフォームはレコードのIDを送信します。\r\n',
 '\nThis plugin a form object which makes table rows permutable using %s, and submits permuted row indices.\n': 'このプラグインは%sを用いてテーブルの行を入れ替え可能にするフォームオブジェクトを提供します。このフォームは入れ替えた行のインデックスを送信します。\r\n',
 '\nThis plugin automatically attaches not-empty markers to labels of "not-empty" fields of a form, \nbased on field validators.\n': 'このプラグインは、フィールドのバリデータに基づいて、自動的に必須マークを"必須"フィールドのラベルに付与します。\r\n',
-'\nThis plugin provides a color picker widget, using %s. Picked color is displayed in forms. \n': 'このプラグインは、%sを用いて色選択ウィジェットを提供します。選択した色はフォームに表示されます。\r\n',
 '\nThis plugin provides buttons to select table records by a value of a field,\nshowing the record count for each value of the field.\n': 'このプラグインは、フィールドの値によってテーブルレコードを選択するボタンを提供します。さらに、フィールドの各値に対してレコードの総数を表示します。',
-'\nThis plugin provides time, date and datetime picker widgets using %s.\n': 'このプラグインは%sを使用して、時刻、日付、日時の選択ウィジェットを提供します。',
 '%Y-%m-%d': '%Y年%m月%d日',
 '%Y-%m-%d %H:%M:%S': '%Y年%m月%d日 %H時%M分%S秒',
 '%s mutual friends': '共通の友達%s人',
