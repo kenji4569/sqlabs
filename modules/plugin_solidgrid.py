@@ -38,6 +38,18 @@ class SolidGrid(object):
     def _build_query_by_form(self, db, form, queries={}, field_sep='___',
                               exclude_var_pattern='^.+_page$', formname='form'):
         
+        def _convert(field, val):
+            if field.requires:
+                if type(field.requires) in (list, tuple):
+                    for r in field.requires:
+                        # if isinstance(r, IS_EMPTY_OR) and val:
+                            # val, err = r.other(val)
+                        # else:
+                        val, err = r(val)
+                else:
+                    val, err = field.requires(val)
+            return val
+            
         request = current.request
         if form.accepts(request.vars, keepvalues=True, formname=formname):
             new_vars = request.get_vars.copy()
@@ -72,18 +84,19 @@ class SolidGrid(object):
                         if len(_key)>=2:
                             tablename, fieldname = _key[:2]
                             field = db[tablename][fieldname]
+                            _val = _convert(field, val)
                             if len(_key)==3:
                                 if _key[2] == 'from':
-                                    new_queries.append(field>=val)
+                                    new_queries.append(field>=_val)
                                 elif _key[2] == 'to':
-                                    new_queries.append(field<=val)
+                                    new_queries.append(field<=_val)
                                 else:
                                     raise RuntimeError
                             else:
                                 if field.unique:
-                                    new_queries.append(field==val)
+                                    new_queries.append(field==_val)
                                 else:
-                                    new_queries.append(db[tablename][fieldname].like('%'+val+'%'))
+                                    new_queries.append(db[tablename][fieldname].like('%'+_val+'%'))
                         else:
                             new_queries.append(queries[key](val))
                         input_el.attributes['_value'] = val
@@ -105,7 +118,8 @@ class SolidGrid(object):
                     _key = key.split(field_sep)
                     if len(_key)==2:
                         tablename, fieldname = _key
-                        new_queries.append(db[tablename][fieldname] == val)
+                        field = db[tablename][fieldname]
+                        new_queries.append(field == _convert(field, val))
                     else:
                         new_queries.append(queries[key](val))
                 input_el.attributes['_checked'] = 'checked' if val else None
@@ -123,7 +137,8 @@ class SolidGrid(object):
                 if len(_key)==2:
                     tablename, fieldname = _key
                     if val:
-                        new_queries.append(db[tablename][fieldname] == val) 
+                        field = db[tablename][fieldname]
+                        new_queries.append(field == _convert(field, val)) 
                 else:
                     if val:
                         new_queries.append(queries[key](val))
@@ -143,7 +158,8 @@ class SolidGrid(object):
                 _key = key.split(field_sep)
                 if len(_key)==2:
                     tablename, fieldname = _key
-                    new_queries.append(db[tablename][fieldname] == val)
+                    field = db[tablename][fieldname]
+                    new_queries.append(field == _convert(field, val)) 
                 else:
                     new_queries.append(queries[key](val))
                 for option in select_el.elements('option'):
@@ -183,7 +199,7 @@ class SolidGrid(object):
             els.append(form.elements('#%s_%s__label' % (table, field))[0].parent.parent)
         
         children = []
-        if form.formstyle == 'table3cols' or type(form.formstyle) == type(lambda:None):
+        if form.formstyle == 'table3cols' or callable(form.formstyle):
             for el in els:
                 children.append(el.elements('td'))
         elif form.formstyle == 'divs':
@@ -294,7 +310,7 @@ class SolidGrid(object):
                       buttontext='',
                       buttonadd='ui-icon-plusthick',
                       buttonback='ui-icon-arrowreturnthick-1-w',
-                      buttonexport='',
+                      buttonexport='ui-icon ui-icon-transferthick-e-w',
                       buttondelete='ui-icon-close',
                       buttonedit='ui-icon-pencil',
                       buttontable='',
@@ -363,7 +379,6 @@ class SolidGrid(object):
                     elif link(record):
                          gridbuttons.append(link(record))
                      
-        
         if create and len(request.args)>1 and request.args[-2]=='new':
             check_authorization()
             table = db[request.args[-1]]
@@ -376,7 +391,7 @@ class SolidGrid(object):
                  
             self.mark_not_empty(virtualtable or table)
             
-            if type(create) == type(lambda:None):
+            if callable(create):
                 create_form = create()
             else:
                 create_form = SOLIDFORM(virtualtable or table, 
@@ -400,7 +415,7 @@ class SolidGrid(object):
             table = db[request.args[-2]]
             record = table(request.args[-1]) or redirect(URL('error'))
             
-            if type(details) == type(lambda:None):
+            if callable(details):
                 view_form = details(record)
             else:
                 view_form = SOLIDFORM(virtualtable or table, virtualrecord or record, 
@@ -428,7 +443,7 @@ class SolidGrid(object):
             record = table(request.args[-1]) or redirect(URL('error'))
             self.mark_not_empty(virtualtable or table)
             
-            if type(editable) == type(lambda:None):
+            if callable(editable):
                 edit_form = editable(record)
             else:
                 edit_form = SOLIDFORM(virtualtable or table, virtualrecord or record,
@@ -463,7 +478,7 @@ class SolidGrid(object):
         elif deletable and len(request.args)>2 and request.args[-3]=='delete':
             check_authorization()
             table = db[request.args[-2]]
-            if type(deletable) == type(lambda:None):
+            if callable(deletable):
                 deletable(request.args[-1])
             else:
                 ret = db(table.id==request.args[-1]).delete()
@@ -471,21 +486,12 @@ class SolidGrid(object):
                     ondelete(table, request.args[-1], ret)
             redirect(url())
             
-        elif csv and len(request.args)>0 and request.args[-1]=='csv':
-            check_authorization()
-            # TODO
-            return dict()
-            
         elif request.vars.records and not isinstance(request.vars.records, list):
             request.vars.records=[request.vars.records]
             
         elif not request.vars.records:
             request.vars.records=[]
            
-        session['_web2py_grid_referrer_'+formname] = URL(
-                r=request, args=request.args,vars=request.vars,
-                user_signature=user_signature, hmac_key=hmac_key)
-                
         error = None
         search_form = None
         table_el_id = formname + '_maintable'
@@ -504,6 +510,7 @@ class SolidGrid(object):
             
             _search_fields = []
             _from_tos = []
+
             for f in searchable:
                 _requires = []
                 if f.requires and type(f.requires) not in (list, tuple):
@@ -511,7 +518,9 @@ class SolidGrid(object):
                         _requires = [f.requires.other]
                     else:
                         _requires = [f.requires]
+                    
                 _requires = [r for r in _requires if not isinstance(r, IS_NOT_IN_DB)]
+                
                 if _requires:
                     if len(_requires) == 1:
                         _requires = _requires[0]
@@ -573,6 +582,18 @@ class SolidGrid(object):
         
         orderby_selector = OrderbySelector(sortable)
         
+        if csv and len(request.args)>1 and request.args[-2]=='csv':
+            if not dbset:
+                raise HTTP(400)
+            check_authorization()
+            current.response.headers['Content-Type'] = 'text/csv; charset=Shift_JIS'
+            current.response.headers['Content-Disposition'] = 'attachment;filename=rows.csv;'
+            raise HTTP(200, str(dbset.select(limitby=(0,1000))).encode('shift_jis', 'ignore'), **current.response.headers )
+
+        session['_web2py_grid_referrer_'+formname] = URL(
+                r=request, args=request.args,vars=request.vars,
+                user_signature=user_signature, hmac_key=hmac_key)
+
         current_orderby = orderby_selector.orderby()
         permutable = (orderby and (not subquery) and sortable and current_orderby is sortable[0])
            
@@ -714,6 +735,10 @@ if(confirm("%s")){return true;} else {jQuery(this).unbind('click').fadeOut();ret
             res.gridbuttons.append(
                 gridbutton('%(buttonadd)s' % ui, T('Add'), url(args=['new', tablename]))
             )
-            
+
+        if csv:
+            res.gridbuttons.append(
+                gridbutton('%(buttonexport)s' % ui, T('Export'), url(args=['csv', tablename], vars=request.vars ))
+            )
         return res
         

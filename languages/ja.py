@@ -75,6 +75,7 @@
 'Edited': 'Edited',
 'Email': 'メールアドレス',
 'Errors in form, please check it out.': 'フォームにエラーがあります。ご確認ください。',
+'Export': 'Export',
 'Extension': 'Extension',
 'Feb': '2月',
 'File': 'File',
