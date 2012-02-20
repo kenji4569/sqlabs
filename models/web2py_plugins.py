@@ -5,36 +5,46 @@ def get_info_plugin_metas():
     plugin_hradio_widget=dict(
         label='Horizontal Radio Widget',
         short_description=T('A radio widget arranging its buttons horizontally'),
-        long_description=XML(T("""
+        long_description=XML(trans(en="""
 %s arranges its radio buttons vertically, which occupies a relatively large area. 
 Here we implemented a horizontal radio widget, and further made it clickable for it's labels. 
+""",                              ja="""
+%sはラジオボタンを垂直に配置するため、少し広めの領域を占めてしまいます。そこで水平のラジオウィジェットを実装し、さらにラベルをクリック可能にしました。
 """) % A(T('A built-in radio widget'), _href='http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.RadioWidget-class.html').xml())
     ),
     plugin_multiselect_widget=dict(
         label='Multiple Select Widget',
         short_description=T('A user-friendly multiple options widget'),
-        long_description=XML(T("""
+        long_description=XML(trans(en="""
 %s is made by a single select tag,
 which would be difficult to handle when it had many options.
 We built more user-friendly multiple select widget with two select tags.
 You can choice between horizontal or vertical layout.
-""") % A(T('A built-in multiple options widget'), _href='http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.MultipleOptionsWidget-class.html').xml())   
+""",                                ja="""
+%s は単一のセレクトタグからなり、多数のオプションを持つ場合に扱うのが困難になります。
+そこで、より使い勝手のよい、２つのセレクトタグからなる複数選択ウィジェットを作成しました。
+水平まはた垂直のレイアウトを選ぶことができます。"""
+) % A(T('A built-in multiple options widget'), _href='http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.MultipleOptionsWidget-class.html').xml())   
     ),
     plugin_suggest_widget=dict(
         label='Suggest Widget',
         short_description=T('A refined autocomplete widget'),
-        long_description=XML(T("""
+        long_description=XML(trans(en="""
 The suggest widget is an alternative for %s.
 It uses %s with some modifications to handle non-us charcters. 
 Further, it visualize a selecting status at each typing step.
+""",                               ja="""
+サジェストウィジェットは%sの代替です。修正した%sを用いて非US文字を扱うことができます。さらに、各タイピングのステップにおける選択状態を可視化します。
 """) % (A(T("a built-in autocomplete widget"), _href='http://web2py.com/book/default/chapter/07#Widgets').xml(),
         A('suggest.js', _href='http://www.vulgarisoip.com/2007/08/06/jquerysuggest-11/').xml()))
     ),
     plugin_lazy_options_widget=dict(
         label='Lazy Options Widget',
         short_description=T('A lazy loading options widget triggered by a js event'),
-        long_description=XML(T("""
+        long_description=XML(trans(en="""
 The lazy options widget receives js events and sends ajax requests to populate its select options as in %s.
+""",                               ja="""
+遅延オプションウィジェットはjsのイベントを受け取ってajaxリクエストを送り、%sのように選択オプションを追加します。
 """) % A(T('a built-in options widget'), _href='http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.OptionsWidget-class.html').xml())
     ),
     plugin_anytime_widget=dict(

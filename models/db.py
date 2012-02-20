@@ -18,7 +18,7 @@ info_products = dict(
 Here we love to share useful code parts produced by our development with the framework.
 The code parts are organized in %s, and easily available.""", 
                               ja="""オープンソースのPythonウェブ・フレームワーク %s のプラグイン集です。
-ここでは、このフレームワークによる開発で生み出された有用なコード部品を共有します。
+ここでは、このフレームワークによる開発で生み出された有用なコード部品を共有したいと思います。
 コード部品は %s に基づいて整理されいて、簡単に利用可能です。
 """) % (
             A('Web2py', _href='http://www.web2py.com').xml(), 
