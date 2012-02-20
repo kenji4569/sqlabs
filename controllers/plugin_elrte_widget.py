@@ -57,7 +57,10 @@ jQuery.data(document.body, 'elrte_callback', callback)
     # You can specify the language for the editor, and include your image chooser.
     # In this demo, the image chooser uses the uploadify plugin.
     # If you want to edit contents with css applied, pass the css file urls for an argument.
-    db.product.description.widget = ElrteWidget(lang=lang, fm_open=fm_open, cssfiles=cssfiles)
+    db.product.description.widget = ElrteWidget()
+    db.product.description.widget.settings.lang = lang
+    db.product.description.widget.settings.fm_open = fm_open
+    db.product.description.widget.settings.cssfiles = cssfiles
     ################################################################################
 
     form = SQLFORM(db.product)

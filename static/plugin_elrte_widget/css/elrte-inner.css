@@ -83,3 +83,217 @@ img.elrte-webkit-hl { outline:1px dashed #777; }
   clear: both;
   visibility: hidden;
 }
+
+/* --------------------------------------------------------------------------- */
+/* Fix for elrte */
+/* --------------------------------------------------------------------------- */
+
+.el-dialogform + .ui-dialog-buttonpane .ui-dialog-buttonset .ui-button-text {
+  padding: 0px 2px;
+}
+.el-dialogform .ui-state-default.ui-corner-all {
+  margin-right: 11px !important;
+}
+
+.el-rte .toolbar ul {
+  float: none !important;
+  height: auto !important;
+  padding: 0  !important;
+  margin: 0 !important;
+}
+.el-rte .toolbar ul li
+{
+  float: none !important;
+  padding: 0  !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+}
+.elrte-image-src-fm .ui-state-default {
+  float: right !important;
+  margin-right: 5px !important;
+  cursor: pointer !important;
+}
+
+.el-rte .statusbar {
+  margin: 0 !important;
+}
+.elrte-image-src-fm .ui-icon {
+  position: relative !important;
+}
+
+.el-dialogform-content table tr td {
+-webkit-border-horizontal-spacing: 0px;
+-webkit-border-vertical-spacing: 0px;
+background-attachment: scroll;
+background-clip: border-box;
+background-color: transparent;
+background-image: none;
+background-origin: padding-box;
+border-bottom-color: #222;
+border-bottom-style: none;
+border-bottom-width: 0px;
+border-collapse: separate;
+border-left-color: #222;
+border-left-style: none;
+border-left-width: 0px;
+border-right-color: #222;
+border-right-style: none;
+border-right-width: 0px;
+border-top-color: #222;
+border-top-style: none;
+border-top-width: 0px;
+color: #222;
+display: table-cell;
+font-family: Verdana, Arial, sans-serif;
+font-size: 10px;
+font-style: normal;
+height: 16px;
+line-height: 13px;
+margin-bottom: 0px;
+margin-left: 0px;
+margin-right: 0px;
+margin-top: 0px;
+padding-bottom: 2px;
+padding-left: 2px;
+padding-right: 2px;
+padding-top: 2px;
+text-align: left;
+vertical-align: top;
+}
+
+.el-dialogform-content input {
+-webkit-appearance: none;
+-webkit-border-horizontal-spacing: 0px;
+-webkit-border-vertical-spacing: 0px;
+-webkit-rtl-ordering: logical;
+-webkit-user-select: text;
+background-attachment: scroll;
+background-clip: border-box;
+background-color: white;
+background-image: none;
+background-origin: padding-box;
+border-bottom-color: #CCC;
+border-bottom-style: solid;
+border-bottom-width: 1px;
+border-collapse: separate;
+border-left-color: #CCC;
+border-left-style: solid;
+border-left-width: 1px;
+border-right-color: #CCC;
+border-right-style: solid;
+border-right-width: 1px;
+border-top-color: #CCC;
+border-top-style: solid;
+border-top-width: 1px;
+color: black;
+cursor: auto;
+display: inline-block !important;
+font-family: Verdana, Arial, sans-serif !important;
+font-size: 10px !important;
+font-style: normal;
+height: 12px !important;
+letter-spacing: normal;
+line-height: normal;
+margin-bottom: 0px;
+margin-left: 0px;
+margin-right: 5px;
+margin-top: 0px;
+padding-bottom: 0px;
+padding-left: 0px;
+padding-right: 0px;
+padding-top: 0px;
+text-align: -webkit-auto;
+text-indent: 0px;
+text-shadow: none;
+text-transform: none;
+vertical-align: baseline;
+word-spacing: 0px;
+}
+
+.el-dialogform-content select {
+-webkit-appearance: menulist;
+-webkit-border-horizontal-spacing: 0px;
+-webkit-border-vertical-spacing: 0px;
+-webkit-box-align: center;
+-webkit-rtl-ordering: logical;
+background-attachment: scroll;
+background-clip: border-box;
+background-color: white;
+background-image: none;
+background-origin: padding-box;
+box-sizing: border-box;
+color: black;
+cursor: default;
+display: inline-block;
+font-family: Verdana, Arial, sans-serif;
+font-size: 10px !important;
+font-style: normal;
+height: 16px !important;
+letter-spacing: normal;
+line-height: normal;
+margin-bottom: 0px;
+margin-left: 0px;
+margin-right: 5px;
+margin-top: 0px;
+padding-bottom: 0px;
+padding-left: 0px;
+padding-right: 0px;
+padding-top: 0px;
+text-align: -webkit-auto;
+text-indent: 0px;
+text-shadow: none;
+text-transform: none;
+vertical-align: baseline;
+white-space: pre;
+word-spacing: 0px;
+}
+.el-dialogform-content .el-select label {
+-webkit-border-horizontal-spacing: 0px;
+-webkit-border-vertical-spacing: 0px;
+background-attachment: scroll;
+background-clip: border-box;
+background-color: white;
+background-image: none;
+background-origin: padding-box;
+border-bottom-color: #222;
+border-bottom-left-radius: 3px;
+border-bottom-style: none;
+border-bottom-width: 0px;
+border-collapse: separate;
+border-left-color: #222;
+border-left-style: none;
+border-left-width: 0px;
+border-right-color: #CCC;
+border-right-style: solid;
+border-right-width: 1px;
+border-top-color: #222;
+border-top-left-radius: 3px;
+border-top-style: none;
+border-top-width: 0px;
+color: #222;
+cursor: default;
+display: block;
+font-family: Verdana, Arial, sans-serif;
+font-size: 10px;
+font-style: normal;
+height: 17px;
+line-height: 17px;
+margin-bottom: 0px;
+margin-left: 0px;
+margin-right: 12px;
+margin-top: 0px;
+overflow-x: hidden;
+overflow-y: hidden;
+padding-bottom: 0px;
+padding-left: 5px;
+padding-right: 5px;
+padding-top: 0px;
+position: static;
+text-align: left;
+vertical-align: baseline;
+white-space: nowrap;
+width: 87px;
+}
+.elrte-image-preview {
+width: 420px;
+}
