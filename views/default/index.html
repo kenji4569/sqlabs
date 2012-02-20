@@ -14,11 +14,11 @@
   {{if info.get('status') == 'under-construction':}}
   <div class="under-construction">{{=T('under construction')}}</div>
   {{else:}}
-  <div class="try-demo"><a href="{{=URL(key, 'index')}}">{{=T('See Demo')}}</a></div>
+  <div class="try-demo"><a href="{{=info['link']}}">{{=info['link_label']}}</a></div>
   {{pass}}
 </dt>
 <dd>
-  <img src="{{=URL('static', 'images/products/%s.jpg' % key)}}" />
+  <img src="{{=URL('static', 'images/products/%s' % info['image'])}}" />
 </dd>
 {{pass}}
 </dl>
