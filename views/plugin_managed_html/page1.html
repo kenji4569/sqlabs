@@ -11,39 +11,48 @@
   <h2>Edit text</h2>
   <div style="width:100px;">
     {{@managed_html.content_block('block2', Field('text', comment='Input Text'))
-      def _block(content):}}
+      def _(content):}}
       {{=content.text or ''}}
     {{pass}}
-    {{_block()}}
+    {{_()}}
   </div>
   <br/>
   
   <h2>Edit image</h2>
   <div style="width:300px;">
     {{@managed_html.content_block('block3', Field('image', widget=managed_html.image_widget, comment='Upload Image'))
-      def _block(content):}}
+      def _(content):}}
       {{if content.image:}}
         <img src="{{=URL('download', args=content.image)}}"/>
       {{else:}}
         no-image
       {{pass}}
     {{pass}}
-    {{_block()}}
+    {{_()}}
   </div>
   <br/>
   
   <h2>Edit html</h2>
   <div>
     {{@managed_html.content_block('block1', Field('html', 'text', comment='Input HTML'))
-      def _block(content):}}
+      def _(content):}}
       {{=XML(content.html or '')}}
     {{pass}}
-    {{_block()}}
+    {{_()}}
   </div>
   <br/>
   
   <hr/>
+  <h2>Block Collection</h2>
+  <div>
+    {{@managed_html.collection_block('collection1')
+      def _(collection):}}
+        {{for block in collection:}}
+          <div>{{=block()}}</div>
+        {{pass}}
+    {{pass}}
+    {{_()}}
+  </div>
+  <br/>
   
 </div>
-
-

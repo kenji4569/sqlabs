@@ -134,7 +134,7 @@ function managed_html_web2py_ajax_page(method,action,data,target) {
       web2py_trap_link(target);
       web2py_ajax_init();  
       if(command) eval(command);
-      if(flash) jQuery('.flash').html(eval(flash)).slideDown();
+      if(flash) jQuery('.flash').html(flash).slideDown();
       }
     });
 }
@@ -153,14 +153,18 @@ function managed_html_ajax_page(action, data, target) {
 function managed_html_show_content_ctrl(block_el) {
   var _inner_el = block_el.find('.managed_html_content_inner');
   var target_el = _inner_el.children(':first');
-  if (target_el.length==0) {
+  if (target_el.length == 0) {
     var _target_el = block_el.find('.managed_html_content').children('form').find('.el-rte');
-    if (_target_el.length>0) {
+    if (_target_el.length > 0) {
       target_el = _target_el;
     } else {
       target_el = _inner_el;
     }
   }
+  if (target_el.length == 0) {
+    target_el = _inner_el;
+  }
+  
   var pos = target_el.position();
 
   var margin = {top: (parseInt(target_el.css('margin-top'), 10) || 0),
@@ -171,7 +175,11 @@ function managed_html_show_content_ctrl(block_el) {
 }
 
 function managed_html_show_collection_ctrl(block_el) {
-  var target_el = block_el.find('.managed_html_collection_inner').children(':first');
+  var _inner_el = block_el.find('.managed_html_collection_inner');
+  var target_el = _inner_el.children(':first');
+  if (target_el.length == 0) {
+    target_el = _inner_el;
+  }
   var pos = target_el.position();
   var margin = {top: (parseInt(target_el.css('margin-top'), 10) || 0),
                 left: (parseInt(target_el.css('margin-left'), 10) || 0)}
@@ -251,6 +259,9 @@ function managed_html_move(name, keyword, url, confirm_message) {
               var target_block = jQuery(this);
               var _inner_el = target_block.find('.managed_html_content_inner');
               var target_el = _inner_el.children(':first');
+              if (target_el.length == 0) {
+                target_el = _inner_el;
+              }
               var pos = target_el.position();
               var margin = {top: (parseInt(target_el.css('margin-top'), 10) || 0),
                             left: (parseInt(target_el.css('margin-left'), 10) || 0)}

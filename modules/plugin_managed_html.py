@@ -59,7 +59,15 @@ class ManagedHTML(object):
         settings.editable = True
         settings.publishable = True
         
-        settings.content_types = Storage()
+        
+        def _html(name, parent=None):
+            @self.content_block(name, Field('html', 'text'), parent=parent)
+            def _(content):
+                current.response.write(XML(content.html or '').xml())
+            _()
+            return ''
+        settings.content_types = Storage(html=_html)
+        
         
         messages = self.messages = Messages(current.T)
         
@@ -514,9 +522,8 @@ jQuery(function(){
                                        ('managed_html_content_anchor' if self._is_published(content) 
                                             else 'managed_html_content_anchor_pending')))
 
-                    response.write(XML("<div onclick='%s' class='managed_html_content_inner'>" % 
+                    response.write(XML("<div onclick='%s' class='managed_html_content_inner'><div>" % 
                                         (self._post_content_js(name, 'edit') if settings.editable else '') ))
-                    
                     _body_len = len(response.body.getvalue())
                     
                 func(Storage(content and content.data and json.loads(content.data) or {}))
@@ -525,7 +532,7 @@ jQuery(function(){
                     if len(response.body.getvalue()) == _body_len:
                         response.write(XML('<div class="managed_html_empty_content">&nbsp;</div>'))
                     
-                    response.write(XML('</div>'))
+                    response.write(XML('</div></div>'))
                     
             if (EDIT_MODE in self.view_mode and request.ajax and 
                     self.keyword in request.vars and request.vars[self.keyword] == name):
@@ -649,7 +656,7 @@ jQuery(function(){
                               _onclick=self._post_content_js(name, 'edit'),
                               _class='managed_html_btn'),
                            _class='managed_html_edit_btn') if settings.editable else '',
-                        SPAN(INPUT(_value=T('Publish Now'), _type='button', 
+                        SPAN(INPUT(_value=T('Publish'), _type='button', 
                               _onclick=self._post_content_js(name, 'publish_now'),
                               _class='managed_html_btn managed_html_success_btn'),
                            _class='managed_html_publish_now_btn',
@@ -846,7 +853,7 @@ jQuery(function(){
                                       _onclick=self._show_add_form_js(name),
                                       _class='managed_html_btn'),
                                    _class='managed_html_edit_btn') if settings.editable else '',
-                                SPAN(INPUT(_value=T('Publish Now'), _type='button', 
+                                SPAN(INPUT(_value=T('Publish'), _type='button', 
                                       _onclick=self._post_collection_js(name, 'publish_now'),
                                       _class='managed_html_btn managed_html_success_btn'),
                                    _class='managed_html_publish_now_btn',
@@ -865,100 +872,3 @@ jQuery(function(){
             return wrapper
         return _decorator
         
-    def movable(self, name):
-        # ! Deprecated. just for demo..
-        
-        if not hasattr(self, '_movables'):
-            from collections import defaultdict
-            self._movables = defaultdict(list)
-            self._movable_indices = defaultdict(int)
-            self._movable_loaded = {}
-    
-        request, response, session, T, settings = (
-            current.request, current.response, current.session, current.T, self.settings)
-
-        if (self.keyword in request.vars and 
-                request.vars[self.keyword] == name):
-            action = request.vars.get('_action')
-            if action == 'permute':
-                content = self._get_content(name)
-                if not content:
-                    settings.table_content.insert(name=name, publish_on=request.now) # remove if append archive
-                    content = self._get_content(name)
-                    
-                indices = request.vars.get('indices[]', [])
-                from_idx = request.vars.get('from')
-                to_idx = request.vars.get('to')
-                arg_from = indices.index(from_idx)
-                arg_to = indices.index(to_idx)
-                indices[arg_from] = to_idx
-                indices[arg_to] = from_idx
-                
-                content.update_record(data=json.dumps(indices), publish_on=request.now) # remove if append archive
-                # settings.table_content.insert(name=name, data=json.dumps(indices))
-                # content = self._get_content(name)
-                        
-                response.flash = T('Moved')
-                
-                raise HTTP(200, json.dumps(indices))
-            
-        def _movable(func):
-            self._movables[name].append((len(self._movables[name]), func))
-                
-            def wrapper(*args, **kwds):
-                # is_published = False
-                if not self._movable_loaded.get(name):
-                    content = self._get_content(name)
-                    if content and content.data:
-                        indices = json.loads(content.data)
-                        permutation = range(len(self._movables[name]))
-                        try:
-                            indices = map(int, indices)
-                            permutation[:len(indices)] = indices
-                        except ValueError:
-                            pass
-                        self._movables[name] = [self._movables[name][i] for i in permutation]
-                        
-                        # is_published = bool(content.publish_on and content.publish_on<=request.now)
-                        
-                    if EDIT_MODE in self.view_mode:
-                        response.write(XML("""
-<script>jQuery(function(){managed_html_movable("%s", [%s], "%s", "%s", "%s")})</script>""" % 
-                            (name, ','.join([str(i) for i, f in self._movables[name]]),
-                             self.keyword, URL(args=request.args, vars=request.get_vars),
-                             current.T('Sure you want to move them?'))))
-                    self._movable_loaded[name] = True
-                    
-                _block_index, _func = self._movables[name].pop(0)
-                
-                if EDIT_MODE in self.view_mode:
-                    el_id = 'managed_html_block_%s_%s' % (name, _block_index)
-                    content_el_id = 'managed_html_content_%s_%s' % (name, _block_index)
-                    
-                    response.write(XML('<div id="%s" class="managed_html_block managed_html_block_movable">'% el_id))
-                    
-                    response.write(XML("""
-<div id="%s" class="managed_html_movable managed_html_name_%s">
-""" % (content_el_id, name))) #  %s .. , 'managed_html_content_published' if is_published else ''
-                    
-                    _func(*args, **kwds)
-                    
-                    response.write(XML('</div>'))
-                    response.write(XML('</div>'))
-                else:
-                    _func(*args, **kwds)
-                
-            return wrapper
-        return _movable
-            
-    
-    # def response(self, name):
-        # # TODO
-        # response = current.response
-        # if self.view_mode == EDIT_MODE:
-            # # response.xxx = xxx
-            # return SCRIPT(""" """)
-        # else:
-            # # response.yyy = yyy
-            # return ''
-
