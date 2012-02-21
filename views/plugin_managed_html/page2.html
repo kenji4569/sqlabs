@@ -6,7 +6,7 @@
   <br/><br/>
   <hr/>
   <div style="width:100px;">
-    {{@managed_html.render('page2_block1', Field('text', comment='Input Text'))
+    {{@managed_html.content_block('page2_block1', Field('text', comment='Input Text'))
       def _block(content):}}
       {{=content.text or ''}}
     {{pass}}
@@ -16,7 +16,7 @@
   
   <h4>Movie Block</h4>
   <div>
-  {{@managed_html.render('movie_block', 
+  {{@managed_html.content_block('movie_block', 
       Field('movie', widget=managed_html.movie_widget, comment='Upload Movie'))
   def _block(content):}}
     <video id="example_video_1" class="video-js" width="480" height="270"

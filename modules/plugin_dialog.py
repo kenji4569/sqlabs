@@ -7,7 +7,7 @@ from gluon.storage import Storage
 class DIALOG(DIV):
         
     def __init__(self, content, title=None, close_button=None, 
-                 width=70, height=70, onclose='', renderstyle=False, **attributes):
+                 width=90, height=80, onclose='', renderstyle=False, **attributes):
         DIV.__init__(self, **attributes)
         self.title, self.content, self.close_button, self.width, self.height, self.onclose = (
             title, content, close_button, width, height, onclose)
@@ -23,13 +23,19 @@ class DIALOG(DIV):
             if _url not in current.response.files:
                 current.response.files.append(_url)
                 
-    def show(self):
+    def show(self, reload=False):
         import gluon.contrib.simplejson as json
-        return """(function(){
-var el = jQuery("#%(id)s");
-if (el.length == 0) {el = jQuery(%(xml)s); jQuery(document.body).append(el);}
+        return ("""(function(){
+var el = jQuery("#%(id)s");""" +
+    ("""
+el.remove(); el = [];
+    """ if reload else '') +
+"""
+if (el.length == 0) {
+    el = jQuery(%(xml)s); jQuery(document.body).append(el);
+}
 el.css('zIndex', (parseInt(el.css('zIndex')) || 1000) + 10);
-el.show();})();"""  % dict(id=self.attributes['_id'], 
+el.show();})();""")  % dict(id=self.attributes['_id'], 
                        xml=json.dumps(self.xml().replace('<!--', '').replace('//-->', '')))
         
     def close(self):

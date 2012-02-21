@@ -23,32 +23,32 @@ $.each(%s, function() {
 
 class ElrteWidget(object):
     
-    def __init__(self, lang=None, toolbar='default', fm_open="''", cssfiles=[]):
-        self.lang, self.toolbar, self.fm_open, self.cssfiles = lang, toolbar, fm_open, cssfiles
+    def __init__(self):
 
         settings = self.settings = Storage()
-        
         self.settings.files = None
+        settings.cssfiles = []
+        settings.lang = None
+        settings.toolbar = 'default'
+        settings.fm_open = "''"
 
     def __call__(self, field, value, **attributes):
         if not self.settings.files:
-            _files = [URL('static','plugin_elrte_widget/css/elrte.min.css'),
+            _files = [
+                     URL('static','plugin_elrte_widget/css/elrte.min.css'),
                      URL('static','plugin_elrte_widget/css/elrte-inner.css'),
                      URL('static','plugin_elrte_widget/css/smoothness/jquery-ui-1.8.13.custom.css'),
-                     URL('static','plugin_elrte_widget/js/jquery-ui-1.8.13.custom.min.js'),
-                     URL('static','plugin_elrte_widget/js/elrte.min.js')]
-            if self.lang:
-                _files.append(URL('static','plugin_elrte_widget/js/i18n/elrte.%s.js' % self.lang))
+                     URL('static','plugin_elrte_widget/js/jquery-ui-1.8.16.custom.min.js'),
+                     URL('static','plugin_elrte_widget/js/elrte.min.js'),
+                     ]
+            if self.settings.lang:
+                _files.append(URL('static','plugin_elrte_widget/js/i18n/elrte.%s.js' % self.settings.lang))
         else:
             _files = self.settings.files
         _set_files(_files)
-                
-        if current.request.vars.description in ('<p>&nbsp;</p>', '&nbsp;'):
-            current.request.vars.description = ''
-        if current.request.vars.description:
-            current.request.vars.description = current.request.vars.description.strip(' ')
-        
-        _id = '%s_%s' % (field._tablename, field.name)
+          
+        from gluon.utils import web2py_uuid
+        _id = '%s_%s_%s' % (field._tablename, field.name, web2py_uuid())
         attr = dict(
                 _id = _id, _name = field.name, requires = field.requires,
                 _class = 'text',
@@ -79,10 +79,10 @@ jQuery(function() { var t = 10; (function run() {if ((function() {
               cssfiles: %(cssfiles)s}); 
 })()) {setTimeout(run, t); t = 2*t;}})();});
 
-""" % dict(id=_id, lang=self.lang or '', 
-           toolbar=self.toolbar, 
-           fm_open=self.fm_open,
-           cssfiles=json.dumps(self.cssfiles),
+""" % dict(id=_id, lang=self.settings.lang or '', 
+           toolbar=self.settings.toolbar, 
+           fm_open=self.settings.fm_open,
+           cssfiles=json.dumps(self.settings.cssfiles),
            ))
         
         return SPAN(script, TEXTAREA((value!=None and str(value)) or '', **attr), **attributes)

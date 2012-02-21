@@ -4,28 +4,54 @@ db = DAL('sqlite://storage.sqlite')
 
 response.generic_patterns = ['*'] if request.is_local else []
 
+
+def trans(**texts):
+    if T.accepted_language in texts:
+        return texts[T.accepted_language]
+    else:
+        return texts['en'] if 'en' in texts else ''
+
 info_products = dict(
     web2py_plugins= dict(
         label='web2py-plugins',
-        description=XML(T("""A collection of plugins of %s, an opensource Python web framework.
+        description=XML(trans(en="""A collection of plugins of %s, an opensource Python web framework.
 Here we love to share useful code parts produced by our development with the framework.
-The code parts are organized in %s, and easily available.""") % (
-        A('Web2py', _href='http://www.web2py.com').xml(), 
-        A(T("a web2py's plugin system"), _href='http://web2py.com/book/default/chapter/13#Plugins').xml())),
+The code parts are organized in %s, and easily available.""", 
+                              ja="""オープンソースのPythonウェブ・フレームワーク %s のプラグイン集です。
+ここでは、このフレームワークによる開発で生み出された有用なコード部品を共有したいと思います。
+コード部品は %s に基づいて整理されいて、簡単に利用可能です。
+""") % (
+            A('Web2py', _href='http://www.web2py.com').xml(), 
+            A(T("a web2py's plugin system"), _href='http://web2py.com/book/default/chapter/13#Plugins').xml())),
+        link=URL('web2py_plugins', 'index'),
+        link_label=T('See Demo'),
+        image='web2py_plugins.jpg',
+    ),
+    akamon=dict(
+        label='AKAMON',
+        description=trans(ja="""新感覚CMS製品パッケージです。"""),
+        link='http://aka-mon.jp/',
+        link_label='紹介ページ',
+        image='akamon.gif',
+    ),
+    ec_orange_cms=dict(
+        label='EC-Orange CMS',
+        description=trans(ja="""ECサイト特化型CMSです。"""),
+        link='http://ec-cube.ec-orange.jp/lineup/cms/',
+        link_label='紹介ページ',
+        image='ec_orange_cms.gif',
+    ),
+    ec_orange_pos=dict(
+        label='EC-Orange POS',
+        description=trans(ja="""ECサイト連動型POSです。"""),
+        link='http://ec-cube.ec-orange.jp/lineup/pos/',
+        link_label='紹介ページ',
+        image='ec_orange_pos.gif',
     ),
     cloudmap=dict(
         label='cloudmap',
         description=XML(T("""Cloudmap is a visual search engine for any contents with user evaluations.""")),
         status='under-construction',
-    ),
-    nanahoshi_cms=dict(
-        label='nanahoshi-cms',
-        description=XML(T("""CMS based on Web2py.""")),
-        status='under-construction',
-    ),
-    nanahoshi_db=dict(
-        label='nanahoshi-db',
-        description=XML(T("""NoSQL package based on Cassandra.""")),
-        status='under-construction',
+        image='cloudmap.jpg',
     ),
 )

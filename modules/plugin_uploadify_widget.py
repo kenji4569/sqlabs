@@ -74,10 +74,11 @@ def uploadify_widget(field, value, download_url=None, **attributes):
     _id = '%s_%s' % (field._tablename, field.name)
     input_el = INPUT(_id = _id, _name = field.name,
                      requires = field.requires, _type='hidden',)
-            
-    _file_id = '__uploadify__%s_%s' % (field._tablename, field.name)
+
+    from gluon.utils import web2py_uuid
+    _file_id = '__uploadify__%s_%s_%s' % (field._tablename, field.name, web2py_uuid())
     file_input_el = INPUT(_id = _file_id, _name = '__uploadify__%s' % field.name, _type='file')
-        
+
     ajaxed = 'Filedata' in current.request.post_vars and current.request.post_vars.name == field.name
         
     fileext = '*.*'

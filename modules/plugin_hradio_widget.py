@@ -10,7 +10,7 @@ def hradio_widget(field, value, **attributes):
         button, label = row.elements('td')[0]
         button.attributes['_style'] = 'cursor:pointer;'
         inner.append(SPAN(button, ' ', 
-                          SPAN(label, _onclick='jQuery(this).parent().children("input").click();', 
-                               _style='cursor:pointer;'), 
+                          LABEL(label, 
+                                _for=button.attributes['_id']), 
                           _style='padding-right:10px;'))
     return DIV(*inner, **attributes)

@@ -10,77 +10,49 @@
   <hr/>
   <h2>Edit text</h2>
   <div style="width:100px;">
-    {{@managed_html.render('block2', Field('text', comment='Input Text'))
-      def _block(content):}}
+    {{@managed_html.content_block('block2', Field('text', comment='Input Text'))
+      def _(content):}}
       {{=content.text or ''}}
     {{pass}}
-    {{_block()}}
+    {{_()}}
   </div>
   <br/>
   
   <h2>Edit image</h2>
   <div style="width:300px;">
-    {{@managed_html.render('block3', Field('image', widget=managed_html.image_widget, comment='Upload Image'))
-      def _block(content):}}
+    {{@managed_html.content_block('block3', Field('image', widget=managed_html.image_widget, comment='Upload Image'))
+      def _(content):}}
       {{if content.image:}}
         <img src="{{=URL('download', args=content.image)}}"/>
       {{else:}}
         no-image
       {{pass}}
     {{pass}}
-    {{_block()}}
+    {{_()}}
   </div>
   <br/>
   
   <h2>Edit html</h2>
   <div>
-    {{@managed_html.render('block1', Field('html', 'text', comment='Input HTML'))
-      def _block(content):}}
+    {{@managed_html.content_block('block1', Field('html', 'text', comment='Input HTML'))
+      def _(content):}}
       {{=XML(content.html or '')}}
     {{pass}}
-    {{_block()}}
+    {{_()}}
   </div>
   <br/>
   
   <hr/>
-  
-  <h2>Drag us!</h2>
-  <div style="border: 1px solid whiteSmoke; width:200px;">
-    {{@managed_html.movable('block_type1')
-      def block_a():}}
-      <div style="height:100px;">block 1</div>
-    {{pass}}
-    {{@managed_html.movable('block_type1')
-      def block_b():}}
-      <div style="height:100px;">block 2</div>
-    {{pass}}
-    {{@managed_html.movable('block_type1')
-      def block_c():}}
-      <div style="height:100px;">block 3</div>
-    {{pass}}
-    {{block_a()}}
-    {{block_b()}}
-    <div style="margin:10px;">
-      <div>inner</div>
-      {{block_c()}}
-    </div>
-  </div>
-  
-  <hr/>
-  <h2>Drag another group</h2>
+  <h2>Block Collection</h2>
   <div>
-    {{@managed_html.movable('block_type2')
-      def block_a():}}
-      <div  style="height:100px;">block a</div>
+    {{@managed_html.collection_block('collection1')
+      def _(collection):}}
+        {{for block in collection:}}
+          <div>{{=block()}}</div>
+        {{pass}}
     {{pass}}
-    {{@managed_html.movable('block_type2')
-      def block_b():}}
-      <div style="height:100px;">block b</div>
-    {{pass}}
-    {{block_a()}}
-    {{block_b()}}
+    {{_()}}
   </div>
   <br/>
+  
 </div>
-
-
