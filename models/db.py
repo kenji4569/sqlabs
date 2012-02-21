@@ -48,6 +48,16 @@ The code parts are organized in %s, and easily available.""",
         link_label='紹介ページ',
         image='ec_orange_pos.gif',
     ),
+    excellent=dict(
+        label='Excellent',
+        description=trans(ja="""クラウド基盤を活用した大規模サイト構築ソリューションです。
+Eコマース、SNS、CMSを中心に豊富な機能を取り揃え、
+高負荷な環境下でも高信頼性、ハイパフォーマンスを可能にします。"""),
+        link='http://excellent-solution.jp/',
+        link_label='紹介ページ',
+        image='excellent.png',
+    ),
+    
     cloudmap=dict(
         label='cloudmap',
         description=XML(T("""Cloudmap is a visual search engine for any contents with user evaluations.""")),

@@ -577,11 +577,12 @@ margin-bottom: 15px;
 }
 #products dt {
 float:left;
-width: 500px;
+width: 490px;
 }
 #products dd {
-margin-left:500px;
-padding-bottom: 25px;
+  margin-left:500px;
+  padding-bottom: 25px;
+  text-align: center;
 }
 
 h4 {
