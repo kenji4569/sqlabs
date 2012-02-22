@@ -18,10 +18,28 @@ MOVIE_EXTENSIONS = ('flv', 'mp4', 'm4v', 'avi', 'wmv')
 FILE_EXTENSIONS = None
 
 class IS_HTML(Validator):
+    def _strip(self, value):
+        if value in ('<p>&nbsp;</p>', '&nbsp;'):
+            value = ''
+        if value:
+            value = value.strip(' ')
+            while True:
+                if value.startswith('\n'):
+                    value = value[1:]
+                if value.startswith('<div><br /></div>'):
+                    value = value[17:]
+                elif value.startswith('<br />'):
+                    value = value[6:]
+                else:
+                    break
+        return value
+
     def __call__(self, value):
-        from BeautifulSoup import BeautifulSoup
-        from plugin_elrte_widget import strip
-        return (strip(str(BeautifulSoup(value))), None)
+        try:
+            from BeautifulSoup import BeautifulSoup
+        except ImportError:
+            BeautifulSoup = lambda v: v
+        return (self._strip(str(BeautifulSoup(value))), None)
     
 class ManagedHTML(object):
 
@@ -63,7 +81,7 @@ class ManagedHTML(object):
         def _html(name, parent=None):
             @self.content_block(name, Field('html', 'text'), parent=parent)
             def _(content):
-                current.response.write(XML(content.html or '').xml())
+                current.response.write(XML(content.html or '').xml(), escape=False)
             _()
             return ''
         settings.content_types = Storage(html=_html)
@@ -518,11 +536,12 @@ jQuery(function(){
     jQuery('#%s a').unbind("click").click(function(e) {e.preventDefault();});
 });</script>""" % content_el_id))
 
-                    response.write(XML('<div class="%s">&nbsp;</div>' %
-                                       ('managed_html_content_anchor' if self._is_published(content) 
-                                            else 'managed_html_content_anchor_pending')))
+                    response.write(XML("<div class='%s' onclick='%s'>&nbsp;</div>" %
+                                       (('managed_html_content_anchor' if self._is_published(content) 
+                                            else 'managed_html_content_anchor_pending'),
+                                        (self._post_content_js(name, 'edit') if settings.editable else ''))))
 
-                    response.write(XML("<div onclick='%s' class='managed_html_content_inner'><div>" % 
+                    response.write(XML("<div onclick='%s' class='managed_html_content_inner'>" % 
                                         (self._post_content_js(name, 'edit') if settings.editable else '') ))
                     _body_len = len(response.body.getvalue())
                     
@@ -530,9 +549,8 @@ jQuery(function(){
                 
                 if EDIT_MODE in self.view_mode:
                     if len(response.body.getvalue()) == _body_len:
-                        response.write(XML('<div class="managed_html_empty_content">&nbsp;</div>'))
-                    
-                    response.write(XML('</div></div>'))
+                        response.write(XML("<div class='managed_html_empty_content' >&nbsp;</div>"))
+                    response.write(XML('</div>'))
                     
             if (EDIT_MODE in self.view_mode and request.ajax and 
                     self.keyword in request.vars and request.vars[self.keyword] == name):

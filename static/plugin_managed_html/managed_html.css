@@ -1,16 +1,10 @@
 /* -------------------------------------------------------------------------- */
 
-div.managed_html_content_block, div.managed_html_content, div.managed_html_content_inner, 
+div.managed_html_content_block, div.managed_html_content, div.managed_html_content_inner,
 div.managed_html_collection_block, div.managed_html_collection, div.managed_html_collection_inner {
   margin: 0 !important;
   padding: 0 !important;
   display: inline !important;
-}
-div.managed_html_content_inner > div {
-  margin: 0 !important;
-  padding: 0 !important;
-  min-height: 10px;
-  min-width: 10px;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -21,11 +15,13 @@ div.managed_html_content {
 
 /* -------------------------------------------------------------------------- */
 
+div.managed_html_content_block .managed_html_content_inner,
 div.managed_html_content_block .managed_html_content_inner > * {
   -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 15px rgba(82, 236, 82, 0.6);
   -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 15px rgba(82, 236, 82, 0.6);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 15px rgba(82, 236, 82, 0.6);
 }
+div.managed_html_content_block:hover .managed_html_content_inner,
 div.managed_html_content_block:hover .managed_html_content_inner > * {
   -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(236, 168, 82, 0.6);
   -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(236, 168, 82, 0.6);
@@ -33,11 +29,13 @@ div.managed_html_content_block:hover .managed_html_content_inner > * {
   outline: 3px dotted rgba(236, 168, 82, 0.6);
 }
 
+div.managed_html_content_block_pending .managed_html_content_inner,
 div.managed_html_content_block_pending .managed_html_content_inner > * {
   -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 15px rgba(236, 82, 168, 0.6);
   -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 15px rgba(236, 82, 168, 0.6);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 15px rgba(236, 82, 168, 0.6);
 }
+div.managed_html_content_block_pending:hover .managed_html_content_inner,
 div.managed_html_content_block_pending:hover .managed_html_content_inner > * {
   -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(255, 0, 0, 0.6);
   -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(255, 0, 0, 0.6);
@@ -46,24 +44,26 @@ div.managed_html_content_block_pending:hover .managed_html_content_inner > * {
 }
 
 
-div.managed_html_collection_block .managed_html_collection_inner > div {
+div.managed_html_collection_block .managed_html_collection_inner,
+div.managed_html_collection_block .managed_html_collection_inner > * {
   -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(82, 82, 236, 0.6);
   -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(82, 82, 236, 0.6);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(82, 82, 236, 0.6);
 }
-div.managed_html_collection_block:hover .managed_html_collection_inner > div {
+div.managed_html_collection_block:hover .managed_html_collection_inner,
+div.managed_html_collection_block:hover .managed_html_collection_inner > * {
   -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 35px rgba(168, 82, 236, 0.6);
   -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 35px rgba(168, 82, 236, 0.6);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 35px rgba(168, 82, 236, 0.6);
   outline: 4px dotted rgba(168, 82, 236, 0.6);
 }
 
-div.managed_html_collection_block_pending .managed_html_collection_inner > div {
+div.managed_html_collection_block_pending .managed_html_collection_inner > * {
   -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(251, 103, 4, 0.6);
   -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(251, 103, 4, 0.6);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(251, 103, 4, 0.6);
 }
-div.managed_html_collection_block_pending:hover .managed_html_collection_inner > div {
+div.managed_html_collection_block_pending:hover .managed_html_collection_inner > * {
   -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 35px rgba(251, 50, 4, 0.6);
   -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 35px rgba(251, 50, 4, 0.6);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 35px rgba(251, 50, 4, 0.6);
@@ -87,14 +87,14 @@ div.managed_html_block_movable:hover .managed_html_content_inner > * {
 /* -------------------------------------------------------------------------- */
 
 div.managed_html_content_anchor, div.managed_html_content_anchor_pending {
-  width:5px;height:5px;position:absolute;
+  width:15px;height:15px;position:absolute;
 }
 div.managed_html_content_anchor {
   background: rgba(82, 236, 82, 0.6);
 }
 div.managed_html_content_anchor_pending {
   background: rgba(236, 82, 168, 0.6);
-  width:5px;height:5px;
+  width:15px;height:15px;
 }
 
 
@@ -275,6 +275,10 @@ input[type="button"].managed_html_btn, .managed_html_move_btn {
   transition: 0.1s linear all;
   margin-right:10px;
 }
+.managed_html_move_btn .managed_html_btn {
+  color: white;
+}
+
 input[type="button"].managed_html_btn:hover {
   background-position: 0 -15px;
   text-decoration: none;
@@ -400,12 +404,11 @@ div.managed_html_droppable_target {
 }
 
 /* -------------------------------------------------------------------------- */
-.managed_html_empty_content {
+div.managed_html_empty_content {
   width:150px;
   height:15px;
   margin:5px;
   background:#FFD;
-  float:left;
 }
 
 /* -------------------------------------------------------------------------- */
