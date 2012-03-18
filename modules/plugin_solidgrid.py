@@ -280,13 +280,13 @@ class SolidGrid(object):
         gridbutton = self.settings.gridbutton
         recordbutton = self.settings.recordbutton
         
-        request, session, T = current.request, current.session, current.T
+        request, response, session, T = current.request, current.response, current.session, current.T
         
         def __oncreate(form):
             session.flash = T('Created')
         def __onupdate(form):
             session.flash = T('Updated')
-        def __ondelete(table, tablename, ret):
+        def __ondelete(table, tablename):
             session.flash = T('Deleted')
         def __onpermute(table, tablename, ret):
             session.flash = T('Permuted')
@@ -481,9 +481,9 @@ class SolidGrid(object):
             if callable(deletable):
                 deletable(request.args[-1])
             else:
-                ret = db(table.id==request.args[-1]).delete()
                 if ondelete:
-                    ondelete(table, request.args[-1], ret)
+                    ondelete(table, request.args[-1])
+                db(table.id==request.args[-1]).delete()
             redirect(url())
             
         elif request.vars.records and not isinstance(request.vars.records, list):
