@@ -4,15 +4,19 @@
 from gluon import *
 from gluon.storage import Storage
 
+# The following is used for referencing static and views folders from other application
+import os
+APP = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
+
 class JsTree(object):
     
     def __init__(self, tree_model, renderstyle=False):
         self.tree_model = tree_model # tree_model could be an MPTT object of plugin_mptt
         
-        _urls = [URL('static', 'plugin_jstree/jstree/jquery.hotkeys.js'),
-                 URL('static', 'plugin_jstree/jstree/jquery.jstree.js')]
+        _urls = [URL(APP, 'static', 'plugin_jstree/jstree/jquery.hotkeys.js'),
+                 URL(APP, 'static', 'plugin_jstree/jstree/jquery.jstree.js')]
         if renderstyle:
-            _urls.append(URL('static', 'plugin_jstree/main.css'))
+            _urls.append(URL(APP, 'static', 'plugin_jstree/main.css'))
         for _url in _urls:
             if _url not in current.response.files:
                 current.response.files.append(_url)
@@ -70,6 +74,7 @@ class JsTree(object):
                  args=[],
                  user_signature=True, 
                  hmac_key=None, 
+                 onsuccess=None, # def onsuccess(affected_node_ids): ...
                  ):
         request = current.request
         response = current.response
@@ -92,6 +97,8 @@ class JsTree(object):
             if not vars.name or vars.name == '---':
                 raise HTTP(406)
             node_id = self.tree_model.insert_node(vars.target, name=vars.name)
+            if onsuccess:
+                onsuccess([])
             raise HTTP(200, node_id)
             
         elif action=='edit':
@@ -105,6 +112,8 @@ class JsTree(object):
             if node.name == vars.name:
                 raise HTTP(406)
             node.update_record(name=vars.name)
+            if onsuccess:
+                onsuccess([])
             raise HTTP(200)
             
         elif action=='delete':
@@ -113,7 +122,11 @@ class JsTree(object):
             node = self.tree_model.get_node(vars.id)
             if not self.tree_model.is_leaf_node(node) or not node:
                 raise HTTP(404)
+            affected_node_ids = [_node.id for _node in self.tree_model.ancestors_from_node(node).select()]
+
             self.tree_model.delete_node(node)
+            if onsuccess:
+                onsuccess(affected_node_ids)
             raise HTTP(200)
             
         elif action=='move':
@@ -122,6 +135,7 @@ class JsTree(object):
             node = self.tree_model.get_node(vars.id)
             if self.tree_model.is_root_node(node):
                 raise HTTP(406)
+            affected_node_ids = [_node.id for _node in self.tree_model.ancestors_from_node(node).select()]
             
             parent_node = self.tree_model.get_node(vars.parent)
             position = int(vars.position)
@@ -133,13 +147,18 @@ class JsTree(object):
                 for i in range(position):
                     tmp = self.tree_model.get_next_sibling(target_child)
                     if tmp is False:
-                        self.tree_model.move_node(node,target_child,'right')
+                        self.tree_model.move_node(node, target_child, 'right')
                         end_flag = True
                     target_child = tmp
                 if end_flag is False:  
-                    self.tree_model.move_node(node,target_child,'left')
+                    self.tree_model.move_node(node, target_child, 'left')
             else:
-                self.tree_model.move_node(node,parent_node)
+                self.tree_model.move_node(node, parent_node)
+                
+            affected_node_ids += [_node.id for _node in self.tree_model.ancestors_from_node(node).select()]
+            if onsuccess:
+                onsuccess(list(set(affected_node_ids)))
+                
             raise HTTP(200)
 
         root_nodes = self.tree_model.roots().select()
@@ -152,9 +171,17 @@ class JsTree(object):
         
         from gluon.utils import web2py_uuid
         element_id = web2py_uuid()
-        return XML(response.render('plugin_jstree/block.html',
+
+        from globals import Response, Storage
+        _response = Response()
+        _response._view_environment = current.globalenv.copy()
+        _response._view_environment.update(
+            request=Storage(folder=os.path.join(os.path.dirname(os.path.dirname(request.folder)), application)),
+            response=_response,
+        )
+        return XML(_response.render('plugin_jstree/block.html',
                                    dict(url=url, data=data,
                                         initially_open=initially_open,
                                         tree_crud_buttons=self.render_tree_crud_buttons(),
-                                        element_id=element_id)))
-                        
+                                        element_id=element_id,
+                                        APP=APP)))
