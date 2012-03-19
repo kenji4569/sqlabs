@@ -176,7 +176,7 @@ class JsTree(object):
         _response = Response()
         _response._view_environment = current.globalenv.copy()
         _response._view_environment.update(
-            request=Storage(folder=os.path.join(os.path.dirname(os.path.dirname(request.folder)), application)),
+            request=Storage(folder=os.path.join(os.path.dirname(os.path.dirname(request.folder)), APP)),
             response=_response,
         )
         return XML(_response.render('plugin_jstree/block.html',
