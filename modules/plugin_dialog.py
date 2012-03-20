@@ -7,7 +7,6 @@ from gluon import *
 import os
 APP = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
 
-
 class DIALOG(DIV):
         
     def __init__(self, content, title=None, close_button=None,
