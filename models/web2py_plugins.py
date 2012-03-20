@@ -6,8 +6,8 @@ def get_info_plugin_metas():
         label='Horizontal Radio Widget',
         short_description=T('A radio widget arranging its buttons horizontally'),
         long_description=XML(trans(en="""
-%s arranges its radio buttons vertically, which occupies a relatively large area. 
-Here we implemented a horizontal radio widget, and further made it clickable for it's labels. 
+%s arranges its radio buttons vertically, which occupies a relatively large area.
+Here we implemented a horizontal radio widget, and further made it clickable for it's labels.
 """,                              ja="""
 %sはラジオボタンを垂直に配置するため、少し広めの領域を占めてしまいます。そこで水平のラジオウィジェットを実装し、さらにラベルをクリック可能にしました。
 """) % A(T('A built-in radio widget'), _href='http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.RadioWidget-class.html').xml())
@@ -24,14 +24,14 @@ You can choice between horizontal or vertical layout.
 %s は単一のセレクトタグからなり、多数のオプションを持つ場合に扱うのが困難になります。
 そこで、より使い勝手のよい、２つのセレクトタグからなる複数選択ウィジェットを作成しました。
 水平まはた垂直のレイアウトを選ぶことができます。"""
-) % A(T('A built-in multiple options widget'), _href='http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.MultipleOptionsWidget-class.html').xml())   
+) % A(T('A built-in multiple options widget'), _href='http://web2py.com/examples/static/epydoc/web2py.gluon.sqlhtml.MultipleOptionsWidget-class.html').xml())
     ),
     plugin_suggest_widget=dict(
         label='Suggest Widget',
         short_description=T('A refined autocomplete widget'),
         long_description=XML(trans(en="""
 The suggest widget is an alternative for %s.
-It uses %s with some modifications to handle non-us charcters. 
+It uses %s with some modifications to handle non-us charcters.
 Further, it visualize a selecting status at each typing step.
 """,                               ja="""
 サジェストウィジェットは%sの代替です。修正した%sを用いて非US文字を扱うことができます。さらに、各タイピングのステップにおける選択状態を可視化します。
@@ -54,14 +54,14 @@ The lazy options widget receives js events and sends ajax requests to populate i
 This plugin provides time, date and datetime picker widgets using %s.
 """,                               ja="""
 このプラグインは%sを使用して、時刻、日付、日時の選択ウィジェットを提供します。
-""") % A('anytime.js', _href='http://www.ama3.com/anytime/').xml() + 
+""") % A('anytime.js', _href='http://www.ama3.com/anytime/').xml() +
 '<br/><span style="color:#D00;">NOTE: Confirm the anytime.js licence. The anytime.js is under the Creative Commons BY-NC-SA 3.0 License.</span>')
     ),
     plugin_color_widget=dict(
         label='Color Widget',
         short_description=T('A color picker widget using colorpicker.js'),
         long_description=XML(trans(en="""
-This plugin provides a color picker widget, using %s. Picked color is displayed in forms. 
+This plugin provides a color picker widget, using %s. Picked color is displayed in forms.
 """,                               ja="""
 このプラグインは、%sを用いて色選択ウィジェットを提供します。選択した色はフォームに表示されます。
 """) % A('colorpicker.js', _href='http://www.eyecon.ro/colorpicker/').xml())
@@ -82,7 +82,7 @@ A WYSIWYG editor widget using %s. You can specify your language by a contructor 
         long_description=XML(trans(en="""
 A file upload widget using %s.
 The uploadify turns a file input tag into a flash-based file uploader,
-which displays a progress bar and enables ajax upload. 
+which displays a progress bar and enables ajax upload.
 """,                               ja="""
 %sを用いたファイルアップロードウィジェットです。uploadifyはファイルのインプタグをflashベースのファイルアップローダーに変換します。これにより、プログレスバーが表示され、ajaxアップロードが可能になります。
 """) % A('uploadify.js', _href='http://www.uploadify.com/').xml())
@@ -104,7 +104,7 @@ The widget works with string, integer, double, and, decimal fields.
         label='Solid Form',
         short_description=T('A custom SQLFORM for denser layout'),
         long_description=trans(en="""
-A custom %s for denser layout using multi-line columns. 
+A custom %s for denser layout using multi-line columns.
 You can specify structured fields corresponding to the layout.
 Other functionarities are same as SQLFORM, including facotry and readonly forms.
 """,                           ja="""
@@ -115,7 +115,7 @@ Other functionarities are same as SQLFORM, including facotry and readonly forms.
         label='Not-Empty Marker',
         short_description=T('Add not-empty markers to field labels'),
         long_description=trans(en="""
-This plugin automatically attaches not-empty markers to labels of "not-empty" fields of a form, 
+This plugin automatically attaches not-empty markers to labels of "not-empty" fields of a form,
 based on field validators.
 """,                           ja="""
 このプラグインは、フィールドのバリデータに基づいて、自動的に必須マークを"必須"フィールドのラベルに付与します。
@@ -125,7 +125,7 @@ based on field validators.
         label='Solid Table',
         short_description=T('A custom SQLTABLE for denser layout'),
         long_description=XML(trans(en="""
-A custom %s for denser layout using multi-line rows. 
+A custom %s for denser layout using multi-line rows.
 You can specify structured fields corresponding to the layout.
 The interface of the class keeps backward-compatible to the SQLTABLE,
 and enables more flexible customization.
@@ -206,18 +206,18 @@ A WYSIWYG CMS. Just take a look!  (EXPERIMENTAL)
         short_description='Modified Preorder Tree Traversal (MPTT) implemntation original by django-mptt',
         long_description=XML(trans(en="""
 A web2py implemntation of %s, 
-which manages tree structured data stored in db with faster selects. 
+which manages tree structured data stored in db with faster selects.
 The program is originated in %s.
 """,                           ja="""
 %s のweb2py版の実装です。これによりdbに格納された木構造のデータを高速に扱うことができます。プログラムは　%s から派生しています。
-""")  % (A('Modified Preorder Tree Traversal (MPTT) algorithm', _href='http://www.sitepoint.com/hierarchical-data-database/'), 
+""")  % (A('Modified Preorder Tree Traversal (MPTT) algorithm', _href='http://www.sitepoint.com/hierarchical-data-database/'),
         A('django-mptt', _href='https://github.com/django-mptt/django-mptt/').xml())),
     ),
     plugin_jstree=dict(
         label='Tree Crud',
         short_description='A tree crud using jsTree, fully integrated with the MPTT plugin',
         long_description=XML(trans(en="""
-The plugin allows you to CRUD and move tree structured data 
+The plugin allows you to CRUD and move tree structured data
 in a fancy ui by using %s. Then, %s could be then included into the plugin as a base tree model.
 """,                           ja="""
 %s を用いたファンシーなUIで、木構造のデータを、CRUD および 移動できるようになります。
@@ -326,9 +326,11 @@ if request.controller.startswith('plugin_'):
         
     def _get_code(directory, filename, linestart):
         path = os.path.join(request.folder, directory, filename)
+
         def _get_code_core():
             if not os.path.exists(path):
                 raise HTTP(404)
+
             f = open(path, 'r')
             lines = f.readlines()
             f.close()
@@ -349,12 +351,13 @@ if request.controller.startswith('plugin_'):
     # Get static files
     def _get_statics():
         statics = listdir(apath('sqlabs/static/%s/' % plugin_name, r=request), '[^\.#].*')
-        statics = [x.replace('\\','/') for x in statics]
+        statics = [x.replace('\\', '/') for x in statics]
         statics.sort()
         return statics
     statics = cache.ram('statics:%s' % plugin_name, _get_statics, time_expire=10)
     
-    info_plugin = get_info_plugin_metas()[plugin_name]
+    info_plugin = get_info_plugin_metas().get(plugin_name,
+        dict(label='', short_description='', long_description=''))
     if info_plugin.get('status') == 'under-construction':
         SHOW_SOCIAL = False
     

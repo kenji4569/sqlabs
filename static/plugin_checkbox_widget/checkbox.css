@@ -1,0 +1,33 @@
+input.plugin_checkbox_widget {
+    z-index: -1;
+    position: absolute;
+}
+
+.plugin_checkbox_widget_label{
+    background-image: url("dim_bullet.gif");
+    background-repeat: no-repeat;
+    background-position: top left;
+    padding-left: 16px;
+    padding-top: 2px;
+    margin-right:16px;
+    cursor: pointer;
+}
+
+.plugin_checkbox_widget_selected{
+    background-image: url("sidebar_bullet.gif");
+    background-repeat: no-repeat;
+}
+
+.checkbox_label_class.slide{
+    background-image: url("http://www.webcreatorbox.com/sample/images/checkbox.png");
+    background-repeat: no-repeat;
+    background-position: top left;
+    margin-right:20px;
+    padding-left:22px;
+}
+
+.checkbox_label_class.slide.label_selected{
+    background-position: bottom left;
+}
+
+
