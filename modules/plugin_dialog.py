@@ -3,7 +3,7 @@
 # Authors: Kenji Hosoda <hosoda@s-cubism.jp>
 from gluon import *
 
-# The following is used for referencing static and views folders from other application
+# For referencing static and views from other application
 import os
 APP = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
 
