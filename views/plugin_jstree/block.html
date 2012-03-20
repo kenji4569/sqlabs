@@ -70,6 +70,10 @@ tree_el.jstree({
     }
     tree_crud_buttons.show();
   }).bind("create.jstree", function (e, data) {
+    if (!confirm("{{=T('Sure you want to create it?')}}")) {
+      $.jstree.rollback(data.rlbk);
+      return;
+    }
     jQuery('#tree_crud_buttons').jstree_spinner();
     $.post("{{=url(args=['new'])}}",
       {
@@ -88,6 +92,10 @@ tree_el.jstree({
       $.jstree.rollback(data.rlbk);
     });
   }).bind("rename.jstree", function (e, data) {
+    if (!confirm("{{=T('Sure you want to rename it?')}}")) {
+      $.jstree.rollback(data.rlbk);
+      return;
+    }
     jQuery('#tree_crud_buttons').jstree_spinner();
     $.post("{{=url(args=['edit'])}}",
       {
