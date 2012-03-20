@@ -2,7 +2,6 @@
 
 from plugin_jstree import JsTree
 from plugin_mptt import MPTT
-import re
 import datetime
 
 ### setup core objects #########################################################
