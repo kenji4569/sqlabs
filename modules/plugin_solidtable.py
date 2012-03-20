@@ -5,6 +5,11 @@ from gluon import *
 from gluon.sqlhtml import table_field, represent, Row
 import urllib
 
+# For referencing static and views from other application
+import os
+APP = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
+
+
 class SOLIDTABLE(SQLTABLE):
     
     def __init__(self, sqlrows, linkto=None, upload=None, orderby=None,
@@ -27,7 +32,7 @@ class SOLIDTABLE(SQLTABLE):
             else:
                 return c
         
-        max_col_lines = 1 # max row span in table header or each table "row"
+        max_col_lines = 1  # max row span in table header or each table "row"
         flat_columns = []
         _converted_columns = []
         _precedent_col_len = 1
@@ -55,7 +60,7 @@ class SOLIDTABLE(SQLTABLE):
         
         show_header = headers is not None
         headers = self._convert_headers(show_header and headers or {}, columns)
-        if extracolumns:#new implement dict
+        if extracolumns:  # new implement dict
             _extracolumns = dict([(str(ec), ec) for ec in extracolumns])
             columns.extend([c for c in [str(ec) for ec in extracolumns] if c not in flat_columns])
             headers.update(_extracolumns.items())
@@ -68,7 +73,7 @@ class SOLIDTABLE(SQLTABLE):
         self.components.append(self._create_tbody(headers, col_lines))
             
         if renderstyle:
-            _url = URL('static','plugin_solidtable/solidtable.css')
+            _url = URL(APP, 'static', 'plugin_solidtable/solidtable.css')
             if _url not in current.response.files:
                 current.response.files.append(_url)
         
@@ -78,31 +83,36 @@ class SOLIDTABLE(SQLTABLE):
             if type(column) == str and column[0] != '(':
                 parts = column.split('.')
                 if len(parts) == 2:
-                    (t,f) = parts
+                    (t, f) = parts
                     field = self.sqlrows.db[t][f]
             return field
     
-        if headers=='fieldname:capitalize':
+        if headers == 'fieldname:capitalize':
             headers = {}
-            def _set_header(c):
+
+            def _set_header_capitalize(c):
                 if type(c) == str:
-                    headers[c] = {'label': ' '.join([w.capitalize() 
+                    headers[c] = {'label': ' '.join([w.capitalize()
                                     for w in c.split('.')[-1].split('_')])}
                 elif c:
                     field = _get_field(c)
                     headers[c] = {'label': (field and field.label) or c,
                                   'class': field and field.type or ''}
-                    
-        elif headers=='labels':
+            _set_header = _set_header_capitalize
+
+        elif headers == 'labels':
             headers = {}
-            def _set_header(c):
+
+            def _set_header_labels(c):
                 if c:
                     field = _get_field(c)
                     headers[c] = {'label': (field and field.label) or c,
                                   'class': field and field.type or ''}
+            _set_header = _set_header_labels
+             
         else:
-            def _set_header(c):
-                if c:   
+            def _set_header_default(c):
+                if c:
                     field = _get_field(c)
                     label = (field and field.label) or c
                     class_ = field and field.type or ''
@@ -113,13 +123,14 @@ class SOLIDTABLE(SQLTABLE):
                             headers[c]['label'] = label
                         if 'class' not in headers[c]:
                             headers[c]['class'] = class_
+            _set_header = _set_header_default
                     
         for inner in columns or self.sqlrows.colnames:
             if type(inner) in (list, tuple):
                 for col in inner:
                     _set_header(col)
             else:
-                _set_header(inner) 
+                _set_header(inner)
                     
         return headers
         
@@ -134,11 +145,11 @@ class SOLIDTABLE(SQLTABLE):
                 num_lines = len(inner)
                 rowspan = max_col_lines / num_lines
                 extra_rowspan = max_col_lines % num_lines
-                for i in range((max_col_lines-extra_rowspan)/rowspan):
+                for i in range((max_col_lines - extra_rowspan) / rowspan):
                     col = inner[i]
                     if col:
                         headers[col]['_rowspan'] = rowspan
-                        col_lines[i*rowspan].append(col)
+                        col_lines[i * rowspan].append(col)
                     else:
                         for _col_no in reversed(range(col_no)):
                             try:
@@ -147,7 +158,7 @@ class SOLIDTABLE(SQLTABLE):
                             except KeyError:
                                 pass
                 if extra_rowspan:
-                    for line_no in range(max_col_lines-extra_rowspan, max_col_lines):
+                    for line_no in range(max_col_lines - extra_rowspan, max_col_lines):
                         col_lines[line_no].append(None)
             else:
                 col = inner
@@ -159,7 +170,7 @@ class SOLIDTABLE(SQLTABLE):
     def _create_thead(self, headers, col_lines):
         thead_inner = []
         for col_line in col_lines:
-            tr_inner =[]
+            tr_inner = []
             for col in col_line:
                 if not col:
                     tr_inner.append(TH())
@@ -180,14 +191,14 @@ class SOLIDTABLE(SQLTABLE):
             if callable(self.orderby):
                 label = self.orderby(col, label)
             else:
-                label = A(label, _href=self.th_link+'?orderby=' + col, _class='w2p_trap') # from SQLTABLE
-        return TH(label,**attrcol)
+                label = A(label, _href=self.th_link + '?orderby=' + col, _class='w2p_trap')  # from SQLTABLE
+        return TH(label, **attrcol)
         
     def _apply_colclass(self, attrcol, header):
         attrcol.update(_rowspan=header['_rowspan'], _colspan=header['_colspan'])
         
         if header.get('selected'):
-            colclass= str(header.get('class', '') + " colselected").strip()
+            colclass = str(header.get('class', '') + " colselected").strip()
         else:
             colclass = header.get('class')
         if colclass:
@@ -208,7 +219,7 @@ class SOLIDTABLE(SQLTABLE):
                     if callable(self.selectid):
                         if self.selectid(record):
                             _class += ' rowselected'
-                    elif hasattr(record, 'id') and record.id ==self.selectid:
+                    elif hasattr(record, 'id') and record.id == self.selectid:
                         _class += ' rowselected'
                 tbody_inner.append(TR(_class=_class, *tr_inner))
         return TBODY(*tbody_inner)
@@ -241,7 +252,7 @@ class SOLIDTABLE(SQLTABLE):
             elif fieldname in record:
                 r = record[fieldname]
             else:
-                raise SyntaxError, 'something wrong in Rows object'
+                raise SyntaxError('something wrong in Rows object')
                 
             r_old = r
             if not field:
@@ -260,20 +271,20 @@ class SOLIDTABLE(SQLTABLE):
                     except TypeError:
                         href = '%s/%s/%s' % (self.linkto, ref, r_old)
                         if ref.find('.') >= 0:
-                            tref,fref = ref.split('.')
-                            if hasattr(self.sqlrows.db[tref],'_primarykey'):
-                                href = '%s/%s?%s' % (self.linkto, tref, urllib.urlencode({fref:r}))
+                            tref, fref = ref.split('.')
+                            if hasattr(self.sqlrows.db[tref], '_primarykey'):
+                                href = '%s/%s?%s' % (self.linkto, tref, urllib.urlencode({fref: r}))
                     r = A(represent(field, r, record), _href=str(href), _class='w2p_trap')
                 elif field.represent:
                     r = represent(field, r, record)
-            elif self.linkto and hasattr(field._table,'_primarykey') and fieldname in field._table._primarykey:
+            elif self.linkto and hasattr(field._table, '_primarykey') and fieldname in field._table._primarykey:
                 # have to test this with multi-key tables
-                key = urllib.urlencode(dict( [ \
+                key = urllib.urlencode(dict([ \
                             ((tablename in record \
                                   and isinstance(record, Row) \
                                   and isinstance(record[tablename], Row)) and
                              (k, record[tablename][k])) or (k, record[k]) \
-                                for k in field._table._primarykey ] ))
+                                for k in field._table._primarykey]))
                 r = A(r, _href='%s/%s?%s' % (self.linkto, tablename, key), _class='w2p_trap')
             elif field.type.startswith('list:'):
                 r = represent(field, r or [], record)
@@ -288,14 +299,14 @@ class SOLIDTABLE(SQLTABLE):
                     r = 'file'
                 else:
                     r = ''
-            elif field.type in ['string','text']:
+            elif field.type in ['string', 'text']:
                 r = str(field.formatter(r))
                 if isinstance(header, dict):
                     r = self._truncate_str(r, header.get('truncate') or self.truncate)
                 else:
                     r = self._truncate_str(r, self.truncate)
                     
-        return TD(r,**attrcol)
+        return TD(r, **attrcol)
         
     def _truncate_str(self, r, truncate):
         if truncate:
@@ -303,7 +314,8 @@ class SOLIDTABLE(SQLTABLE):
             if len(ur) > truncate:
                 return ur[:truncate - 3].encode('utf8') + '...'
         return r
-            
+
+        
 class OrderbySelector(object):
     def __init__(self, orderbys, orderby_var='orderby'):
         self.orderbys = orderbys
@@ -331,7 +343,7 @@ class OrderbySelector(object):
         
         if current_orderby:
             if current_orderby.op == current_orderby.db._adapter.INVERT:
-                self.current_field =current_orderby.first
+                self.current_field = current_orderby.first
                 self.next_orderby = self.current_field
                 self.current_class = 'orderby-desc'
             else:
@@ -357,7 +369,7 @@ class OrderbySelector(object):
         
     def __call__(self, column, label):
         if str(column) == str(self.current_field):
-            return A(label, _href=self._url(self.next_orderby), _class='w2p_trap orderby '+self.current_class)
+            return A(label, _href=self._url(self.next_orderby), _class='w2p_trap orderby ' + self.current_class)
         
         for orderby in self.orderbys:
             if orderby.op == orderby.db._adapter.INVERT:
@@ -368,4 +380,3 @@ class OrderbySelector(object):
                 return A(label, _href=self._url(orderby), _class='w2p_trap orderby')
                 
         return label
-        
