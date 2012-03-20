@@ -3,6 +3,7 @@
 # Authors: Kenji Hosoda <hosoda@s-cubism.jp>
 from gluon import *
 
+
 def _get_length(require):
     if isinstance(require, IS_LENGTH):
         return require.maxsize
@@ -14,13 +15,14 @@ def _get_length(require):
             maximum = require.maximum
         return int(math.log10(max(maximum, abs(require.minimum)))) + 1
 
+
 def tight_input_widget(field, value, **attributes):
     _length = None
     
     if field.requires:
         requires = field.requires
         while hasattr(requires, 'other') and requires.other:
-            requires =  requires.other
+            requires = requires.other
             
         if type(requires) in (list, tuple):
             for r in requires:
@@ -46,7 +48,7 @@ def tight_input_widget(field, value, **attributes):
             _length *= 1.2
             _style = ''
             
-        _style = _style + ('width:%sem;' % (0.5*(_length + 2)))
+        _style = _style + ('width:%sem;' % (0.5 * (_length + 2)))
             
         if '_style' in attributes:
             attributes['_style'] = attributes['_style'] + ';' + _style
@@ -54,5 +56,3 @@ def tight_input_widget(field, value, **attributes):
             attributes['_style'] = _style
             
     return SQLFORM.widgets[_type].widget(field, value, **attributes)
-    
-    
