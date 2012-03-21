@@ -4,6 +4,7 @@
 from gluon import *
 from gluon.storage import Storage, Messages
 
+
 class Messaging(object):
     
     def __init__(self, db):
@@ -49,7 +50,7 @@ class Messaging(object):
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_thread_name, []))
             table.status.requires = IS_IN_SET(
-                [(settings.status_read, self.messages.read), 
+                [(settings.status_read, self.messages.read),
                  (settings.status_unread, self.messages.unread)])
         settings.table_thread = db[settings.table_thread_name]
         
@@ -60,20 +61,20 @@ class Messaging(object):
                 Field('thread', 'reference %s' % settings.table_thread_name),
                 Field('body_text', 'text',
                       label=self.messages.label_body_text),
-                Field('forward', 'text'),  # TODO 
+                Field('forward', 'text'),  # TODO
                 migrate=migrate, fake_migrate=fake_migrate,
                 *settings.extra_fields.get(settings.table_message_name, []))
         settings.table_message = db[settings.table_message_name]
         
     def threads_from_user(self, user_id):
-        return self.db(self.settings.table_thread.user==user_id)
+        return self.db(self.settings.table_thread.user == user_id)
         
     def get_thread(self, user_id, receiver_id, *fields, **attributes):
-        return self.threads_from_user(user_id)(self.settings.table_thread.receiver==receiver_id
+        return self.threads_from_user(user_id)(self.settings.table_thread.receiver == receiver_id
                     ).select(*fields, **attributes).first()
         
     def messages_from_thread(self, thread_id):
-        return self.db(self.settings.table_message.thread==thread_id)
+        return self.db(self.settings.table_message.thread == thread_id)
         
     def add_message(self, user_id, receiver_id, body_text, forward_message_ids=None, **extra):
         db, settings = self.db, self.settings
@@ -97,7 +98,7 @@ class Messaging(object):
         
         forward = None
         if forward_message_ids:
-            pass # TODO
+            pass  # TODO
         settings.table_message.insert(user=user_id, thread=user_thread_id,
                                       body_text=body_text, forward=forward, **extra)
         settings.table_message.insert(user=user_id, thread=receiver_thread_id,
@@ -109,7 +110,7 @@ class Messaging(object):
     def remove_messages(self, user_id, receiver_id, message_ids=None):
         settings = self.settings
         if not message_ids:
-            self.db(settings.table_thread.user==user_id)(settings.table_thread.receiver==receiver_id
+            self.db(settings.table_thread.user == user_id)(settings.table_thread.receiver == receiver_id
                     ).delete()
         else:
             thread = self.get_thread(user_id, receiver_id)

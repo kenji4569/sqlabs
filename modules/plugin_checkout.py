@@ -4,7 +4,8 @@
 from gluon import *
 from gluon.storage import Storage, Messages
 from gluon.utils import web2py_uuid
-    
+
+
 class Checkout(object):
     
     def __init__(self, db):
@@ -33,12 +34,12 @@ class Checkout(object):
         if not settings.table_purchase_order_name in db.tables:
             table = db.define_table(
                 settings.table_purchase_order_name,
-                Field('uuid', length=256, unique=True, writable=False, readable=False), 
+                Field('uuid', length=256, unique=True, writable=False, readable=False),
                 Field('is_active', 'boolean', default=False, writable=False, readable=False),
                 Field('purchased_on', 'datetime', writable=False, readable=True),
                 Field('paid_on', 'datetime', writable=False, readable=True),
                 Field('shipped_on', 'datetime', writable=False, readable=True),
-                Field('status', length=16), 
+                Field('status', length=16),
                 Field('customer', 'integer', writable=False),
                 basetable_address,
                 Field('deep_copy', 'text', writable=False),
@@ -111,7 +112,7 @@ class Checkout(object):
                 break
         else:
             line_items.append(Storage(
-                id=line_items and (line_items[-1].id+1) or 0,
+                id=line_items and (line_items[-1].id + 1) or 0,
                 sku=sku, price=price, quantity=quantity))
         
         self.update_cart(line_items)
@@ -146,7 +147,6 @@ class Checkout(object):
         session.checkout_summary = Storage(subtotal_price=subtotal_price,
                                            total_quantity=total_quantity)
                            
-        
     def set_shipping_address_id(self, address_id):
         current.session.checkout_shipping_address_id = address_id
    
@@ -171,5 +171,3 @@ class Checkout(object):
         session.checkout_shipping_address_id = None
         session.checkout_payment_method_id = None
         session.checkout_order_options = None
-        
-         

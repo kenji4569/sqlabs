@@ -2,32 +2,36 @@
 # This plugins is licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 # Authors: Yusuke Kishita <yuusuuke.kishiita@gmail.com>, Kenji Hosoda <hosoda@s-cubism.jp>
 from gluon import *
-from gluon.storage import Storage
+
+# For referencing static and views from other application
+import os
+APP = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
+
 
 class JsTree(object):
     
     def __init__(self, tree_model, renderstyle=False):
-        self.tree_model = tree_model # tree_model could be an MPTT object of plugin_mptt
+        self.tree_model = tree_model  # tree_model could be an MPTT object of plugin_mptt
         
-        _urls = [URL('static', 'plugin_jstree/jstree/jquery.hotkeys.js'),
-                 URL('static', 'plugin_jstree/jstree/jquery.jstree.js')]
+        _urls = [URL(APP, 'static', 'plugin_jstree/jstree/jquery.hotkeys.js'),
+                 URL(APP, 'static', 'plugin_jstree/jstree/jquery.jstree.js')]
         if renderstyle:
-            _urls.append(URL('static', 'plugin_jstree/main.css'))
+            _urls.append(URL(APP, 'static', 'plugin_jstree/main.css'))
         for _url in _urls:
             if _url not in current.response.files:
                 current.response.files.append(_url)
         
     def recordbutton(self, buttonclass, buttontext, buttonurl, showbuttontext=True, **attr):
         if showbuttontext:
-            inner = SPAN(buttontext, _class='ui-button-text') 
+            inner = SPAN(buttontext, _class='ui-button-text')
         else:
             inner = SPAN(XML('&nbsp'), _style='padding: 0px 7px 0px 6px;')
-        return A(SPAN(_class='ui-icon ' + buttonclass), 
-                 inner, 
+        return A(SPAN(_class='ui-icon ' + buttonclass),
+                 inner,
                  _title=buttontext, _href=buttonurl, _class='ui-btn', **attr)
 
     def build_tree_objects(self, initially_select):
-        initially_open=[]
+        initially_open = []
         data = []
         
         for child in self.tree_model.descendants_from_node(initially_select, include_self=True
@@ -37,16 +41,16 @@ class JsTree(object):
                 initially_open.append(node_el_id)
             
             if child.level == 0:
-                data.append(dict(data=child.name, 
+                data.append(dict(data=child.name,
                              attr=dict(id=node_el_id, rel=child.node_type),
                              children=[],
-                             ))        
-            elif child.level >= 1:        
+                             ))
+            elif child.level >= 1:
                 _data = data[:]
                 for depth in range(child.level):
                     _data = _data[-1]['children']
                 
-                _data.append(dict(data=child.name, 
+                _data.append(dict(data=child.name,
                                  attr=dict(id=node_el_id, rel=child.node_type),
                                  children=[],
                                  ))
@@ -59,23 +63,23 @@ class JsTree(object):
                   buttonedit='ui-icon-pencil')
         return DIV(
             A('x', _class='close', _href='#', _onclick='jQuery(this).parent().hide();'),
-            self.recordbutton('%(buttonadd)s' % ui, T('Add'), '#', False, _id='add_node_button'), 
-            self.recordbutton('%(buttonedit)s' % ui, T('Edit'),'#', False, _id='edit_node_button'),
-            self.recordbutton('%(buttondelete)s' % ui, T('Delete'),'#', False, _id='delete_node_button'),
+            self.recordbutton('%(buttonadd)s' % ui, T('Add'), '#', False, _id='add_node_button'),
+            self.recordbutton('%(buttonedit)s' % ui, T('Edit'), '#', False, _id='edit_node_button'),
+            self.recordbutton('%(buttondelete)s' % ui, T('Delete'), '#', False, _id='delete_node_button'),
             _id='tree_crud_buttons', _style='display:none;position:absolute;',
             _class='tree_crud_button alert-message info',
         )
 
-    def __call__(self, 
+    def __call__(self,
                  args=[],
-                 user_signature=True, 
-                 hmac_key=None, 
+                 user_signature=True,
+                 hmac_key=None,
+                 onsuccess=None,  # def onsuccess(affected_node_ids): ...
                  ):
         request = current.request
-        response = current.response
         
         def url(**b):
-            b['args'] = args + b.get('args',[])
+            b['args'] = args + b.get('args', [])
             b['user_signature'] = user_signature
             b['hmac_key'] = hmac_key
             return URL(**b)
@@ -84,17 +88,19 @@ class JsTree(object):
             if not URL.verify(request, user_signature=user_signature, hmac_key=hmac_key):
                 raise HTTP(403)
                 
-        action = request.args and request.args[-1]     
+        action = request.args and request.args[-1]
       
-        if action=='new':
+        if action == 'new':
             check_authorization()
             vars = request.post_vars
             if not vars.name or vars.name == '---':
                 raise HTTP(406)
             node_id = self.tree_model.insert_node(vars.target, name=vars.name)
+            if onsuccess:
+                onsuccess([])
             raise HTTP(200, node_id)
             
-        elif action=='edit':
+        elif action == 'edit':
             check_authorization()
             vars = request.post_vars
             if not vars.name or vars.name == '---':
@@ -105,23 +111,30 @@ class JsTree(object):
             if node.name == vars.name:
                 raise HTTP(406)
             node.update_record(name=vars.name)
+            if onsuccess:
+                onsuccess([])
             raise HTTP(200)
             
-        elif action=='delete':
+        elif action == 'delete':
             check_authorization()
             vars = request.post_vars
             node = self.tree_model.get_node(vars.id)
             if not self.tree_model.is_leaf_node(node) or not node:
                 raise HTTP(404)
+            affected_node_ids = [_node.id for _node in self.tree_model.ancestors_from_node(node).select()]
+
             self.tree_model.delete_node(node)
+            if onsuccess:
+                onsuccess(affected_node_ids)
             raise HTTP(200)
             
-        elif action=='move':
+        elif action == 'move':
             check_authorization()
             vars = request.post_vars
             node = self.tree_model.get_node(vars.id)
             if self.tree_model.is_root_node(node):
                 raise HTTP(406)
+            affected_node_ids = [_node.id for _node in self.tree_model.ancestors_from_node(node).select()]
             
             parent_node = self.tree_model.get_node(vars.parent)
             position = int(vars.position)
@@ -133,13 +146,18 @@ class JsTree(object):
                 for i in range(position):
                     tmp = self.tree_model.get_next_sibling(target_child)
                     if tmp is False:
-                        self.tree_model.move_node(node,target_child,'right')
+                        self.tree_model.move_node(node, target_child, 'right')
                         end_flag = True
                     target_child = tmp
-                if end_flag is False:  
-                    self.tree_model.move_node(node,target_child,'left')
+                if end_flag is False:
+                    self.tree_model.move_node(node, target_child, 'left')
             else:
-                self.tree_model.move_node(node,parent_node)
+                self.tree_model.move_node(node, parent_node)
+                
+            affected_node_ids += [_node.id for _node in self.tree_model.ancestors_from_node(node).select()]
+            if onsuccess:
+                onsuccess(list(set(affected_node_ids)))
+                
             raise HTTP(200)
 
         root_nodes = self.tree_model.roots().select()
@@ -152,9 +170,17 @@ class JsTree(object):
         
         from gluon.utils import web2py_uuid
         element_id = web2py_uuid()
-        return XML(response.render('plugin_jstree/block.html',
+
+        from globals import Response, Storage
+        _response = Response()
+        _response._view_environment = current.globalenv.copy()
+        _response._view_environment.update(
+            request=Storage(folder=os.path.join(os.path.dirname(os.path.dirname(request.folder)), APP)),
+            response=_response,
+        )
+        return XML(_response.render('plugin_jstree/block.html',
                                    dict(url=url, data=data,
                                         initially_open=initially_open,
                                         tree_crud_buttons=self.render_tree_crud_buttons(),
-                                        element_id=element_id)))
-                        
+                                        element_id=element_id,
+                                        APP=APP)))

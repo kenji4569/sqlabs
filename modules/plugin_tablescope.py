@@ -3,10 +3,15 @@
 # Authors: Kenji Hosoda <hosoda@s-cubism.jp>
 from gluon import *
 
-class TableScope(DIV): 
+# For referencing static and views from other application
+import os
+APP = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
+
+
+class TableScope(DIV):
 
     def __init__(self, dataset, field, all=True, default=None,
-                  left=None, groupby=None, scope_var='scope', page_var='page', 
+                  left=None, groupby=None, scope_var='scope', page_var='page',
                   renderstyle=False, **attributes):
         DIV.__init__(self, **attributes)
         self.attributes['_class'] = 'tablescope'
@@ -19,7 +24,7 @@ class TableScope(DIV):
         for k, v in field.requires.options():
             if str(v):
                 self.scopes.append(k)
-                _dataset = self.dataset(field==k)
+                _dataset = self.dataset(field == k)
                 if groupby:
                     count = len(_dataset.select(field, left=left, groupby=groupby))
                 elif left:
@@ -31,17 +36,17 @@ class TableScope(DIV):
             
         if all == True:
             count = sum([e['count'] for e in self.scope_details.values()])
-            self.scope_details['__all__'] = dict(label=current.T('All'), count=count) 
+            self.scope_details['__all__'] = dict(label=current.T('All'), count=count)
             self.scopes.insert(0, '__all__')
             
         self.scope = str(current.request.get_vars.get(self.scope_var) or (default or self.scopes[0]))
         if self.scope == '__all__':
             self.scoped_dataset = dataset
         else:
-            self.scoped_dataset = dataset(field==self.scope)
+            self.scoped_dataset = dataset(field == self.scope)
         
         if renderstyle:
-            _url = URL('static','plugin_tablescope/tablescope.css')
+            _url = URL(APP, 'static', 'plugin_tablescope/tablescope.css')
             if _url not in current.response.files:
                 current.response.files.append(_url)
                 
@@ -51,7 +56,7 @@ class TableScope(DIV):
         vars[self.scope_var] = scope
         return URL(args=current.request.args, vars=vars)
         
-    def xml(self): 
+    def xml(self):
         for scope in self.scopes:
             scope_detail = self.scope_details[scope]
             count = scope_detail['count']
@@ -62,9 +67,8 @@ class TableScope(DIV):
                         _class='scope selected'))
             else:
                 self.append(
-                    SPAN(A(label, _href=self._url(scope=scope)), 
+                    SPAN(A(label, _href=self._url(scope=scope)),
                          ' ', SPAN('(%s)' % count, _class='count'),
                     _class='scope'))
     
-        return DIV.xml(self) 
-        
+        return DIV.xml(self)

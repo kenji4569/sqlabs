@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-db = DAL('sqlite://storage.sqlite')  
+db = DAL('sqlite://storage.sqlite')
 
 response.generic_patterns = ['*'] if request.is_local else []
 
@@ -12,16 +12,16 @@ def trans(**texts):
         return texts['en'] if 'en' in texts else ''
 
 info_products = dict(
-    web2py_plugins= dict(
+    web2py_plugins=dict(
         label='web2py-plugins',
         description=XML(trans(en="""A collection of plugins of %s, an opensource Python web framework.
 Here we love to share useful code parts produced by our development with the framework.
-The code parts are organized in %s, and easily available.""", 
+The code parts are organized in %s, and easily available.""",
                               ja="""オープンソースのPythonウェブ・フレームワーク %s のプラグイン集です。
 ここでは、このフレームワークによる開発で生み出された有用なコード部品を共有したいと思います。
 コード部品は %s に基づいて整理されいて、簡単に利用可能です。
 """) % (
-            A('Web2py', _href='http://www.web2py.com').xml(), 
+            A('Web2py', _href='http://www.web2py.com').xml(),
             A(T("a web2py's plugin system"), _href='http://web2py.com/book/default/chapter/13#Plugins').xml())),
         link=URL('web2py_plugins', 'index'),
         link_label=T('See Demo'),

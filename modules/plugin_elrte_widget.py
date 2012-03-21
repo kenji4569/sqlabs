@@ -5,6 +5,11 @@ from gluon import *
 from gluon.storage import Storage
 from gluon.contrib import simplejson as json
 
+# For referencing static and views from other application
+import os
+APP = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
+
+
 def _set_files(files):
     if current.request.ajax:
         current.response.js = (current.response.js or '') + """;(function ($) {
@@ -16,10 +21,11 @@ $.each(%s, function() {
         document.body.appendChild(el);
     } else if ((this.slice(-4) == '.css') && ($.inArray(this.toString(), hrefs) == -1)) {
         $('<link rel="stylesheet" type="text/css" href="' + this + '" />').prependTo('head');
-        if (/* for IE */ document.createStyleSheet){document.createStyleSheet(this);} 
+        if (/* for IE */ document.createStyleSheet){document.createStyleSheet(this);}
 }});})(jQuery);""" % ('[%s]' % ','.join(["'%s'" % f.lower().split('?')[0] for f in files]))
     else:
         current.response.files[:0] = [f for f in files if f not in current.response.files]
+
 
 class ElrteWidget(object):
     
@@ -35,26 +41,24 @@ class ElrteWidget(object):
     def __call__(self, field, value, **attributes):
         if not self.settings.files:
             _files = [
-                     URL('static','plugin_elrte_widget/css/elrte.min.css'),
-                     URL('static','plugin_elrte_widget/css/elrte-inner.css'),
-                     URL('static','plugin_elrte_widget/css/smoothness/jquery-ui-1.8.13.custom.css'),
-                     URL('static','plugin_elrte_widget/js/jquery-ui-1.8.16.custom.min.js'),
-                     URL('static','plugin_elrte_widget/js/elrte.min.js'),
-                     ]
+                URL(APP, 'static', 'plugin_elrte_widget/css/elrte.min.css'),
+                URL(APP, 'static', 'plugin_elrte_widget/css/elrte-inner.css'),
+                URL(APP, 'static', 'plugin_elrte_widget/css/smoothness/jquery-ui-1.8.13.custom.css'),
+                URL(APP, 'static', 'plugin_elrte_widget/js/jquery-ui-1.8.16.custom.min.js'),
+                URL(APP, 'static', 'plugin_elrte_widget/js/elrte.min.js'),
+            ]
             if self.settings.lang:
-                _files.append(URL('static','plugin_elrte_widget/js/i18n/elrte.%s.js' % self.settings.lang))
+                _files.append(URL(APP, 'static', 'plugin_elrte_widget/js/i18n/elrte.%s.js' % self.settings.lang))
         else:
             _files = self.settings.files
         _set_files(_files)
           
         from gluon.utils import web2py_uuid
         _id = '%s_%s_%s' % (field._tablename, field.name, web2py_uuid())
-        attr = dict(
-                _id = _id, _name = field.name, requires = field.requires,
-                _class = 'text',
-                )
+        attr = dict(_id=_id, _name=field.name,
+                    requires=field.requires, _class='text')
                 
-        script = SCRIPT(""" 
+        script = SCRIPT("""
 jQuery(function() { var t = 10; (function run() {if ((function() {
     if (typeof elRTE === 'undefined') { return true; }
     var opts = elRTE.prototype.options;
@@ -73,17 +77,16 @@ jQuery(function() { var t = 10; (function run() {if ((function() {
     var el = $('#%(id)s');
     if(!$.support.opacity){if (el.text() == '') { el.text('<p>&nbsp;</p>')}}
 
-    el.elrte({cssClass: 'el-rte', lang: '%(lang)s', 
-              toolbar: '%(toolbar)s', 
+    el.elrte({cssClass: 'el-rte', lang: '%(lang)s',
+              toolbar: '%(toolbar)s',
               fmOpen : %(fm_open)s,
-              cssfiles: %(cssfiles)s}); 
+              cssfiles: %(cssfiles)s});
 })()) {setTimeout(run, t); t = 2*t;}})();});
 
-""" % dict(id=_id, lang=self.settings.lang or '', 
-           toolbar=self.settings.toolbar, 
+""" % dict(id=_id, lang=self.settings.lang or '',
+           toolbar=self.settings.toolbar,
            fm_open=self.settings.fm_open,
            cssfiles=json.dumps(self.settings.cssfiles),
            ))
         
-        return SPAN(script, TEXTAREA((value!=None and str(value)) or '', **attr), **attributes)
-       
+        return SPAN(script, TEXTAREA((value != None and str(value)) or '', **attr), **attributes)

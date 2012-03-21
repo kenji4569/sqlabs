@@ -9,6 +9,7 @@ db.define_table('product', Field('color', widget=color_widget))
 db.product.color.widget = color_widget
 ################################################################################
 
+
 def index():
     form = SQLFORM(db.product)
     if form.accepts(request.vars, session):

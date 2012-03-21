@@ -2,14 +2,13 @@
 
 from plugin_jstree import JsTree
 from plugin_mptt import MPTT
-import re
 import datetime
 
 ### setup core objects #########################################################
 mptt = MPTT(db)
 mptt.settings.table_node_name = 'plugin_mptt_node'
 mptt.settings.extra_fields = {
-    'plugin_mptt_node': 
+    'plugin_mptt_node':
         [Field('name'),
          Field('node_type'),
          Field('created_on', 'datetime', default=request.now)],
@@ -23,7 +22,7 @@ mptt.define_tables()
 table_node = mptt.settings.table_node
 
 ### populate records ###########################################################
-deleted = db(table_node.created_on<request.now-datetime.timedelta(minutes=30)).delete()
+deleted = db(table_node.created_on < request.now - datetime.timedelta(minutes=30)).delete()
 if deleted:
     table_node.truncate()
     session.flash = 'the database has been refreshed'
@@ -41,9 +40,8 @@ if not mptt.roots().count():
 from gluon.storage import Storage
 session.auth = Storage(hmac_key='test', user=Storage(email='user@test.com'))
 
+
 ### demo functions #############################################################
 
 def index():
     return dict(tree_block=DIV(jstree(), _style='width:500px;'))
-
-                            
