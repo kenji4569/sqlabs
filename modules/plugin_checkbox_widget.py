@@ -10,6 +10,8 @@ def checkbox_widget(field, value, **attributes):
     if url not in current.response.files:
         current.response.files.append(url)
             
+    attributes['_class'] = 'plugin_checkbox_widget_wrapper'
+
     input_el = SQLFORM.widgets.boolean.widget(field, value)
     input_el.attributes['_class'] += ' plugin_checkbox_widget'
 

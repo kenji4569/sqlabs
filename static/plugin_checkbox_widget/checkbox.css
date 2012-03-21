@@ -6,9 +6,9 @@ input.plugin_checkbox_widget {
 .plugin_checkbox_widget_label{
     background-image: url("dim_bullet.gif");
     background-repeat: no-repeat;
-    background-position: top left;
+    font-size: 15px;
     padding-left: 16px;
-    padding-top: 2px;
+    padding-top: 0px;
     margin-right:16px;
     cursor: pointer;
 }
