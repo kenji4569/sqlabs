@@ -195,8 +195,17 @@ class ManagedHTML(object):
             self.view_mode = _arg0
             if request.args and request.args[-1] == 'managed_html.js':
                 # Return javascript
-                response.headers['Content-Type'] = 'text/javascript; charset=utf-8;'
-                raise HTTP(200, response.render('plugin_managed_html/managed_html_ajax.js',
+                
+                from globals import Response, Storage
+                _response = Response()
+                _response._view_environment = current.globalenv.copy()
+                _response._view_environment.update(
+                    request=Storage(folder=os.path.join(os.path.dirname(os.path.dirname(request.folder)), APP)),
+                    response=_response,
+                )
+                
+                _response.headers['Content-Type'] = 'text/javascript; charset=utf-8;'
+                raise HTTP(200, _response.render('plugin_managed_html/managed_html_ajax.js',
                             dict(
                                 home_url=settings.home_url,
                                 home_label=settings.home_label,
@@ -209,7 +218,7 @@ class ManagedHTML(object):
                                 live_url=self.settings.URL(args=request.args[1:-1], vars=request.vars, scheme='http'),
                                 show_page_grid=self._show_page_grid_js() if settings.page_grid else '',
                             )),
-                           **response.headers)
+                           **_response.headers)
                            
             response.files.append(URL(args=((request.args or []) + ['managed_html.js'])))
                           
@@ -753,7 +762,7 @@ jQuery(function(){
                 _collection = []
                 from functools import partial
                 for content_type, content_name in collection and collection.data and json.loads(collection.data) or []:
-                    _content_func = settings.content_types.get(content_type, lambda name: '')
+                    _content_func = settings.content_types.get(content_type, lambda name, parent=None: '')
                     _collection.append(partial(_content_func, content_name, parent=name))
                 func(_collection)
                 
