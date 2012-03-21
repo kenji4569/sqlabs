@@ -3,9 +3,10 @@
 # Authors: Kenji Hosoda <hosoda@s-cubism.jp>
 from gluon import *
 
+
 class TableCheckbox(FORM):
     
-    def __init__(self, id_getter=lambda row: row.id, 
+    def __init__(self, id_getter=lambda row: row.id,
                  tablecheckbox_var='tablecheckbox',
                  confirm_message='"Are you sure you want to submit?"',
                  submit_button='Submit checks',
@@ -32,17 +33,17 @@ jQuery(document).ready(function(){
     jQuery("input[name=%(checkall)s]").change(set_activation);
 });""" % dict(checkall=self._checkall, selected=self._selected, button=self._button)))
         self.append(INPUT(_type='hidden', _name=self.tablecheckbox_var))
-        self.append(INPUT(_type='submit', _value=self.submit_button, 
+        self.append(INPUT(_type='submit', _value=self.submit_button,
               _onclick=self._get_submit_js(),
               _id=self._button, _disabled='disabled'))
       
     def column(self):
-        return {'label':DIV(INPUT(_type='checkbox', _name=self._checkall, 
-                                _onclick=self._get_toggle_all_js()), 
-                            _style='text-align:center;'),
-                'content':lambda row, rc: DIV(INPUT(_type='checkbox', _name=self._selected, 
-                                                    _value=self.id_getter(row), _style='margin:3px;'),
-                                              _style='text-align:center;'),
+        return {'label': DIV(INPUT(_type='checkbox', _name=self._checkall,
+                                 _onclick=self._get_toggle_all_js()),
+                             _style='text-align:center;'),
+                'content': lambda row, rc: DIV(INPUT(_type='checkbox', _name=self._selected,
+                                                     _value=self.id_getter(row), _style='margin:3px;'),
+                                               _style='text-align:center;'),
                 'width': '', 'class': '', 'selected': False}
          
     def accepts(self, *args, **kwds):
@@ -51,8 +52,8 @@ jQuery(document).ready(function(){
             self.vars[self.tablecheckbox_var] = current.request.vars[self.tablecheckbox_var].split(',')
         return accepted
         
-    def xml(self): 
-        return FORM.xml(self) 
+    def xml(self):
+        return FORM.xml(self)
                 
     def _get_toggle_all_js(self):
         return """

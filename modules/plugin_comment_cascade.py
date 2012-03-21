@@ -4,6 +4,7 @@
 from gluon import *
 from gluon.storage import Storage, Messages
 
+
 class CommentCascade(object):
     
     def __init__(self, db):
@@ -20,7 +21,7 @@ class CommentCascade(object):
         settings.headers = []
         settings.content = lambda row: row
         settings.view_all_content = lambda total: A(
-                                        current.T('View all %s comments') % total, _href='#', 
+                                        current.T('View all %s comments') % total, _href='#',
                                         _class='plugin_comment_cascade_view_all')
         settings.footers = [TEXTAREA('', _placeholder=current.T('Write a comment..'),
                                   _rows=1, _class='plugin_comment_cascade_create')]
@@ -34,12 +35,12 @@ class CommentCascade(object):
         messages.record_created = 'Record Created'
         messages.record_deleted = 'Record Deleted'
         
-    def define_tables(self, table_target_name, table_user_name, 
+    def define_tables(self, table_target_name, table_user_name,
                       migrate=True, fake_migrate=False):
         db, settings = self.db, self.settings
         
         if not settings.table_comment_name in db.tables:
-            table = db.define_table(
+            db.define_table(
                 settings.table_comment_name,
                 Field('target', 'reference %s' % table_target_name),
                 Field('user', 'reference %s' % table_user_name),
@@ -60,20 +61,20 @@ class CommentCascade(object):
     def remove_comment(self, user_id, comment_id):
         db, table_comment = self.db, self.settings.table_comment
         
-        if db(table_comment.id==comment_id)(table_comment.user==user_id).count():
-            db(table_comment.id==comment_id).delete()
+        if db(table_comment.id == comment_id)(table_comment.user == user_id).count():
+            db(table_comment.id == comment_id).delete()
         else:
             raise ValueError
             
     def comments_from_target(self, target_id):
-        return self.db(self.settings.table_comment.target==target_id)
+        return self.db(self.settings.table_comment.target == target_id)
         
-    def render_comment_box(self, user_id, target_id, view_all=False):  
+    def render_comment_box(self, user_id, target_id, view_all=False):
         settings = self.settings
         _id = 'plugin_comment_cascade__%s__%s' % (user_id, target_id)
             
         records = self.comments_from_target(target_id).select(
-            limitby=None if view_all else (0, settings.limit+1),
+            limitby=None if view_all else (0, settings.limit + 1),
             orderby=~settings.table_comment.id,
             *settings.select_fields, **settings.select_attributes
         )
@@ -95,12 +96,12 @@ class CommentCascade(object):
                 _user_id = record.user
                 _comment_id = record.id
             if settings.tooltip and str(_user_id) == str(user_id):
-                content = DIV(DIV(settings.tooltip, 
-                                  _class='plugin_comment_cascade_tooltip', 
-                                  _style='float:right;visibility:hidden;'), 
+                content = DIV(DIV(settings.tooltip,
+                                  _class='plugin_comment_cascade_tooltip',
+                                  _style='float:right;visibility:hidden;'),
                               DIV(content, _style='display:table-cell;padding-right:5px;'))
-            elements.append(LI(content, 
-                               _class='plugin_comment_cascade_comment', 
+            elements.append(LI(content,
+                               _class='plugin_comment_cascade_comment',
                                _id='plugin_comment_cascade_comment__%s' % _comment_id))
         
         elements.extend(settings.footers)
@@ -108,7 +109,6 @@ class CommentCascade(object):
         return DIV(UL(*elements), _id=_id, _class='plugin_comment_cascade')
     
     def process(self):
-        settings = self.settings
         form = FORM(INPUT(_type='hidden', _name='form_id'),
                     INPUT(_type='hidden', _name='target_id'),
                     INPUT(_type='hidden', _name='user_id'),
@@ -157,8 +157,8 @@ function create(self) {
         el_id_parts = el_id.split('__'),
         user_id = el_id_parts[1],
         target_id = el_id_parts[2],
-        body_text = el.find('textarea').val();  
-    set_inputs({form_id:'%(form_id)s', user_id:user_id, target_id: target_id, 
+        body_text = el.find('textarea').val();
+    set_inputs({form_id:'%(form_id)s', user_id:user_id, target_id: target_id,
                 action:'create', body_text: body_text, view_all:is_view_all(el)});
     post_form(el_id);
 }
@@ -179,7 +179,7 @@ $('.plugin_comment_cascade_delete').live('click', function(e){
         target_id = el_id_parts[2],
         comment_el = $(this).closest('.plugin_comment_cascade_comment'),
         comment_id = comment_el.attr('id').split('__')[1];
-    set_inputs({form_id:'%(form_id)s', user_id:user_id, target_id: target_id, 
+    set_inputs({form_id:'%(form_id)s', user_id:user_id, target_id: target_id,
                 action:'delete', comment_id: comment_id, view_all:is_view_all(el)});
     post_form(el_id);
     return false;
@@ -197,7 +197,7 @@ $('.plugin_comment_cascade_view_all').live('click', function() {
         el_id_parts = el_id.split('__'),
         user_id = el_id_parts[1],
         target_id = el_id_parts[2];
-    set_inputs({form_id:'%(form_id)s', user_id:user_id, target_id: target_id, 
+    set_inputs({form_id:'%(form_id)s', user_id:user_id, target_id: target_id,
                 action:'view_all'});
     post_form(el_id);
     return false;

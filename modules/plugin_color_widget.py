@@ -3,21 +3,26 @@
 # Authors: Kenji Hosoda <hosoda@s-cubism.jp>
 from gluon import *
 
+# For referencing static and views from other application
+import os
+APP = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
+
+
 def color_widget(field, value, **attributes):
-    for _url in (URL('static','plugin_color_widget/css/colorpicker.css'),
-                 URL('static','plugin_color_widget/css/layout.css'),
-                 URL('static','plugin_color_widget/js/colorpicker.js'),
-                 URL('static','plugin_color_widget/js/eye.js'),
-                 URL('static','plugin_color_widget/js/utils.js'),
-                 URL('static','plugin_color_widget/js/layout.js'),):
+    for _url in (URL(APP, 'static', 'plugin_color_widget/css/colorpicker.css'),
+                 URL(APP, 'static', 'plugin_color_widget/css/layout.css'),
+                 URL(APP, 'static', 'plugin_color_widget/js/colorpicker.js'),
+                 URL(APP, 'static', 'plugin_color_widget/js/eye.js'),
+                 URL(APP, 'static', 'plugin_color_widget/js/utils.js'),
+                 URL(APP, 'static', 'plugin_color_widget/js/layout.js'),):
         if _url not in current.response.files:
             current.response.files.append(_url)
             
     _id = '%s_%s' % (field._tablename, field.name)
     attr = dict(
-            _type = 'text', value = (value!=None and str(value)) or '',
-            _id = _id, _name = field.name, requires = field.requires,
-            _class = 'string',
+            _type='text', value=(value != None and str(value)) or '',
+            _id=_id, _name=field.name, requires=field.requires,
+            _class='string',
             )
 
     script = SCRIPT("""

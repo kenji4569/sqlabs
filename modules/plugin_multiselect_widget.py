@@ -3,6 +3,7 @@
 # Authors: Kenji Hosoda <hosoda@s-cubism.jp>
 from gluon import *
 
+
 def multiselect_widget(field, value, **attributes):
     requires = field.requires
     if not isinstance(requires, (list, tuple)):
@@ -13,7 +14,7 @@ def multiselect_widget(field, value, **attributes):
                 options = require.options()
                 break
         else:
-            raise SyntaxError, 'widget cannot determine options of %s'  % field
+            raise SyntaxError('widget cannot determine options of %s' % field)
     
     selected_opts = {}
     unselected_opts = []
@@ -27,9 +28,9 @@ def multiselect_widget(field, value, **attributes):
             unselected_opts.append(opt)
             
     if _value:
-        selected_opts = [selected_opts[k] for k in _value if k in selected_opts] # preserve the sort order
+        selected_opts = [selected_opts[k] for k in _value if k in selected_opts]  # preserve the sort order
     else:
-        select_opts = []
+        selected_opts = []
         
     unselected_el_id = "unselected_%s" % field.name
     select_el_id = field.name
@@ -64,11 +65,11 @@ jQuery(document).ready(function() {
         if not reversed:
             return DIV(script_el, unselected_el, BR(),
                        CENTER(
-                            INPUT(_type='button', 
-                                  _value=attributes.get('label_register', '↓  %s  ↓' % current.T('register')), 
-                                 _onclick=('plugin_multiselect_widget_move("%s", "%s");' % 
+                            INPUT(_type='button',
+                                  _value=attributes.get('label_register', '↓  %s  ↓' % current.T('register')),
+                                 _onclick=('plugin_multiselect_widget_move("%s", "%s");' %
                                            (unselected_el_id, select_el_id))), ' ',
-                            INPUT(_type='button', 
+                            INPUT(_type='button',
                                   _value=attributes.get('label_delete', '↑  %s  ↑' % current.T('delete')),
                                   _onclick=('plugin_multiselect_widget_move("%s", "%s");' %
                                             (select_el_id, unselected_el_id))),
@@ -78,14 +79,14 @@ jQuery(document).ready(function() {
                        **attributes)
         else:
             return DIV(script_el, select_el, BR(),
-                       CENTER(INPUT(_type='button', 
-                                    _value=attributes.get('label_register', '↑  %s  ↑' % current.T('register')), 
-                                 _onclick=('plugin_multiselect_widget_move("%s", "%s");' % 
+                       CENTER(INPUT(_type='button',
+                                    _value=attributes.get('label_register', '↑  %s  ↑' % current.T('register')),
+                                 _onclick=('plugin_multiselect_widget_move("%s", "%s");' %
                                            (unselected_el_id, select_el_id))), ' ',
-                              INPUT(_type='button', 
+                              INPUT(_type='button',
                                     _value=attributes.get('label_delete', '↓  %s  ↓' % current.T('delete')),
                                   _onclick=('plugin_multiselect_widget_move("%s", "%s");' %
-                                            (select_el_id, unselected_el_id))), 
+                                            (select_el_id, unselected_el_id))),
                         _style='padding:5px 0px;width:%spx;' % width),
                        unselected_el,
                        _id='%s_%s' % (field._tablename, field.name),
@@ -95,11 +96,11 @@ jQuery(document).ready(function() {
             return DIV(script_el, TABLE(TR(
                            TD(unselected_el),
                            TD(
-                                INPUT(_type='button', 
-                                      _value=attributes.get('label_register', '%s  →' % current.T('register')), 
-                                     _onclick=('plugin_multiselect_widget_move("%s", "%s");' % 
-                                               (unselected_el_id, select_el_id))), BR(),BR(),
-                                INPUT(_type='button', 
+                                INPUT(_type='button',
+                                      _value=attributes.get('label_register', '%s  →' % current.T('register')),
+                                     _onclick=('plugin_multiselect_widget_move("%s", "%s");' %
+                                               (unselected_el_id, select_el_id))), BR(), BR(),
+                                INPUT(_type='button',
                                       _value=attributes.get('label_delete', '←  %s' % current.T('delete')),
                                       _onclick=('plugin_multiselect_widget_move("%s", "%s");' %
                                                 (select_el_id, unselected_el_id))),
@@ -113,11 +114,11 @@ jQuery(document).ready(function() {
             return DIV(script_el, TABLE(TR(
                            TD(select_el),
                            TD(
-                                INPUT(_type='button', 
-                                      _value=attributes.get('label_register', '←  %s' % current.T('register')), 
-                                     _onclick=('plugin_multiselect_widget_move("%s", "%s");' % 
-                                               (unselected_el_id, select_el_id))), BR(),BR(),
-                                INPUT(_type='button', 
+                                INPUT(_type='button',
+                                      _value=attributes.get('label_register', '←  %s' % current.T('register')),
+                                     _onclick=('plugin_multiselect_widget_move("%s", "%s");' %
+                                               (unselected_el_id, select_el_id))), BR(), BR(),
+                                INPUT(_type='button',
                                       _value=attributes.get('label_delete', '%s  →' % current.T('delete')),
                                       _onclick=('plugin_multiselect_widget_move("%s", "%s");' %
                                                 (select_el_id, unselected_el_id))),
@@ -127,20 +128,24 @@ jQuery(document).ready(function() {
                        )),
                        _id='%s_%s' % (field._tablename, field.name),
                        **attributes)
-           
+
+
 def vmultiselect_widget(field, value, **attributes):
     attributes['arrangement'] = 'vertical'
     return multiselect_widget(field, value, **attributes)
-    
+
+
 def hmultiselect_widget(field, value, **attributes):
     attributes['arrangement'] = 'horizontal'
     attributes['width'] = 150
     return multiselect_widget(field, value, **attributes)
-    
+
+
 def rvmultiselect_widget(field, value, **attributes):
     attributes['reversed'] = True
     return vmultiselect_widget(field, value, **attributes)
-    
+
+
 def rhmultiselect_widget(field, value, **attributes):
     attributes['reversed'] = True
     return hmultiselect_widget(field, value, **attributes)

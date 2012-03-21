@@ -3,18 +3,19 @@
 # Authors: Kenji Hosoda <hosoda@s-cubism.jp>
 from gluon import *
 
+
 class lazy_options_widget(SQLFORM.widgets.options):
 
     def __init__(self, on_key, off_key, where,
                  trigger=None, default='---',
-                 keyword='_lazy_options_%(fieldname)s', orderby=None,  
+                 keyword='_lazy_options_%(fieldname)s', orderby=None,
                  user_signature=False, hmac_key=None,
                  field=None):
         self.on_key, self.off_key, self.where = (
             on_key, off_key, where
         )
         self.trigger, self.default, self.keyword, self.orderby = (
-            trigger, default, keyword, orderby, 
+            trigger, default, keyword, orderby,
         )
         self.user_signature, self.hmac_key = user_signature, hmac_key
         
@@ -27,7 +28,7 @@ class lazy_options_widget(SQLFORM.widgets.options):
             self._require.dbset = self._require.dbset(self.where(trigger))
             options = self._require.options()
             opts = [OPTION(v, _value=k) for (k, v) in options]
-            return SELECT(_id='%s__aux' % self._el_id, value=value, 
+            return SELECT(_id='%s__aux' % self._el_id, value=value,
                           _onchange='jQuery("#%s").val(jQuery(this).val());' % self._hidden_el_id,
                           *opts)
         else:
@@ -49,7 +50,7 @@ class lazy_options_widget(SQLFORM.widgets.options):
             if hasattr(requires[0], 'options'):
                 self._require = requires[0]
             else:
-                raise SyntaxError, 'widget cannot determine options of %s'  % field
+                raise SyntaxError('widget cannot determine options of %s' % field)
         else:
             self._require = []
         
@@ -70,8 +71,8 @@ class lazy_options_widget(SQLFORM.widgets.options):
         self._pre_process(field)
         
         request = current.request
-        if hasattr(request,'application'):
-            self.url = URL(r=request, args=request.args, 
+        if hasattr(request, 'application'):
+            self.url = URL(r=request, args=request.args,
                            user_signature=self.user_signature, hmac_key=self.hmac_key)
             self.process_now(field)
         else:
@@ -84,7 +85,7 @@ jQuery(document).ready(function() {
         jQuery("#%(hidden_el_id)s").val("");
         var query = {}
         query["%(keyword)s"] = val;
-        jQuery.ajax({type: "POST", url: "%(url)s", data: query, 
+        jQuery.ajax({type: "POST", url: "%(url)s", data: query,
             success: function(html) {
               jQuery("#%(disp_el_id)s").html(html);
         }});
@@ -94,9 +95,9 @@ jQuery(document).ready(function() {
         jQuery("#%(disp_el_id)s").html("%(default)s");
         jQuery("#%(hidden_el_id)s").val("");
     });
-});""" % dict(on_key=self.on_key, 
-              off_key=self.off_key, 
-              disp_el_id=self._disp_el_id, 
+});""" % dict(on_key=self.on_key,
+              off_key=self.off_key,
+              disp_el_id=self._disp_el_id,
               hidden_el_id=self._hidden_el_id,
               default=self.default,
               keyword=self._keyword,
@@ -104,10 +105,10 @@ jQuery(document).ready(function() {
         
         select_el = self._get_select_el(self.trigger, value) if self.trigger else None
         
-        el = DIV(script_el, 
-                 SPAN(select_el or self.default, _id=self._disp_el_id), 
-                 INPUT(_value=value, _type='hidden', 
+        el = DIV(script_el,
+                 SPAN(select_el or self.default, _id=self._disp_el_id),
+                 INPUT(_value=value, _type='hidden',
                        _name=field.name, _id=self._hidden_el_id,
-                       requires=field.requires), 
+                       requires=field.requires),
                  _id=self._el_id)
         return el

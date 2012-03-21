@@ -4,21 +4,26 @@
 from gluon import *
 from gluon.storage import Storage
 
+
 class _BulkLoader(object):
     def __init__(self):
         self.flattened = []
         self.sizes = []
+
     def register(self, values):
         self.flattened.extend(values)
         self.sizes.append(len(values))
+
     def load(self, fn):
         self.flattened = fn(self.flattened)
+
     def retrieve(self):
         size = self.sizes.pop(0)
         objects = self.flattened[:size]
         self.flattened = self.flattened[size:]
         return objects
-        
+
+
 class Catalog(object):
     
     def __init__(self, db):
@@ -88,26 +93,26 @@ class Catalog(object):
             raise ValueError
         product_id = self.settings.table_product.insert(**product_vars)
         for variant_vars in variant_vars_list:
-            self.settings.table_variant.insert(product=product_id, **variant_vars)  
+            self.settings.table_variant.insert(product=product_id, **variant_vars)
         return product_id
         
     def edit_product(self, product_id, product_vars, variant_vars_list):
-        self.db(self.settings.table_product.id==product_id).update(**product_vars)
+        self.db(self.settings.table_product.id == product_id).update(**product_vars)
         table_variant = self.settings.table_variant
-        self.db(table_variant.product==product_id).delete()
+        self.db(table_variant.product == product_id).delete()
         for variant_vars in variant_vars_list:
-            table_variant.insert(product=product_id, **variant_vars)  
+            table_variant.insert(product=product_id, **variant_vars)
         
     def remove_product(self, product_id):
-        self.db(self.settings.table_variant.product==product_id).delete()
-        return self.db(self.settings.table_product.id==product_id).delete()
+        self.db(self.settings.table_variant.product == product_id).delete()
+        return self.db(self.settings.table_product.id == product_id).delete()
         
     def get_options(self, option_ids):
-        return self._get_records(self.settings.table_option, 
+        return self._get_records(self.settings.table_option,
                                  option_ids, self._option_pool)
                                  
     def get_option_groups(self, option_group_ids):
-        return self._get_records(self.settings.table_option_group, 
+        return self._get_records(self.settings.table_option_group,
                                  option_group_ids, self._option_group_pool)
         
     def _get_records(self, table, ids, pool):
@@ -120,31 +125,31 @@ class Catalog(object):
             pool.update(**dict([(r[tablename].id if tablename in r else r.id, r) for r in records]))
         return [pool[id] for id in ids]
     
-    def get_product(self, product_id, load_variants=True, 
-                    load_options=True, load_option_groups=True, 
+    def get_product(self, product_id, load_variants=True,
+                    load_options=True, load_option_groups=True,
                     variant_fields=[], variant_attributes={},
                     fields=[]):
         settings = self.settings
-        product = self.db(settings.table_product.id==product_id).select(*fields).first()
+        product = self.db(settings.table_product.id == product_id).select(*fields).first()
         if not product:
             return None
             
         if load_variants:
             product.variants = self.variants_from_product(product_id
-                    ).select(orderby=settings.table_variant_orderby, 
+                    ).select(orderby=settings.table_variant_orderby,
                              *variant_fields, **variant_attributes)
             if load_options:
                 for variant in product.variants:
                     variant.options = self.get_options(variant.options)
-                product.option_groups = [option.option_group for option 
+                product.option_groups = [option.option_group for option
                         in product.variants and product.variants[0].options or []]
-                if load_option_groups:       
+                if load_option_groups:
                     product.option_groups = self.get_option_groups(product.option_groups)
             
         return product
         
-    def products_from_query(self, query, load_variants=True, 
-                              load_options=True, load_option_groups=True, 
+    def products_from_query(self, query, load_variants=True,
+                              load_options=True, load_option_groups=True,
                               variant_fields=[], variant_attributes={}):
         db, settings, get_options, get_option_groups = self.db, self.settings, self.get_options, self.get_option_groups
         
@@ -165,9 +170,9 @@ class Catalog(object):
                     
                 product_ids = [r[tablename].id if joined else r.id for r in products]
                                  
-                from itertools import groupby                               
+                from itertools import groupby
                 variants = db(table_variant.product.belongs(product_ids)
-                              ).select(orderby=table_variant.product|settings.table_variant_orderby,
+                              ).select(orderby=table_variant.product | settings.table_variant_orderby,
                                        *variant_fields, **variant_attributes)
                 _variants = {}
                 for k, g in groupby(variants, key=lambda r: r.product):
@@ -177,12 +182,12 @@ class Catalog(object):
                     if joined:
                         r[tablename].variants = _variants.get(r[tablename].id, [])
                     else:
-                        r.variants = _variants.get(r.id, []) 
+                        r.variants = _variants.get(r.id, [])
                     
                 if not load_options:
                     return products
                     
-                bulk_loader = _BulkLoader()        
+                bulk_loader = _BulkLoader()
                 for r in products:
                     for variant in r[tablename].variants if joined else r.variants:
                         bulk_loader.register(variant.options or [])
@@ -191,14 +196,14 @@ class Catalog(object):
                     for variant in r[tablename].variants if joined else r.variants:
                         variant.options = bulk_loader.retrieve()
                 
-                if load_option_groups:        
+                if load_option_groups:
                     bulk_loader = _BulkLoader()
                 for r in products:
                     if joined:
-                        r[tablename].option_groups = [option.option_group for option 
+                        r[tablename].option_groups = [option.option_group for option
                                 in r[tablename].variants and r[tablename].variants[0].options or []]
                     else:
-                        r.option_groups = [option.option_group for option 
+                        r.option_groups = [option.option_group for option
                                 in r.variants and r.variants[0].options or []]
                     if load_option_groups:
                         bulk_loader.register(r[tablename].option_groups if joined else r.option_groups)
@@ -215,15 +220,15 @@ class Catalog(object):
                 
         return _VirtualSet()
         
-    def get_variant(self, id=None, sku=None, load_product=True, 
-                    load_options=True, load_option_groups=True, 
+    def get_variant(self, id=None, sku=None, load_product=True,
+                    load_options=True, load_option_groups=True,
                     product_fields=[], product_attributes={},
                     fields=[]):
         settings = self.settings
         if id:
-            variant = self.db(settings.table_variant.id==id).select(*fields).first()
+            variant = self.db(settings.table_variant.id == id).select(*fields).first()
         elif sku:
-            variant = self.db(settings.table_variant.sku==sku).select(*fields).first()
+            variant = self.db(settings.table_variant.sku == sku).select(*fields).first()
         else:
             return None
         if not variant:
@@ -234,18 +239,18 @@ class Catalog(object):
                                                *product_fields, **product_attributes)
             if load_options:
                 variant.options = self.get_options(variant.options)
-                variant.product.option_groups = [option.option_group for option 
+                variant.product.option_groups = [option.option_group for option
                                                     in variant.options or []]
-                if load_option_groups:       
+                if load_option_groups:
                     variant.product.option_groups = self.get_option_groups(variant.product.option_groups)
             
         return variant
         
     def variants_from_product(self, product_id):
-        return self.db(self.settings.table_variant.product==product_id)
+        return self.db(self.settings.table_variant.product == product_id)
         
     def options_from_option_group(self, option_group_id):
-        return self.db(self.settings.table_option.option_group==option_group_id)
+        return self.db(self.settings.table_option.option_group == option_group_id)
         
     def get_option_sets(self, option_group_ids):
         options_list = [self.options_from_option_group(option_group_id).select()
@@ -253,13 +258,12 @@ class Catalog(object):
         if not options_list:
             return []
             
-        def itertools_product(*args, **kwds): # for python < 2.6
+        def itertools_product(*args, **kwds):  # for python < 2.6
             pools = map(tuple, args) * kwds.get('repeat', 1)
             result = [[]]
             for pool in pools:
-                result = [x+[y] for x in result for y in pool]
+                result = [x + [y] for x in result for y in pool]
             for prod in result:
                 yield tuple(prod)
                 
         return list(itertools_product(*options_list))
-       
