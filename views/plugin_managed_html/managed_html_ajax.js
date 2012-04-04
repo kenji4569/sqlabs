@@ -44,7 +44,7 @@
   $('a').not('.managed_html_topbar a').each(function() {
     var el = $(this);
     var href = el.attr('href');
-    if (href == undefined) { return; }
+//  if (href == undefined) { return; }
     if (href.slice(0, 4) == 'http') {
       el.click(function(){ managed_html_show_page_grid(href); return false;})
     }

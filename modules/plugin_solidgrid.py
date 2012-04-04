@@ -42,8 +42,8 @@ class SolidGrid(object):
             if _url not in current.response.files:
                 current.response.files.append(_url)
 
-    def _build_query_by_form(self, db, form, queries={}, field_sep='___',
-                              exclude_var_pattern='^.+_page$', formname='form'):
+    def _build_query_by_form(self, db, form, search_vars, queries={}, field_sep='___',
+                             exclude_var_pattern='^.+_page$', formname='form'):
         
         def _convert(field, val):
             if field.requires:
@@ -59,7 +59,7 @@ class SolidGrid(object):
             
         request = current.request
         if form.accepts(request.vars, keepvalues=True, formname=formname):
-            new_vars = request.get_vars.copy()
+            new_vars = search_vars.copy()
             if 'page' in new_vars:
                 del new_vars['page']
             
@@ -85,8 +85,8 @@ class SolidGrid(object):
                 key = input_el.attributes['_name']
                 request_key = '%s_%s' % (formname, key)
                 _key = key.split(field_sep)
-                if request_key in request.get_vars:
-                    val = request.get_vars[request_key]
+                if request_key in search_vars:
+                    val = search_vars[request_key]
                     if val:
                         if len(_key) >= 2:
                             tablename, fieldname = _key[:2]
@@ -117,8 +117,8 @@ class SolidGrid(object):
             if '_name' in input_el.attributes:
                 key = input_el.attributes['_name']
                 request_key = '%s_%s' % (formname, key)
-                if request_key in request.get_vars:
-                    val = True if str(request.get_vars[request_key]) == 'True' else False
+                if request_key in search_vars:
+                    val = True if str(search_vars[request_key]) == 'True' else False
                 else:
                     val = False
                 if val:
@@ -139,7 +139,7 @@ class SolidGrid(object):
                 radios[input_el.attributes['_name']].append(input_el)
             for key, els in radios.items():
                 request_key = '%s_%s' % (formname, key)
-                val = request.get_vars.get(request_key, '')
+                val = search_vars.get(request_key, '')
                 _key = key.split(field_sep)
                 if len(_key) == 2:
                     tablename, fieldname = _key
@@ -160,8 +160,8 @@ class SolidGrid(object):
             if not key:
                 continue
             request_key = '%s_%s' % (formname, key)
-            if request_key in request.get_vars:
-                val = request.get_vars[request_key]
+            if request_key in search_vars:
+                val = search_vars[request_key]
                 _key = key.split(field_sep)
                 if len(_key) == 2:
                     tablename, fieldname = _key
@@ -278,6 +278,7 @@ class SolidGrid(object):
                 scope=None,  # CUSTOM
                 scope_default=None,  # CUSTOM
                 groupby=None,  # CUSTOM
+                search_vars=None, # CUSTOM
                 ):
             
         from gluon.dal import SQLALL
@@ -288,6 +289,7 @@ class SolidGrid(object):
         recordbutton = self.settings.recordbutton
         
         request, response, session, T = current.request, current.response, current.session, current.T
+        search_vars = search_vars or request.get_vars
         
         def __oncreate(form):
             session.flash = T('Created')
@@ -569,6 +571,7 @@ class SolidGrid(object):
                     [f.name for f in _from_to], LABEL(_from_to[0].label), SPAN(' - '))
             
             subquery = self._build_query_by_form(db, search_form,
+                                                 search_vars,
                             queries=search_queries,
                             field_sep=field_sep,
                             formname='search_%s' % formname)
