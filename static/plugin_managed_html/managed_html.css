@@ -99,6 +99,7 @@ div.managed_html_content_anchor_pending {
 
 
 div.managed_html_collection_anchor, div.managed_html_collection_anchor_pending {
+  clear:both;
   width:100%;height:25px;
 }
 div.managed_html_collection_anchor {

@@ -2,6 +2,7 @@
 table.solidtable {
   border-left:none;
   width: 100%;
+  clear:both;
 }
 
 table.solidtable th {
@@ -493,6 +494,7 @@ a.ui-btn:hover {
 
 .search_form label {
   line-height: 30px;
+  padding-top: 0px;
 }
 
 .web2py_form input[type=submit] {
