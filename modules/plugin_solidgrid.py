@@ -103,7 +103,7 @@ class SolidGrid(object):
                                 if field.unique:
                                     new_queries.append(field == _val)
                                 else:
-                                    new_queries.append(db[tablename][fieldname].like('%' + _val + '%'))
+                                    new_queries.append(db[tablename][fieldname].like('%' + str(_val) + '%'))
                         else:
                             new_queries.append(queries[key](val))
                         input_el.attributes['_value'] = val

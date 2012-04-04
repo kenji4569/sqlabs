@@ -2,6 +2,7 @@
 table.solidtable {
   border-left:none;
   width: 100%;
+  clear:both;
 }
 
 table.solidtable th {
