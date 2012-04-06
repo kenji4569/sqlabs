@@ -586,7 +586,7 @@ jQuery(function(){
                     
                     virtual_record = Storage(id=0)
                     for field in fields:
-                        virtual_record[field.name] = data[field.name] if field.name in data else None
+                        virtual_record[field.name] = data[field.name] if field.name in data else field.default
                         
                         if type(virtual_record[field.name]) == unicode:
                             virtual_record[field.name] = virtual_record[field.name].encode('utf-8', 'ignore')

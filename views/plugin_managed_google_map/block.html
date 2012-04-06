@@ -1,0 +1,89 @@
+{{
+def MANAGED_GOOGLE_MAP(name, parent=None):
+    @managed_html.content_block(name, 
+                                Field('title', label='タイトル', default='芝公園'),
+                                Field('lat', label='緯度', default='35.654071'), 
+                                Field('long', label='経度', default='139.749838'),
+                                Field('marker_lat', label='マーカー緯度', default='35.654071'),
+                                Field('marker_long', label='マーカー経度', default='139.749838'),
+                                Field('marker_image', label='マーカー画像'),
+                                Field('template', 'text', label="テンプレート", default='<div id="map1" class="map" style="height:200px"></div>', widget=SQLFORM.widgets.text.widget), parent=parent)
+    def _(content):}}
+
+        <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+        <script type="text/javascript">
+        jQuery(function(){
+            managed_html_show_content_ctrl = function(block_el) {
+              var _inner_el = block_el.find('.managed_html_content_inner');
+              var target_el = _inner_el.children(':eq(2)');
+              if (target_el.length == 0) {
+                target_el = _inner_el.children(':first');
+              }
+              if (target_el.length == 0) {
+                var _target_el = block_el.find('.managed_html_content').children('form').find('.el-rte');
+                if (_target_el.length > 0) {
+                  target_el = _target_el;
+                } else {
+                  target_el = _inner_el;
+                }
+              }
+              if (target_el.length == 0) {
+                target_el = _inner_el;
+              }
+      
+              var pos = target_el.position();
+    
+              var margin = {top: (parseInt(target_el.css('margin-top'), 10) || 0),
+                            left: (parseInt(target_el.css('margin-left'), 10) || 0)}
+              pos.top = pos.top - 38 + margin.top;
+              pos.left = pos.left + margin.left;
+              block_el.children('.managed_html_content_ctrl').css(pos).show();
+            }
+        });
+        </script>
+
+        <script type="text/javascript">
+        jQuery(function($) {
+          
+          var source   = $("#template_{{=name}}").html();
+          var template = Handlebars.compile(source);
+          var context  = {title: "{{=content.title}}"}
+          $('#content_{{=name}}').html(template(context));
+          
+          {{if content.template:}}
+              var latlng = new google.maps.LatLng({{=content.lat}},{{=content.long}});
+              var opts = {
+                zoom: 15,
+                center: latlng,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+              };
+    
+              var map = new google.maps.Map($("#content_{{=name}} .map")[0], opts);
+              var marker = new google.maps.Marker({
+                    position: new google.maps.LatLng({{=content.marker_lat}},{{=content.marker_long}}),
+                    map: map,
+                    title: '{{=content.title}}'
+              });
+              
+              var content = '<img src="{{=content.marker_image}}" alt="{{=content.title}}"><br/>{{=content.title}}';
+              var infowindow = new google.maps.InfoWindow({
+                content: content ,
+                size: new google.maps.Size(50, 50)
+              });
+              
+              google.maps.event.addListener(marker, 'click', function() {
+                infowindow.open(map, marker);
+              });              
+          {{pass}}
+          
+        });
+        </script>
+        <script id="template_{{=name}}" type="text/x-handlebars-template">
+          {{=XML(content.template or '<table width="400px"></table>')}}
+        </script>
+        <div id="content_{{=name}}"></div>
+       {{
+    pass
+    _()
+pass
+}}
