@@ -1,0 +1,17 @@
+{{extend 'layout.html'}}
+<div>
+  <h1>{{=response.title or ''}}</h1>
+  <hr/>
+  
+  <h2>Block Collection</h2>
+  <div>
+    {{@managed_html.collection_block('collection')
+    def _(collection):}}
+      {{for block in collection:}}
+        {{block()}}
+      {{pass}}
+    {{pass}}
+    {{_()}}
+  </div>
+  <br/>
+</div>
