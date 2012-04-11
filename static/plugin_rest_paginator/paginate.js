@@ -35,10 +35,13 @@ Pagination.prototype = {
     });
   },
 
-  run: function(){
+  get_total_count_func: function(){
     this.$results = $("#results_"+this.name);
     this.num_entries = $(".total_count", this.$results).text();
+  },
 
+  run: function(){
+    this.get_total_count_func();
     if( this.num_entries==undefined ) return false;
     var self = this;
 

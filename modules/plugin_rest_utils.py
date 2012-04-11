@@ -293,4 +293,3 @@ def progressive_enhance():
             return action
     return wrapper
 
-current.request['progressive_enhance'] = progressive_enhance

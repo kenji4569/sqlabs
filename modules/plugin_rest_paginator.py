@@ -19,6 +19,7 @@ from gluon import *
 ##               args=[response.tenant.name],
 ##               vars=vars,
 ##               page_request_func="function(vars, page_index){vars['offset'] = page_index * vars['limit'];}",
+##               get_total_count_func="function(){ this.$results = $("#results_"+this.name); this.num_entries = $(".total_count", this.$results).text();}",
 ##               )
 ## }}
 
@@ -52,24 +53,20 @@ def load_akamon_api_articles( c='api_articles',
                          name=name,
                          args=args,
                          vars=vars,
-                         page_request_func="function(vars, page_index){vars['offset'] = page_index * vars['limit'];}",
+                         page_request_func='''function(vars, page_index){vars['offset'] = page_index * vars['limit'];}''',
+                         get_total_count_func='''function(){ this.$results = $("#results_"+this.name); this.num_entries = $(".total_count", this.$results).text();}''',
                          renderstyle=renderstyle,
                          )
 
 def paginate_load( c,
                    f,
                    limit=10,
-                   page_request_func="function(vars, page_index){vars['offset'] = page_index * vars['limit'];}",
+                   page_request_func='''function(vars, page_index){vars['offset'] = page_index * vars['limit'];}''',
+                   get_total_count_func='''function(){ this.$results = $("#results_"+this.name); this.num_entries = $(".total_count", this.$results).text();}''',
                    name='default',
                    args=[],
                    vars={},
                    renderstyle=False ):
-
-    #urls = [ URL('static','plugin_rest_paginator/jquery.pagination.js'),
-    #         URL('static','plugin_rest_paginator/paginate.js') ]
-    #if renderstyle:
-    #    urls.append(URL('static','plugin_restful_paginate/paginate.css'))
-
     if args:
         load_url = URL(c, f, args=args, extension='load')
     else:
@@ -80,6 +77,7 @@ def paginate_load( c,
       (function(){
         _pagination_%(name)s = new Pagination("%(name)s", "%(url)s", %(limit)s, %(vars)s);
         _pagination_%(name)s['page_request_func'] = %(page_request_func)s;
+        _pagination_%(name)s['get_total_count_func'] = %(get_total_count_func)s;
       })();
       $(function(){
         _pagination_%(name)s.run();
@@ -89,6 +87,7 @@ def paginate_load( c,
                limit=limit,
                vars=XML(gluon.contrib.simplejson.dumps(vars)),
                page_request_func=page_request_func,
+               get_total_count_func=get_total_count_func,
                )
 
     pagination = DIV(_id='Pagination_'+name, _class='pagination')
@@ -97,25 +96,6 @@ def paginate_load( c,
                         args=args,
                         vars=vars,
                         ajax=current.request.ajax))
-
-##     def find_(nodes, classes):
-##         print '------------'
-##         print len(nodes)
-##         print nodes
-##         if nodes['_class']==classes:
-##             return str(nodes)
-##         for i in range(0,len(nodes)):
-##             print i
-##             if nodes[i]._nodeType == 1:
-##                 ret = find_(nodes[i], classes)
-##                 if ret:
-##                     return ret
-##         return None
-
-##     total_count = find_(results,'total_count')
-##     print total_count
-##     for i in range(0,total_count/limit):
-##         pagination.append( A(i, _href=URL('',vars={'page':i})) )
 
     ret = DIV()
 
