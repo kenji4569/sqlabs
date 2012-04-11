@@ -93,6 +93,8 @@ class ManagedHTML(object):
         settings.content_types = Storage(html=_html)
         
         self.view_mode = LIVE_MODE
+        settings.devices = [{'name':'PC', 'suffix':'_managed_html_pc', 'file_suffix':'', 'is_feature_phone':False, 'is_mobile':False,},
+                            {'name':'Smart-Phone', 'suffix':'_managed_html_sp', 'file_suffix':'.mobile', 'is_feature_phone':True, 'is_mobile':True,},]
         
     def url(self, a=None, c=None, f=None, r=None, args=None, vars=None, **kwds):
         if not r:
@@ -193,6 +195,13 @@ class ManagedHTML(object):
             return
         else:
             self.view_mode = _arg0
+            
+            for device in self.settings.devices:
+                if device['suffix'] in _arg0:
+                    request.is_feature_phone = device['is_feature_phone']
+                    request.is_mobile = device['is_mobile']
+                    break
+            
             if request.args and request.args[-1] == 'managed_html.js':
                 # Return javascript
                 
@@ -204,6 +213,12 @@ class ManagedHTML(object):
                     response=_response,
                 )
                 
+                _device_url_base = self.view_mode
+                for device in self.settings.devices:
+                    _device_url_base = _device_url_base.replace(device['suffix'], '')
+                for device in self.settings.devices:
+                    print self.settings.URL(args=[_device_url_base+device['suffix']]+request.args[1:-1], vars=request.vars)
+                    device.update({'url':self.settings.URL(args=[_device_url_base+device['suffix']]+request.args[1:-1], vars=request.vars)})
                 _response.headers['Content-Type'] = 'text/javascript; charset=utf-8;'
                 raise HTTP(200, _response.render('plugin_managed_html/managed_html_ajax.js',
                             dict(
@@ -217,6 +232,7 @@ class ManagedHTML(object):
                                             if EDIT_MODE in self.view_mode else '',
                                 live_url=self.settings.URL(args=request.args[1:-1], vars=request.vars, scheme='http'),
                                 show_page_grid=self._show_page_grid_js() if settings.page_grid else '',
+                                devices=self.settings.devices,
                             )),
                            **_response.headers)
                            
@@ -248,6 +264,7 @@ class ManagedHTML(object):
             URL(APP, 'static', 'plugin_managed_html/managed_html.css'),
             URL(APP, 'static', 'plugin_managed_html/jquery.spinner.js'),
             URL(APP, 'static', 'plugin_elrte_widget/js/jquery-ui-1.8.16.custom.min.js'),
+            URL(APP, 'static', 'plugin_managed_html/bootstrap-dropdown.js'),
         ]
         response.files[:0] = [f for f in _files if f not in response.files]
             

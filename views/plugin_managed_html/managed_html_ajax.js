@@ -11,7 +11,7 @@
   var height = 40;
   var padding = parseInt($('body').css('padding-top'));
   $('body').css('padding-top', (padding+height) + 'px');
-  var topbar = $('<div class="managed_html_topbar" style="height:'+height+'px;"></div>');
+  var topbar = $('<div class="managed_html_topbar" data-dropdown="dropdown" style="height:'+height+'px;"></div>');
   var inner = $('<div class="managed_html_container_fluid"></div>');
   var brand = $('<a class="managed_html_brand" href="{{=home_url}}">{{=home_label}}</a>');
   var nav = $('<ul></ul>');
@@ -29,6 +29,15 @@
     nav.append($('<li><a href="#" onclick="managed_html_show_page_grid('+"'True'"+');">+ Page</a></li>'));
   {{pass}}
   
+  nav.append($(
+  '<li class="dropdown"><a href="#" class="dropdown-toggle" style="color:skyblue;">Device</a>' + 
+  '<ul class="dropdown-menu">' + 
+    {{for device in devices:}}
+    '<li><a href="{{=device['url']}}">{{=device['name']}}</a></li>' +
+    {{pass}}
+  '</ul></li>'
+  ));
+
   var secondary_nav = $('<ul class="managed_html_secondary_nav"></ul>');
   secondary_nav.append($('<li><a target="_blank" href="'+live_url+'" style="color:pink;">Check Live Site</a></li>'));
   
@@ -36,7 +45,9 @@
   inner.append(nav);
   inner.append(secondary_nav);
   topbar.append(inner);
-  $('body').prepend(topbar);
+  $('body').prepend(topbar).load(function() {
+    $('body').dropdown( '[data-dropdown] a.menu, [data-dropdown] .dropdown-toggle' );
+  });
   
   // ---------------------------------------------------------------------------
   // link management TODO refactoring
