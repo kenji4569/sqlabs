@@ -46,7 +46,7 @@ class Notifier(object):
          
     def process(self):
         request = current.request
-        db = self.db
+        db, table_notification = self.db, self.settings.table_notification
         
         keyword = self.settings.keyword
         if keyword in request.vars:
