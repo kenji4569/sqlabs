@@ -93,8 +93,8 @@ class ManagedHTML(object):
         settings.content_types = Storage(html=_html)
         
         self.view_mode = LIVE_MODE
-        settings.devices = [{'name':'PC', 'suffix':'_managed_html_pc', 'file_suffix':'', 'is_feature_phone':False, 'is_mobile':False,},
-                            {'name':'Smart-Phone', 'suffix':'_managed_html_sp', 'file_suffix':'.mobile', 'is_feature_phone':True, 'is_mobile':True,},]
+        settings.devices = [{'name':'pc', 'label':'PC',},
+                            {'name':'mobile', 'label':'Smart-Phone', 'is_mobile':True,},]
         
     def url(self, a=None, c=None, f=None, r=None, args=None, vars=None, **kwds):
         if not r:
@@ -197,9 +197,10 @@ class ManagedHTML(object):
             self.view_mode = _arg0
             
             for device in self.settings.devices:
-                if device['suffix'] in _arg0:
-                    request.is_feature_phone = device['is_feature_phone']
-                    request.is_mobile = device['is_mobile']
+                suffix = '_managed_html_%s'%device['name']
+                if suffix in _arg0:
+                    request.is_feature_phone = device.get('is_feature_phone', False) 
+                    request.is_mobile = device.get('is_mobile', False)
                     break
             
             if request.args and request.args[-1] == 'managed_html.js':
@@ -215,10 +216,9 @@ class ManagedHTML(object):
                 
                 _device_url_base = self.view_mode
                 for device in self.settings.devices:
-                    _device_url_base = _device_url_base.replace(device['suffix'], '')
+                    _device_url_base = _device_url_base.replace('_managed_html_%s'%device['name'], '')
                 for device in self.settings.devices:
-                    print self.settings.URL(args=[_device_url_base+device['suffix']]+request.args[1:-1], vars=request.vars)
-                    device.update({'url':self.settings.URL(args=[_device_url_base+device['suffix']]+request.args[1:-1], vars=request.vars)})
+                    device.update({'url':self.settings.URL(args=[_device_url_base+'_managed_html_%s'%device['name']]+request.args[1:-1], vars=request.vars)})
                 _response.headers['Content-Type'] = 'text/javascript; charset=utf-8;'
                 raise HTTP(200, _response.render('plugin_managed_html/managed_html_ajax.js',
                             dict(

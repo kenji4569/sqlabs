@@ -33,7 +33,7 @@
   '<li class="dropdown"><a href="#" class="dropdown-toggle" style="color:skyblue;">Device</a>' + 
   '<ul class="dropdown-menu">' + 
     {{for device in devices:}}
-    '<li><a href="{{=device['url']}}">{{=device['name']}}</a></li>' +
+    '<li><a href="{{=device['url']}}">{{=device['label']}}</a></li>' +
     {{pass}}
   '</ul></li>'
   ));
