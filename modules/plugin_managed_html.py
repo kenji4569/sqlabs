@@ -94,7 +94,7 @@ class ManagedHTML(object):
         
         self.view_mode = LIVE_MODE
         settings.devices = [{'name':'pc', 'label':'PC',},
-                            {'name':'mobile', 'label':'Smart-Phone', 'is_mobile':True,},]
+                            {'name':'mobile', 'label':'Smart-Phone', 'request_updator':{'is_mobile':True}},]
         
     def url(self, a=None, c=None, f=None, r=None, args=None, vars=None, **kwds):
         if not r:
@@ -199,8 +199,7 @@ class ManagedHTML(object):
             for device in self.settings.devices:
                 suffix = '_managed_html_%s'%device['name']
                 if suffix in _arg0:
-                    request.is_feature_phone = device.get('is_feature_phone', False) 
-                    request.is_mobile = device.get('is_mobile', False)
+                    request.update(**device.get('request_updator', {}))
                     break
             
             if request.args and request.args[-1] == 'managed_html.js':
