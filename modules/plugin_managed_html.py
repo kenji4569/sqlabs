@@ -231,13 +231,14 @@ class ManagedHTML(object):
                                 preview_url=settings.URL(args=[self.view_mode.replace(EDIT_MODE, PREVIEW_MODE).replace(REFERENCE_MODE, PREVIEW_MODE)] +
                                                                  request.args[1:-1], vars=request.vars)
                                             if EDIT_MODE in self.view_mode or REFERENCE_MODE in self.view_mode else '',
-                                reference_url=settings.URL(args=[self.view_mode.replace(EDIT_MODE, REFERENCE_MODE).replace(PREVIEW_MODE, REFERENCE_MODE).replace('_managed_html_%s'%current_device['name'], '')] +
+                                reference_url=settings.URL(args=[self.view_mode.replace(EDIT_MODE, REFERENCE_MODE).replace(PREVIEW_MODE, REFERENCE_MODE).replace('_managed_html_%s'%current_device['name'] if current_device else '', '')] +
                                                                  request.args[1:-1], vars=request.vars)
                                             if EDIT_MODE in self.view_mode or PREVIEW_MODE in self.view_mode else '',
                                 live_url=self.settings.URL(args=request.args[1:-1], vars=request.vars, scheme='http'),
                                 show_page_grid=self._show_page_grid_js() if settings.page_grid else '',
                                 devices=self.settings.devices,
-                                current_device=current_device
+                                current_device=current_device,
+                                is_edit_mode=EDIT_MODE in self.view_mode,
                             )),
                            **_response.headers)
             
@@ -893,6 +894,7 @@ jQuery(function(){
                     reference = self._get_content(request.vars.reference_id)
                     updator = self.settings.table_content._filter_fields(reference)
                     updator['name'] = new_content_name
+                    updator['publish_on'] = None
                     self.settings.table_content.insert(**updator)
                     data.append(['html', new_content_name])
                     response.flash = T('Added')

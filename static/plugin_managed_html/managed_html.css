@@ -918,7 +918,6 @@ height: 30px;
 div#managed_reference_view {
   position:fixed;
   top: 40px; left: 0px;
-  width:100%;
   padding-top: 30px; 
   overflow:scroll;z-index: 400;
   margin:5px 5px 5px 5px;
@@ -934,4 +933,3 @@ div.tmp_managed_html_content_block:hover .tmp_managed_html_content_inner > * {
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(236, 168, 82, 0.6);
   outline: 3px dotted rgba(236, 168, 82, 0.6);
 }
-

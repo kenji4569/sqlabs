@@ -44,7 +44,8 @@ jQuery.extend(jQuery.easing,
     {{pass}}
   '</ul></li>'
   ));
-  {{ if current_device and 'view_width' in current_device:}}
+  {{ if current_device and 'view_width' in current_device and is_edit_mode:}}
+    $('#main').css('overflow', 'hidden');
     $('#main').css('width','{{=current_device['view_width']}}px');
     var reference_view = $('<div id="managed_reference_view"></div>').css('left', '{{=int(current_device['view_width']) + 40}}px');
     var reference_view_content = $('<div id="managed_reference_view_content">');
@@ -407,74 +408,6 @@ function managed_html_movable(name, indices, keyword, url, confirm_message) {
       }); 
     }
     _movable(jQuery(".managed_html_name_" + name));
-}
-
-var current_view_width = '0'
-function toggle_side_view(url, show_side_view, view_width){
-  
-  //var reference_view = $('<div id="managed_reference_view"></div>');
-  //var reference_view_content = $('<div id="managed_reference_view_content">');
-
-  view_width = parseInt(view_width) + 30;
-  var side_view = jQuery("#managed_side_view").css('width', view_width + 'px');
-  
-  if(show_side_view == 'True' && side_view.is(":hidden")){
-    
-    side_view.animate({"width":"toggle"},"fast", "easeInQuart")
-    jQuery('#base').animate({"padding-left":"+=" + view_width + 'px'}, "easeInQuart")
-  
-  }else if(show_side_view == 'True'){
-    
-    jQuery('#managed_side_view_content').children().remove();
-    var current = parseInt(current_view_width);
-    var next = parseInt(view_width);
-    if(next < current){
-      jQuery('#base').animate({"padding-left":"-="+(current-next)+"px"}, "easeInQuart")
-    }else{
-      jQuery('#base').animate({"padding-left":"+="+(next-current)+"px"}, "easeInQuart")
-    }
-  
-  }else if(show_side_view == 'False' && !side_view.is(":hidden")){
-    
-    jQuery('#managed_side_view_content').children().remove();
-    side_view.animate({"width":"toggle"},"fast", "easeInQuart")
-    jQuery('#base').animate({"padding-left":"-=" + current_view_width + 'px'}, "easeInQuart")
-    jQuery('[id^=tmp_managed_html_]').each(function(){
-      jQuery(this).attr('id', jQuery(this).attr('id').replace('tmp_', ''));
-    });
-    jQuery('[class^=tmp_managed_html_]').each(function(){
-      jQuery(this).attr('class', jQuery(this).attr('class').replace('tmp_', ''));
-    });
-    jQuery('[tmp_onclick^=managed_html_ajax_page]').each(function(){
-      jQuery(this).attr('onclick', jQuery(this).attr('tmp_onclick')).removeAttr('tmp_onclick')
-    })
-    managed_html_init_blocks();
-  }
-  current_view_width = view_width
-
-  if(show_side_view == 'True'){
-    jQuery('[onclick^=managed_html_ajax_page]').each(function(){
-      jQuery(this).attr('tmp_onclick', jQuery(this).attr('onclick')).removeAttr('onclick');
-    })
-    jQuery('[id^=managed_html_]').each(function(){
-      jQuery(this).attr('id', 'tmp_'+jQuery(this).attr('id'));
-    });
-    jQuery('[class^=managed_html_]').each(function(){
-      if(!(jQuery(this).hasClass('managed_html_topbar') ||
-          jQuery(this).hasClass('managed_html_container_fluid') ||
-          jQuery(this).hasClass('managed_html_brand') ||
-          jQuery(this).hasClass('managed_html_secondary_nav') ||
-          jQuery(this).hasClass('managed_html_content_anchor') ||
-          jQuery(this).hasClass('managed_html_content_ctrl') ||
-          jQuery(this).hasClass('managed_html_collection_ctrl'))
-      ){
-        jQuery(this).attr('class', 'tmp_'+jQuery(this).attr('class'));
-      }
-    });
-    
-    jQuery('.managed_html_content_block').unbind("mouseenter").unbind("mouseleave");
-    managed_html_web2py_ajax_page('post', url, {}, 'managed_reference_view_content');
-  }
 }
 
 function reference_end(event){
