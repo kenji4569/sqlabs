@@ -15,6 +15,7 @@ APP = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
 LIVE_MODE = '_managed_html_live'
 EDIT_MODE = '_managed_html_edit'
 PREVIEW_MODE = '_managed_html_preview'
+REFERENCE_MODE = '_managed_html_reference'
 
 IMAGE_EXTENSIONS = ('png', 'jpg', 'jpeg', 'gif', 'bmp')
 MOVIE_EXTENSIONS = ('flv', 'mp4', 'm4v', 'avi', 'wmv')
@@ -93,8 +94,8 @@ class ManagedHTML(object):
         settings.content_types = Storage(html=_html)
         
         self.view_mode = LIVE_MODE
-        settings.devices = [{'name':'pc', 'label':'PC',},
-                            {'name':'mobile', 'label':'Smart-Phone', 'request_updator':{'is_mobile':True}},]
+        settings.devices = [{'name':'pc', 'label':'PC', 'show_side_view':False},
+                            {'name':'mobile', 'label':'Smart-Phone', 'request_updator':{'is_mobile':True}, 'show_side_view':True, 'view_width':'320'}]
         
     def url(self, a=None, c=None, f=None, r=None, args=None, vars=None, **kwds):
         if not r:
@@ -104,7 +105,7 @@ class ManagedHTML(object):
                 (c, f, a) = (a, c, f)
         if c != 'static':
             _arg0 = current.request.args(0)
-            if _arg0 and (EDIT_MODE in _arg0 or PREVIEW_MODE in _arg0):
+            if _arg0 and (EDIT_MODE in _arg0 or PREVIEW_MODE in _arg0 or REFERENCE_MODE in _arg0):
                 return self._mode_url(_arg0, a, c, f, r, args, vars, **kwds)
         return self.settings.URL(a, c, f, r, args, vars, **kwds)
         
@@ -190,16 +191,17 @@ class ManagedHTML(object):
         settings, request, response, T = self.settings, current.request, current.response, current.T
         
         _arg0 = request.args(0)
-        if not (_arg0 and (EDIT_MODE in _arg0 or PREVIEW_MODE in _arg0)):
+        if not (_arg0 and (EDIT_MODE in _arg0 or PREVIEW_MODE in _arg0 or  REFERENCE_MODE in _arg0)):
             self.view_mode = LIVE_MODE
             return
         else:
             self.view_mode = _arg0
-            
+            current_device = None
             for device in self.settings.devices:
                 suffix = '_managed_html_%s'%device['name']
                 if suffix in _arg0:
                     request.update(**device.get('request_updator', {}))
+                    current_device = device
                     break
             
             if request.args and request.args[-1] == 'managed_html.js':
@@ -223,20 +225,23 @@ class ManagedHTML(object):
                             dict(
                                 home_url=settings.home_url,
                                 home_label=settings.home_label,
-                                edit_url=settings.URL(args=[self.view_mode.replace(PREVIEW_MODE, EDIT_MODE)] +
+                                edit_url=settings.URL(args=[self.view_mode.replace(PREVIEW_MODE, EDIT_MODE).replace(REFERENCE_MODE, EDIT_MODE)] +
                                                             request.args[1:-1], vars=request.vars)
-                                            if PREVIEW_MODE in self.view_mode else '',
-                                preview_url=settings.URL(args=[self.view_mode.replace(EDIT_MODE, PREVIEW_MODE)] +
+                                            if PREVIEW_MODE in self.view_mode or REFERENCE_MODE in self.view_mode else '',
+                                preview_url=settings.URL(args=[self.view_mode.replace(EDIT_MODE, PREVIEW_MODE).replace(REFERENCE_MODE, PREVIEW_MODE)] +
                                                                  request.args[1:-1], vars=request.vars)
-                                            if EDIT_MODE in self.view_mode else '',
+                                            if EDIT_MODE in self.view_mode or REFERENCE_MODE in self.view_mode else '',
+                                reference_url=settings.URL(args=[self.view_mode.replace(EDIT_MODE, REFERENCE_MODE).replace(PREVIEW_MODE, REFERENCE_MODE).replace('_managed_html_%s'%current_device['name'], '')] +
+                                                                 request.args[1:-1], vars=request.vars)
+                                            if EDIT_MODE in self.view_mode or PREVIEW_MODE in self.view_mode else '',
                                 live_url=self.settings.URL(args=request.args[1:-1], vars=request.vars, scheme='http'),
                                 show_page_grid=self._show_page_grid_js() if settings.page_grid else '',
                                 devices=self.settings.devices,
+                                current_device=current_device
                             )),
                            **_response.headers)
-                           
+            
             response.files.append(URL(args=((request.args or []) + ['managed_html.js'])))
-                          
             self.use_grid(args=request.args[:2])
                
     def use_grid(self, args):
@@ -744,7 +749,7 @@ jQuery(function(){
                                      vars={self.keyword: name, '_action': 'show_add_form'}),
                                      ajax=True),
                         _class='managed_html_dialog').show(reload=True)
-         
+    
     def _post_collection_js(self, name, action, **attrs):
         return self._post_js('managed_html_collection_%s' % name, name, action, **attrs)
                        
@@ -874,6 +879,44 @@ jQuery(function(){
                         raise HTTP(400)
                     raise HTTP(200, self._add_form(name))
                     
+                elif action == 'reference':
+                    if not settings.editable:
+                        raise HTTP(400)
+                    
+                    collection = self._get_content(name, id=request.vars.content_id if action == 'revert' else None)
+                    if not collection:
+                        collection = self._get_content(name)
+                    data = collection and collection.data and json.loads(collection.data) or []
+
+                    from gluon.utils import web2py_uuid
+                    new_content_name = web2py_uuid()
+                    reference = self._get_content(request.vars.reference_id)
+                    updator = self.settings.table_content._filter_fields(reference)
+                    updator['name'] = new_content_name
+                    self.settings.table_content.insert(**updator)
+                    data.append(['html', new_content_name])
+                    response.flash = T('Added')
+                      
+                    response.js += 'managed_html_collection_published("%s", false);' % el_id
+                        
+                    self.db(table_content.name == name)(table_content.publish_on == None).delete()
+                    table_content.insert(name=name, data=json.dumps(data))
+                    collection = self._get_content(name)
+                        
+                    response.body = cStringIO.StringIO()
+                    _func(collection)
+                    raise HTTP(200, response.body.getvalue())
+                    
+#                    collection = self._get_content(name, id=request.vars.content_id if action == 'revert' else None)
+#                    if not collection:
+#                        collection = self._get_content(name)
+#                    data = collection and collection.data and json.loads(collection.data) or []
+#                    
+#                    if action == 'add':
+#                        from gluon.utils import web2py_uuid
+#                        new_content_name = web2py_uuid()
+#                        data.append([request.vars.content_type, new_content_name])
+#                        response.flash = T('Added')
                 else:
                     raise RuntimeError
                     
@@ -900,6 +943,10 @@ jQuery(function(){
                                       _onclick=self._show_add_form_js(name),
                                       _class='managed_html_btn'),
                                    _class='managed_html_edit_btn') if settings.editable else '',
+                                SPAN(INPUT(_value=T('Reference'), _type='button',
+                                      _onclick="reference_start('%s', '%s');"%(name, URL(args=request.args)),
+                                      _class='managed_html_btn'),
+                                   _class='managed_html_reference_btn') if request.is_mobile else '',
                                 SPAN(INPUT(_value=T('Publish'), _type='button',
                                       _onclick=self._post_collection_js(name, 'publish_now'),
                                       _class='managed_html_btn managed_html_success_btn'),
