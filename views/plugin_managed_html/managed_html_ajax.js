@@ -44,14 +44,16 @@ jQuery.extend(jQuery.easing,
     {{pass}}
   '</ul></li>'
   ));
-  {{ if current_device and 'view_width' in current_device and is_edit_mode:}}
-    $('#main').css('overflow', 'hidden');
-    $('#main').css('width','{{=current_device['view_width']}}px');
-    var reference_view = $('<div id="managed_reference_view"></div>').css('left', '{{=int(current_device['view_width']) + 40}}px');
-    var reference_view_content = $('<div id="managed_reference_view_content">');
-    reference_view.append(reference_view_content);
-    $('body').prepend(reference_view);
-    managed_html_web2py_ajax_page('post', '{{=reference_url}}', {'_action':'reference'}, 'managed_reference_view_content');
+  {{ if current_device and 'view_width' in current_device and (is_edit_mode or is_preview_mode):}}
+    $('body, #main').css({'width':'{{=current_device['view_width']}}px', 'min-width':'{{=current_device['view_width']}}px', 'overflow-x':'hidden'});
+    $('#base').css({'position':'fixed', 'left':'20px'});
+    {{ if is_edit_mode:}}
+      var reference_view = $('<div id="managed_reference_view"></div>').css('left', '{{=int(current_device['view_width']) + 40}}px');
+      var reference_view_content = $('<div id="managed_reference_view_content">');
+      reference_view.append(reference_view_content);
+      $('body').prepend(reference_view);
+      managed_html_web2py_ajax_page('post', '{{=reference_url}}', {'_action':'reference'}, 'managed_reference_view_content');
+    {{pass}}
   {{pass}}
   var secondary_nav = $('<ul class="managed_html_secondary_nav"></ul>');
   secondary_nav.append($('<li><a target="_blank" href="'+live_url+'" style="color:pink;">Check Live Site</a></li>'));

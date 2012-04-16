@@ -239,6 +239,7 @@ class ManagedHTML(object):
                                 devices=self.settings.devices,
                                 current_device=current_device,
                                 is_edit_mode=EDIT_MODE in self.view_mode,
+                                is_preview_mode=PREVIEW_MODE in self.view_mode,
                             )),
                            **_response.headers)
             
