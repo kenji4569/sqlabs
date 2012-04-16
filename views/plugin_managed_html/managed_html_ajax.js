@@ -412,15 +412,25 @@ function managed_html_movable(name, indices, keyword, url, confirm_message) {
 
 function reference_end(event){
   var reference_id = jQuery(this).attr('id').replace('tmp_managed_html_content_block_', '');
-  jQuery('[id^=tmp_managed_html_content_block_]').unbind('click', reference_end);
+  jQuery('[id^=tmp_managed_html_content_block_]').unbind('click', reference_end).removeClass('tmp_managed_html_content_block');
   managed_html_web2py_ajax_page('get', event.data.url, 
                                 {'reference_id':reference_id, 
                                  '_managed_html':event.data.content_id, 
                                  'content_id':event.data.content_id, 
                                  '_action':'reference'}, 
                                 'managed_html_collection_' + event.data.content_id);
+  jQuery('[tmp_onclick^=reference_move]').each(function(){
+    jQuery(this).attr('onclick', jQuery(this).attr('tmp_onclick')).removeAttr('tmp_onclick');
+  });
 }
 
 function reference_start(content_id, url){
-  jQuery('[id^=tmp_managed_html_content_block_]').click({content_id:content_id, url:url}, reference_end);
+  jQuery('[id^=tmp_managed_html_content_block_]').click({content_id:content_id, url:url}, reference_end).addClass('tmp_managed_html_content_block');
+  jQuery('[onclick^=reference_move]').each(function(){
+    jQuery(this).attr('tmp_onclick', jQuery(this).attr('onclick')).removeAttr('onclick');
+  });
+}
+
+function reference_move(url){
+  managed_html_web2py_ajax_page('post', url, {'_action':'reference'}, 'managed_reference_view_content');
 }

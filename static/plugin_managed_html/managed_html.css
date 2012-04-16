@@ -926,10 +926,17 @@ div#managed_reference_view {
   background-color: #ffffff;
   background-repeat: repeat-x;
 }
-div.tmp_managed_html_content_block:hover .tmp_managed_html_content_inner,
-div.tmp_managed_html_content_block:hover .tmp_managed_html_content_inner > * {
+div.tmp_managed_html_content_block,
+div.tmp_managed_html_content_block > * {
   -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(236, 168, 82, 0.6);
   -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(236, 168, 82, 0.6);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(236, 168, 82, 0.6);
   outline: 3px dotted rgba(236, 168, 82, 0.6);
+}
+div.tmp_managed_html_content_block:hover,
+div.tmp_managed_html_content_block:hover > * {
+  -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(255, 0, 0, 0.6);
+  -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(255, 0, 0, 0.6);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(255, 0, 0, 0.6);
+  outline: 3px dotted rgba(255, 0, 0, 0.6);
 }
