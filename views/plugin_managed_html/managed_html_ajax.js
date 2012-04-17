@@ -45,8 +45,8 @@ jQuery.extend(jQuery.easing,
   '</ul></li>'
   ));
   {{ if current_device and 'view_width' in current_device and (is_edit_mode or is_preview_mode):}}
-    $('body, #main').css({'width':'{{=current_device['view_width']}}px', 'min-width':'{{=current_device['view_width']}}px'});
-    $('#base').css({'position':'absolute', 'left':'20px'});
+    $('body, #main').css({'width':'{{=current_device['view_width']}}px', 'min-width':'{{=current_device['view_width']}}px', 'margin':'0px 20px 0px 20px'});
+    $('#base').css({'position':'absolute'});
     {{ if is_edit_mode:}}
       var reference_view = $('<div id="managed_reference_view"></div>').css('left', '{{=int(current_device['view_width']) + 40}}px');
       var reference_view_content = $('<div id="managed_reference_view_content">');

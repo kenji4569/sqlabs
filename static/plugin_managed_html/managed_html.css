@@ -940,3 +940,7 @@ div.tmp_managed_html_content_block:hover > * {
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(255, 0, 0, 0.6);
   outline: 3px dotted rgba(255, 0, 0, 0.6);
 }
+
+.dropdown{
+  text-align:left;
+}
