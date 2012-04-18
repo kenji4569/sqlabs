@@ -500,6 +500,32 @@ margin-right: 0;
 
 /* -------------------------------------------------------------------------- */
 
+div.managed_html_topbar .dropdown {
+position: relative;
+}
+
+div.managed_html_topbar .dropdown-menu{
+  background-color:#ffffff;float:left;
+  display:none;position:absolute;top:40px;z-index:900;min-width:160px;max-width:220px;_width:160px;margin-left:0;margin-right:0;padding:6px 0;zoom:1;border-color:#999;border-color:rgba(0, 0, 0, 0.2);border-style:solid;border-width:0 1px 1px;-webkit-border-radius:0 0 6px 6px;-moz-border-radius:0 0 6px 6px;border-radius:0 0 6px 6px;-webkit-box-shadow:0 2px 4px rgba(0, 0, 0, 0.2);-moz-box-shadow:0 2px 4px rgba(0, 0, 0, 0.2);box-shadow:0 2px 4px rgba(0, 0, 0, 0.2);-webkit-background-clip:padding-box;-moz-background-clip:padding-box;background-clip:padding-box;}
+
+div.managed_html_topbar .open .dropdown-menu{display:block;}
+
+  
+div.managed_html_topbar .dropdown-menu {
+background-color: #333;
+}
+
+div.managed_html_topbar .dropdown-menu li{float:none;display:block;background-color:none;}
+
+  
+div.managed_html_topbar .dropdown-menu li a{color:#999;text-shadow:0 1px 0 rgba(0, 0, 0, 0.5);}
+div.managed_html_topbar .dropdown-menu li a:hover{background-color:#191919;background-repeat:repeat-x;background-image:-khtml-gradient(linear, left top, left bottom, from(#292929), to(#191919));background-image:-moz-linear-gradient(top, #292929, #191919);background-image:-ms-linear-gradient(top, #292929, #191919);background-image:-webkit-gradient(linear, left top, left bottom, color-stop(0%, #292929), color-stop(100%, #191919));background-image:-webkit-linear-gradient(top, #292929, #191919);background-image:-o-linear-gradient(top, #292929, #191919);background-image:linear-gradient(top, #292929, #191919);filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#292929', endColorstr='#191919', GradientType=0);color:#ffffff;}
+
+/* -------------------------------------------------------------------------- */
+
+
+/* -------------------------------------------------------------------------- */
+
 .managed_html_dialog table{border-collapse:collapse;border-spacing:0;}
 
 .managed_html_dialog table{width:100%;margin-bottom:18px;padding:0;border-collapse:separate;*border-collapse:collapse;font-size:13px;border:1px solid #ddd;-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px;}
@@ -887,4 +913,34 @@ height: 30px;
   -ms-transition: 0.1s linear all;
   -o-transition: 0.1s linear all;
   transition: 0.1s linear all;
+}
+
+div#managed_reference_view {
+  position:fixed;
+  top: 40px; left: 0px;
+  padding-top: 30px; 
+  overflow:scroll;z-index: 400;
+  margin:5px 5px 5px 5px;
+  height:90%;
+  background-color: #ffffff;
+  background-color: #ffffff;
+  background-repeat: repeat-x;
+}
+div.tmp_managed_html_content_block,
+div.tmp_managed_html_content_block > * {
+  -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(236, 168, 82, 0.6);
+  -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(236, 168, 82, 0.6);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(236, 168, 82, 0.6);
+  outline: 3px dotted rgba(236, 168, 82, 0.6);
+}
+div.tmp_managed_html_content_block:hover,
+div.tmp_managed_html_content_block:hover > * {
+  -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(255, 0, 0, 0.6);
+  -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(255, 0, 0, 0.6);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 25px rgba(255, 0, 0, 0.6);
+  outline: 3px dotted rgba(255, 0, 0, 0.6);
+}
+
+.dropdown{
+  text-align:left;
 }

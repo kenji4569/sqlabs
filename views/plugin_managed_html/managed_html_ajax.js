@@ -1,3 +1,10 @@
+jQuery.extend(jQuery.easing,
+{
+  easeInQuart: function (x, t, b, c, d) {
+    return c*(t/=d)*t*t*t + b;
+  },
+});
+	
 (function($) {$(function(){
   
   managed_html_init_blocks();
@@ -11,7 +18,7 @@
   var height = 40;
   var padding = parseInt($('body').css('padding-top'));
   $('body').css('padding-top', (padding+height) + 'px');
-  var topbar = $('<div class="managed_html_topbar" style="height:'+height+'px;"></div>');
+  var topbar = $('<div class="managed_html_topbar" data-dropdown="dropdown" style="height:'+height+'px;"></div>');
   var inner = $('<div class="managed_html_container_fluid"></div>');
   var brand = $('<a class="managed_html_brand" href="{{=home_url}}">{{=home_label}}</a>');
   var nav = $('<ul></ul>');
@@ -29,6 +36,25 @@
     nav.append($('<li><a href="#" onclick="managed_html_show_page_grid('+"'True'"+');">+ Page</a></li>'));
   {{pass}}
   
+  nav.append($(
+  '<li class="dropdown"><a href="#" class="dropdown-toggle" style="color:skyblue;">Device</a>' + 
+  '<ul class="dropdown-menu">' + 
+    {{for device in devices:}}
+    '<li><a href="{{=device['url']}}">{{=device['label']}}</a></li>' +
+    {{pass}}
+  '</ul></li>'
+  ));
+  {{ if current_device and 'view_width' in current_device and (is_edit_mode or is_preview_mode):}}
+    $('body, #main').css({'width':'{{=current_device['view_width']}}px', 'min-width':'{{=current_device['view_width']}}px', 'margin':'0px 20px 0px 20px'});
+    $('#base').css({'position':'absolute'});
+    {{ if is_edit_mode:}}
+      var reference_view = $('<div id="managed_reference_view"></div>').css('left', '{{=int(current_device['view_width']) + 40}}px');
+      var reference_view_content = $('<div id="managed_reference_view_content">');
+      reference_view.append(reference_view_content);
+      $('body').prepend(reference_view);
+      managed_html_web2py_ajax_page('post', '{{=reference_url}}', {'_action':'reference'}, 'managed_reference_view_content');
+    {{pass}}
+  {{pass}}
   var secondary_nav = $('<ul class="managed_html_secondary_nav"></ul>');
   secondary_nav.append($('<li><a target="_blank" href="'+live_url+'" style="color:pink;">Check Live Site</a></li>'));
   
@@ -36,7 +62,10 @@
   inner.append(nav);
   inner.append(secondary_nav);
   topbar.append(inner);
-  $('body').prepend(topbar);
+  
+  $('body').prepend(topbar).load(function() {
+    $('body').dropdown( '[data-dropdown] a.menu, [data-dropdown] .dropdown-toggle' );
+  });
   
   // ---------------------------------------------------------------------------
   // link management TODO refactoring
@@ -125,7 +154,7 @@ function managed_html_web2py_ajax_page(method,action,data,target) {
       jQuery('.managed_html_spinner').hide(); // TODO
       var html=xhr.responseText;
       var content=xhr.getResponseHeader('web2py-component-content'); 
-      var command=xhr.getResponseHeader('web2py-component-command'); 
+      var command=xhr.getResponseHeader('web2py-component-command');
       var flash=xhr.getResponseHeader('web2py-component-flash');
       var t = jQuery('#'+target);
       if(content=='prepend') t.prepend(html); 
@@ -381,4 +410,29 @@ function managed_html_movable(name, indices, keyword, url, confirm_message) {
       }); 
     }
     _movable(jQuery(".managed_html_name_" + name));
+}
+
+function reference_end(event){
+  var reference_id = jQuery(this).attr('id').replace('tmp_managed_html_content_block_', '');
+  jQuery('[id^=tmp_managed_html_content_block_]').unbind('click', reference_end).removeClass('tmp_managed_html_content_block');
+  managed_html_web2py_ajax_page('get', event.data.url, 
+                                {'reference_id':reference_id, 
+                                 '_managed_html':event.data.content_id, 
+                                 'content_id':event.data.content_id, 
+                                 '_action':'reference'}, 
+                                'managed_html_collection_' + event.data.content_id);
+  jQuery('[tmp_onclick^=reference_move]').each(function(){
+    jQuery(this).attr('onclick', jQuery(this).attr('tmp_onclick')).removeAttr('tmp_onclick');
+  });
+}
+
+function reference_start(content_id, url){
+  jQuery('[id^=tmp_managed_html_content_block_]').click({content_id:content_id, url:url}, reference_end).addClass('tmp_managed_html_content_block');
+  jQuery('[onclick^=reference_move]').each(function(){
+    jQuery(this).attr('tmp_onclick', jQuery(this).attr('onclick')).removeAttr('onclick');
+  });
+}
+
+function reference_move(url){
+  managed_html_web2py_ajax_page('post', url, {'_action':'reference'}, 'managed_reference_view_content');
 }
