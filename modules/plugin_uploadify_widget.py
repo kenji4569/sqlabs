@@ -85,14 +85,15 @@ class IS_UPLOADIFY_LENGTH(IS_LENGTH):
 
 
 def uploadify_widget(field, value, download_url=None, **attributes):
+
     _set_files(FILES)
     
-    _id = '%s_%s' % (field._tablename, field.name)
+    _id = attributes['id'] if 'id' in attributes else '%s_%s' % (field._tablename, field.name)
     input_el = INPUT(_id=_id, _name=field.name,
                      requires=field.requires, _type='hidden',)
 
     from gluon.utils import web2py_uuid
-    _file_id = '__uploadify__%s_%s_%s' % (field._tablename, field.name, web2py_uuid())
+    _file_id = '__uploadify__%s_%s' % (_id, web2py_uuid())
     file_input_el = INPUT(_id=_file_id, _name='__uploadify__%s' % field.name, _type='file')
 
     ajaxed = 'Filedata' in current.request.post_vars and current.request.post_vars.name == field.name
@@ -123,6 +124,7 @@ def uploadify_widget(field, value, download_url=None, **attributes):
     if ajaxed:
         f = current.request.post_vars.Filedata
         newfilename = field.store(f.file, f.filename)
+        current.response.headers['Content-Type'] = 'text/plain; charset=utf-8;'
         raise HTTP(200, newfilename)
         
     script = SCRIPT("""
@@ -201,12 +203,12 @@ file_el.uploadify({
            ajax='true' if current.request.ajax else 'false',
          ))
          
-    if '_formkey' in current.request.vars:
+    if '_formkey' in current.request.vars and (field.name in current.request.vars and isinstance(current.request.vars[field.name], str)):
         filename = current.request.vars[field.name]
         if filename:
             current.request.vars[field.name] = Storage(file=None, filename=filename)  # TODO file
             field.store = lambda source_file, original_filename, path=None: original_filename
-        
+
     inp = SPAN(input_el, file_input_el)
     
     if download_url and value:
