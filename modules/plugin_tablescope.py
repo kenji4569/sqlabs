@@ -10,9 +10,11 @@ APP = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
 
 class TableScope(DIV):
 
-    def __init__(self, dataset, field, all=True, default=None,
-                  left=None, groupby=None, scope_var='scope', page_var='page',
-                  renderstyle=False, **attributes):
+    def __init__(self, dataset, field=None, 
+                 all=True, default=None,
+                 queries=None,
+                 left=None, groupby=None, scope_var='scope', page_var='page',
+                 renderstyle=False, **attributes):
         DIV.__init__(self, **attributes)
         self.attributes['_class'] = 'tablescope'
         self.dataset, self.scope_var, self.page_var = (
@@ -21,18 +23,28 @@ class TableScope(DIV):
         
         self.scopes = []
         self.scope_details = {}
-        for k, v in field.requires.options():
-            if str(v):
+
+        def _get_count(_dataset):
+            if groupby:
+                return len(_dataset.select(field, left=left, groupby=groupby))
+            elif left:
+                counter = field.count()
+                return _dataset.select(counter, left=left).first()[counter]
+            else:
+                return _dataset.count()
+
+        if queries:
+            for k, v, query in queries:
                 self.scopes.append(k)
-                _dataset = self.dataset(field == k)
-                if groupby:
-                    count = len(_dataset.select(field, left=left, groupby=groupby))
-                elif left:
-                    counter = field.count()
-                    count = _dataset.select(counter, left=left).first()[counter]
-                else:
-                    count = _dataset.count()
-                self.scope_details[k] = dict(label=v, count=count)
+                _dataset = self.dataset(query)
+                self.scope_details[k] = dict(label=v, count=_get_count(_dataset))
+
+        if field:
+            for k, v in field.requires.options():
+                if str(v):
+                    self.scopes.append(k)
+                    _dataset = self.dataset(field == k)
+                    self.scope_details[k] = dict(label=v, count=_get_count(_dataset))
             
         if all == True:
             count = sum([e['count'] for e in self.scope_details.values()])
@@ -43,7 +55,10 @@ class TableScope(DIV):
         if self.scope == '__all__':
             self.scoped_dataset = dataset
         else:
-            self.scoped_dataset = dataset(field == self.scope)
+            if queries:
+                self.scoped_dataset = dataset(dict([(k, query) for k, v, query in queries])[self.scope])
+            if field:
+                self.scoped_dataset = dataset(field == self.scope)
         
         if renderstyle:
             _url = URL(APP, 'static', 'plugin_tablescope/tablescope.css')
@@ -67,7 +82,7 @@ class TableScope(DIV):
                         _class='scope selected'))
             else:
                 self.append(
-                    SPAN(A(label, _href=self._url(scope=scope)),
+                    SPAN(A(label, _class='w2p_trap', _href=self._url(scope=scope)),
                          ' ', SPAN('(%s)' % count, _class='count'),
                     _class='scope'))
     
