@@ -41,6 +41,7 @@ class Paginator(DIV):
         return (self.paginate * (self.page - 1), self.paginate * self.page)
       
     def xml(self):
+        self.components[:] = []
         pages = (self.records - 1) / self.paginate + 1
         if (self.records > self.paginate and
             pages == 1 and pages * self.paginate != self.records):
