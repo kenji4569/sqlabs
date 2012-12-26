@@ -33,11 +33,12 @@ class TreeTestMixin():
     leading_whitespace_re = re.compile(r'^\s+', re.MULTILINE)
     
     def asserTree(self, nodes, tree_text):
+        node_list = ([n for n in nodes])
         self.assertEqual(
             '\n'.join(["%s %s %s %s %s %s" % 
                       (node.name, node.parent and node.parent.name, 
                        node.tree_id, node.level, node.lft, node.rgt) 
-                            for node in nodes]),
+                            for node in node_list]),
             self.leading_whitespace_re.sub('',tree_text))
             
     def get_all_nodes(self):
