@@ -5,7 +5,8 @@ def index():
     d = dict(
         products=[
             (k, info_products[k])
-                for k in (['web2py_plugins'] + 
+                for k in ((['github'] 
+                            if T.accepted_language=='ja' else []) + ['web2py_plugins'] + 
                           (['akamon', 'ec_orange_cms', 'ec_orange_pos', 'excellent'] 
                             if T.accepted_language=='ja' else []) + 
                           ['cloudmap'])

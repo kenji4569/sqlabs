@@ -27,6 +27,13 @@ The code parts are organized in %s, and easily available.""",
         link_label=T('See Demo'),
         image='web2py_plugins.jpg',
     ),
+    github=dict(
+        label='github/scubism',
+        description=trans(ja="""scubismの公式githubアカウントのページです。社内で作成したライブラリなどを公開しています。"""),
+        link='https://github.com/scubism',
+        link_label='ページを見る',
+        image='github.png',
+    ),
     akamon=dict(
         label='AKAMON',
         description=trans(ja="""新感覚CMS製品パッケージです。"""),
