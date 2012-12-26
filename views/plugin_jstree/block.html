@@ -74,6 +74,7 @@ tree_el.jstree({
       $.jstree.rollback(data.rlbk);
       return;
     }
+    data.inst.lock();
     jQuery('#tree_crud_buttons').jstree_spinner();
     $.post("{{=url(args=['new'])}}",
       {
@@ -85,10 +86,13 @@ tree_el.jstree({
         jQuery('#tree_crud_buttons').jstree_spinner('remove');
         jQuery('.flash').hide().html("{{=T('Created')}}").slideDown();
         $(data.rslt.obj).attr("id", "node_" + r);
+        data.inst.unlock();
+        tree_crud_buttons.find('#delete_node_button').hide(); //リーフノードでなくなったときに、xボタンを消す作業が必要
       }
     ).error(function(r){ 
       jQuery('#tree_crud_buttons').jstree_spinner('remove');
       handle_error(r, data);
+      data.inst.unlock();
       $.jstree.rollback(data.rlbk);
     });
   }).bind("rename.jstree", function (e, data) {
@@ -96,6 +100,7 @@ tree_el.jstree({
       $.jstree.rollback(data.rlbk);
       return;
     }
+    data.inst.lock();
     jQuery('#tree_crud_buttons').jstree_spinner();
     $.post("{{=url(args=['edit'])}}",
       {
@@ -105,10 +110,12 @@ tree_el.jstree({
       function (r) {
         jQuery('#tree_crud_buttons').jstree_spinner('remove');
         jQuery('.flash').hide().html("{{=T('Updated')}}").slideDown();
+        data.inst.unlock();
       }
     ).error(function(r){ 
       jQuery('#tree_crud_buttons').jstree_spinner('remove');
       handle_error(r, data);
+      data.inst.unlock();
       $.jstree.rollback(data.rlbk);
     });
   }).bind("remove.jstree", function (e, data) {
@@ -118,6 +125,7 @@ tree_el.jstree({
       $.jstree.rollback(data.rlbk);
       return;
     }
+    data.inst.lock();
     $.post("{{=url(args=['delete'])}}",
       {
         "id"   : data.rslt.obj.attr("id").split("_")[1],
@@ -125,6 +133,7 @@ tree_el.jstree({
       function (r) {
         jQuery('#tree_crud_buttons').jstree_spinner('remove');
         jQuery('.flash').hide().html("{{=T('Deleted')}}").slideDown();
+        data.inst.unlock();
       }
     ).error(function(r){ 
       jQuery('#tree_crud_buttons').jstree_spinner('remove');
@@ -141,6 +150,7 @@ tree_el.jstree({
       $.jstree.rollback(data.rlbk);
       return;
     }
+    data.inst.lock();
     tree_el.jstree_spinner();
     $.post("{{=url(args=['move'])}}",
       {
@@ -151,11 +161,13 @@ tree_el.jstree({
       function (r) {
         tree_el.jstree_spinner('remove');
         jQuery('.flash').hide().html("{{=T('Moved')}}").slideDown();
+        data.inst.unlock();
         // TODO refresh?
       }
     ).error(function(r){ 
       tree_el.jstree_spinner('remove');
       handle_error(r);
+      data.inst.unlock();
       $.jstree.rollback(data.rlbk);
     });
    // console.log(data.rslt.np.text());
