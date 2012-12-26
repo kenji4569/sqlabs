@@ -12,9 +12,11 @@ APP = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
 def _gridbutton(buttonclass, buttontext, buttonurl, **attr):
     if '_class' not in attr:
         attr['_class'] = 'btn w2p_trap'
+    if '_style' not in attr:
+        attr['_style'] = 'float:left;margin-right:20px;'
     return A(SPAN(_class='ui-icon  %s' % buttonclass),
              SPAN(buttontext, _class='ui-button-text'),
-             _href=buttonurl, _style='float:left;margin-right:20px;', **attr)
+             _href=buttonurl, **attr)
 
 
 def _recordbutton(buttonclass, buttontext, buttonurl, showbuttontext=True, **attr):
