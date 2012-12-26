@@ -191,15 +191,6 @@ A simple dialog.
 シンプルなダイアログです。
 """) )
     ),
-    plugin_managed_html=dict(
-        label='Managed HTML',
-        short_description=('An extreme WYSIWYG CMS. (EXPERIMENTAL)'),
-        long_description=XML(trans(en="""
-A WYSIWYG CMS. Just take a look!  (EXPERIMENTAL)
-""",                           ja="""
-見たまま編集ができるCMSです。 (EXPERIMENTAL)
-""") )
-    ),
     
     plugin_mptt=dict(
         label='MPTT (Tree Model)',
@@ -225,84 +216,6 @@ in a fancy ui by using %s. Then, %s could be then included into the plugin as a 
 """) % (A('jsTree library', _href='http://www.jstree.com/'),
        A('The MPTT plugin', _href=URL('plugin_mptt', 'index')))),
     ),
-    
-    plugin_comment_cascade=dict(
-        label='Comment Cascade',
-        short_description=T('Make facebook-like comment boxes'),
-        long_description=trans(en="""The plugin makes ajax-intensive comment boxes for a sort of news feed as in Facebook.""",
-                               ja="""Facebookにあるようなニュースフィードに対するAjaxを活用したコメントボックスを作成します。""")
-    ),
-    plugin_friendship=dict(
-        label='Friendship',
-        short_description=T('A friendship manager'),
-        long_description=trans(en="""The plugin makes friendship relations among users as in Facebook.""",
-                               ja="""Facebookにあるようなユーザー間の友達関係を作成します。""")
-    ),
-    plugin_messaging=dict(
-        label='Messaging',
-        short_description=T('A direct messaging manager'),
-        long_description=trans(en="""The plugin provides direct messaging functionality between users as in Facebook.""",
-                               ja="""Facebookにあるようなユーザー間のダイレクト・メッセージ機能を提供します。""")
-    ),
-    
-    plugin_generic_menu=dict(
-        label='Generic Menu',
-        show_image=False,
-        short_description='',
-        long_description='',
-        status='under-construction',
-    ),
-    plugin_tagging=dict(
-        label='Tagging',
-        show_image=False,
-        short_description='',
-        long_description='',
-        status='under-construction',
-    ),
-    plugin_recommender=dict(
-        label='Recommender',
-        show_image=False,
-        short_description='',
-        long_description='',
-        status='under-construction',
-    ),
-    plugin_analytics=dict(
-        label='Ananlytics Integration',
-        show_image=False,
-        short_description='',
-        long_description='',
-        status='under-construction',
-    ),
-    plugin_deploytools=dict(
-        label='Deploy Tools',
-        show_image=False,
-        short_description='',
-        long_description='',
-        status='under-construction',
-    ),
-    plugin_testtools=dict(
-        label='Test Tools',
-        show_image=False,
-        short_description='',
-        long_description='',
-        status='under-construction',
-    ),
-    
-    plugin_catalog=dict(
-        label='Catalog',
-        show_image=False,
-        status='under-construction',
-        short_description='A catalog manager shopping (EXPERIMENTAL)',
-        long_description=trans(en="""A minimum set of catalog models for shopping (EXPERIMENTAL)"""),
-    ),
-    plugin_checkout=dict(
-        label='Checkout',
-        show_image=False,
-        short_description='A checkout manager for shopping',
-        long_description=trans(en="""A minimum set of checkout models for shopping (Now Developping)"""),
-        status='under-construction',
-    ),
-    
     plugin_rating_widget=dict(
         label='Rating Widget',
         short_description='A rating widget using jquery.rating.js',
