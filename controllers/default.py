@@ -50,9 +50,24 @@ def contact():
         Field('subject', label=T('Subject'), requires=IS_LENGTH(200, 1)),
         Field('message', 'text', label=T('Message'), requires=IS_LENGTH(5000)),
     ]
+
+    if T.accepted_language == 'ja':
+        fields.append(
+            Field('agree', 'boolean', label='',
+                  comment=DIV(A('個人情報取扱い同意書', 
+                              _href='http://s-cubism.jp/agreement.html'),
+                              'に同意する。')),
+        )
+    def _onvalidation(form):
+        if T.accepted_language == 'ja':
+            if not form.vars.agree:
+                form.errors.agree = '同意する場合はチェックしてください'
+
+
+
     mark_not_empty(fields)
     form = SOLIDFORM.factory(submit_button=T('Send'), *fields)
-    if form.accepts(request.vars, session):
+    if form.accepts(request.vars, session, onvalidation=_onvalidation):
         _send(
             to=CONTACT_TO,
             subject='sqlabs contact subject: %s' % form.vars.subject,
