@@ -293,7 +293,9 @@ class SOLIDTABLE(SQLTABLE):
             elif field.type == 'blob' and r:
                 r = 'DATA'
             elif field.type == 'upload':
-                if self.upload and r:
+                if callable(self.upload) and r:
+                    r = A('file', _href='%s' % self.upload(r), _class='w2p_trap')
+                elif self.upload and r:
                     r = A('file', _href='%s/%s' % (self.upload, r), _class='w2p_trap')
                 elif r:
                     r = 'file'
