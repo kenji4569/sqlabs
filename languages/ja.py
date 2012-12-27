@@ -150,6 +150,7 @@
 'Search': '検索',
 'Second': '秒',
 'See Demo': 'デモを見る',
+'See Page': 'ページを見る',
 'Select': 'Select',
 'Select a file': 'ファイルを選択してください',
 'Select an image': '画像を選択してください',
