@@ -37,11 +37,20 @@ The code parts are organized in %s, and easily available.""",
     ),
     github_ios=dict(
         label='github/scubism-ios',
-        description=trans(ja="""ios用のユーティリティライブラリ集です。""",
+        description=trans(ja="""ios用のユーティリティライブラリです。""",
                           en="""utility library for ios"""),
         link='https://github.com/scubism-ios',
         link_label=T('See Page'),
         image='github_ios.jpg',
+    ),
+    github_orangewirt=dict(
+        label='github/scubism/OrangeWinRT',
+        description=trans(ja="""WinRT/Windowsストアアプリ用のユーティリティライブラリです。""",
+                          en="""Utility library for WinRT/Windows Store Applications"""),
+        link='https://github/scubism/OrangeWinRT',
+        link_label=T('See Page'),
+        image='github_orangewirt.png',
+
     ),
     akamon=dict(
         label='AKAMON',
