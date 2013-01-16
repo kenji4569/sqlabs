@@ -47,7 +47,7 @@ The code parts are organized in %s, and easily available.""",
         label='github/scubism/OrangeWinRT',
         description=trans(ja="""WinRT/Windowsストアアプリ用のユーティリティライブラリです。""",
                           en="""Utility library for WinRT/Windows Store Applications"""),
-        link='https://github/scubism/OrangeWinRT',
+        link='https://github.com/scubism/OrangeWinRT',
         link_label=T('See Page'),
         image='github_orangewirt.png',
 
